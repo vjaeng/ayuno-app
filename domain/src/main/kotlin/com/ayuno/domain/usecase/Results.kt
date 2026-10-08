@@ -1,0 +1,52 @@
+package com.ayuno.domain.usecase
+
+/**
+ * Resultado tipado de los casos de uso: el dominio devuelve códigos y la UI los traduce a mensajes llanos
+ * (convenciones de código). Nunca se lanza una excepción por una validación.
+ */
+sealed interface Outcome<out T> {
+    data class Ok<T>(val value: T) : Outcome<T>
+    data class Invalid(val errors: List<ValidationError>) : Outcome<Nothing>
+}
+
+enum class ValidationError {
+    NAME_REQUIRED,
+    NAME_DUPLICATED,
+    UNIT_REQUIRED,
+    TARGET_HOURS_NOT_POSITIVE,
+    MILESTONE_NOT_POSITIVE,
+    STAGE_DURATION_REQUIRED,
+    SCHEDULE_STAGE_NOT_USED,
+    RANGE_MIN_NOT_BELOW_MAX,
+    CLOCK_START_BEFORE_LAST_MEAL,
+    TEMPLATE_NOT_FOUND,
+    FAST_NOT_FOUND,
+    FAST_NOT_PLANNED,
+    FAST_NOT_IN_PROGRESS,
+    ANOTHER_FAST_IN_PROGRESS,
+    FAST_NOT_STARTED,
+    REASON_REQUIRED,
+    END_BEFORE_START,
+    END_IN_FUTURE,
+    END_RULE_REQUIRED,
+    END_DETAIL_REQUIRED,
+    METRIC_NOT_FOUND,
+    METRIC_NOT_ACTIVE,
+    VALUE_REQUIRED,
+    VALUE_AND_NOT_DONE,
+    UNIT_NOT_ALLOWED,
+    SOURCE_REQUIRED,
+    DIASTOLIC_NOT_BELOW_SYSTOLIC,
+    PAIRED_READING_INVALID,
+    RULE_METRIC_REQUIRED,
+    RULE_THRESHOLD_REQUIRED,
+    RULE_BP_COMPONENT_REQUIRED,
+    RULE_SUSTAINED_NOT_POSITIVE,
+    RULE_MESSAGE_REQUIRED,
+    RULE_CONDITION_UNSUPPORTED,
+    RULE_ACTION_UNSUPPORTED,
+    ALERT_NOT_FOUND,
+    ALERT_ALREADY_DECIDED,
+}
+
+fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

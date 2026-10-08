@@ -1,0 +1,106 @@
+package com.ayuno.domain.fakes
+
+import com.ayuno.domain.id.Ids
+import com.ayuno.domain.model.BpComponent
+import com.ayuno.domain.model.DurationUnit
+import com.ayuno.domain.model.Fast
+import com.ayuno.domain.model.FastWithPlan
+import com.ayuno.domain.model.MetricSchedule
+import com.ayuno.domain.model.Plan
+import com.ayuno.domain.model.PlanMetric
+import com.ayuno.domain.model.Position
+import com.ayuno.domain.model.Rule
+import com.ayuno.domain.model.RuleAction
+import com.ayuno.domain.model.RuleConditionKind
+import com.ayuno.domain.model.RuleLevel
+import com.ayuno.domain.model.Stage
+import com.ayuno.domain.model.StageKind
+import com.ayuno.domain.model.Template
+import com.ayuno.domain.model.TemplateWithPlan
+import com.ayuno.domain.usecase.CorrectClockStart
+import com.ayuno.domain.usecase.CreateFast
+import com.ayuno.domain.usecase.DecideAlert
+import com.ayuno.domain.usecase.EndFast
+import com.ayuno.domain.usecase.Outcome
+import com.ayuno.domain.usecase.RecordBloodPressure
+import com.ayuno.domain.usecase.RecordMeasurement
+import com.ayuno.domain.usecase.RegisterLastMeal
+import com.ayuno.domain.usecase.SaveMetricType
+import com.ayuno.domain.usecase.SaveTemplate
+import com.ayuno.domain.usecase.SetMetricTypeActive
+import com.ayuno.domain.usecase.StartFast
+import java.time.LocalDateTime
+import java.time.LocalTime
+
+/**
+ * Mundo de prueba: todos los datos se crean por los casos de uso reales (regla anti-fixture-fantasma).
+ * Reloj inicial: jueves 22-oct-2026 18:00 hora local (-05:00).
+ */
+class TestWorld {
+    val clock = TestClock()
+    val catalog = FakeCatalog()
+    val templates = FakeTemplates()
+    val fasts = FakeFasts()
+    val records = FakeRecords()
+    val alerts = FakeAlerts()
+    val audit = FakeAudit()
+
+    val saveMetricType = SaveMetricType(catalog)
+    val setMetricTypeActive = SetMetricTypeActive(catalog)
+    val saveTemplate = SaveTemplate(templates)
+    val createFast = CreateFast(templates, fasts, DirectTransactions, clock)
+    val startFast = StartFast(fasts, DirectTransactions, clock)
+    val registerLastMeal = RegisterLastMeal(fasts, audit, DirectTransactions, clock)
+    val correctClockStart = CorrectClockStart(fasts, audit, DirectTransactions, clock)
+    val endFast = EndFast(fasts, DirectTransactions, clock)
+    val recordMeasurement = RecordMeasurement(catalog, fasts, records, alerts, DirectTransactions, clock)
+    val recordBloodPressure = RecordBloodPressure(catalog, fasts, records, alerts, DirectTransactions, clock)
+    val decideAlert = DecideAlert(alerts)
+
+    fun glucoseBelow(threshold: Double, sustained: Int? = null, action: RuleAction = RuleAction.OFFER_END) = Rule(
+        id = Ids.newId(), name = "Glucosa baja", active = true, conditionKind = RuleConditionKind.METRIC_BELOW,
+        metricTypeCode = "glucose", bpComponent = null, threshold = threshold, sustainedMinutes = sustained,
+        symptomTypeCode = null, intakeTypeCode = null, checkTime = null, filterStageKinds = emptyList(),
+        filterOnWaking = false, filterPosition = null, level = RuleLevel.ALERT, message = "Rompe con caldo tibio con sal.",
+        action = action, actionMinutes = null,
+    )
+
+    fun standingSystolicBelow(threshold: Double) = glucoseBelow(threshold).copy(
+        name = "Presión de pie baja", metricTypeCode = "blood_pressure", bpComponent = BpComponent.SYSTOLIC,
+        filterPosition = Position.STANDING,
+    )
+
+    fun plan57h(rules: List<Rule> = emptyList()) = Plan(
+        stages = listOf(
+            Stage(Ids.newId(), StageKind.PREPARATION, 3.0, DurationUnit.DAYS),
+            Stage(Ids.newId(), StageKind.REFEED, 6.0, DurationUnit.HOURS),
+            Stage(Ids.newId(), StageKind.POST, 4.0, DurationUnit.DAYS),
+        ),
+        metrics = listOf(
+            PlanMetric(Ids.newId(), "glucose", listOf(7, 12, 18, 22).map { MetricSchedule(Ids.newId(), StageKind.FAST, LocalTime.of(it, 0)) }),
+            PlanMetric(Ids.newId(), "weight", listOf(MetricSchedule(Ids.newId(), StageKind.POST, LocalTime.of(7, 0)))),
+        ),
+        rules = rules,
+    )
+
+    suspend fun template(plan: Plan = plan57h()): TemplateWithPlan {
+        val result = saveTemplate(TemplateWithPlan(Template(Ids.newId(), "Ayuno de 57 horas", 57.0, listOf(12.0, 24.0, 36.0, 48.0)), plan))
+        return (result as Outcome.Ok).value
+    }
+
+    /** Ayuno planificado: última comida jueves 22-oct 18:00, reloj previsto 22:00, objetivo 57 h. */
+    suspend fun plannedFast(plan: Plan = plan57h()): FastWithPlan {
+        val template = template(plan)
+        val result = createFast(
+            CreateFast.Input(template.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), 57.0, null),
+        )
+        return (result as Outcome.Ok).value
+    }
+
+    /** Ayuno en curso iniciado a las 22:10 del jueves. */
+    suspend fun startedFast(plan: Plan = plan57h()): Fast {
+        val planned = plannedFast(plan)
+        clock.instant = java.time.Instant.parse("2026-10-23T03:10:00Z")
+        return (startFast(planned.fast.id) as Outcome.Ok).value
+    }
+}

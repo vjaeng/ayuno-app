@@ -1,0 +1,102 @@
+package com.ayuno.domain.fakes
+
+import com.ayuno.domain.model.Alert
+import com.ayuno.domain.model.BloodPressureRanges
+import com.ayuno.domain.model.BloodPressureReading
+import com.ayuno.domain.model.EditLogEntry
+import com.ayuno.domain.model.Fast
+import com.ayuno.domain.model.FastWithPlan
+import com.ayuno.domain.model.Measurement
+import com.ayuno.domain.model.MetricType
+import com.ayuno.domain.model.Template
+import com.ayuno.domain.model.TemplateWithPlan
+import com.ayuno.domain.port.AlertRepository
+import com.ayuno.domain.port.AuditRepository
+import com.ayuno.domain.port.CatalogRepository
+import com.ayuno.domain.port.FastRepository
+import com.ayuno.domain.port.RecordRepository
+import com.ayuno.domain.port.TemplateRepository
+import com.ayuno.domain.port.TransactionRunner
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+
+/** Reloj de prueba avanzable, en hora de Colombia (-05:00). */
+class TestClock(var instant: Instant = Instant.parse("2026-10-22T23:00:00Z"), private val zone: ZoneId = ZoneId.of("-05:00")) : Clock() {
+    override fun getZone(): ZoneId = zone
+    override fun withZone(zone: ZoneId): Clock = TestClock(instant, zone)
+    override fun instant(): Instant = instant
+    fun advanceMinutes(minutes: Long) { instant = instant.plusSeconds(minutes * 60) }
+}
+
+object SeedCatalog {
+    val glucose = MetricType("glucose", "Glucosa", "mg/dL", "mmol/L", "mg/dL", true, 20.0, 600.0, true)
+    val weight = MetricType("weight", "Peso", "kg", "lb", "kg", true, 20.0, 300.0, true)
+    val bloodPressure = MetricType("blood_pressure", "Presión arterial", "mmHg", null, "mmHg", true, null, null, true)
+    val hunger = MetricType("hunger", "Hambre", "0-10", null, "0-10", true, 0.0, 10.0, true)
+    val all = listOf(glucose, weight, bloodPressure, hunger)
+    val bpRanges = BloodPressureRanges(50.0..250.0, 30.0..150.0, 30.0..220.0)
+}
+
+class FakeCatalog(types: List<MetricType> = SeedCatalog.all) : CatalogRepository {
+    val types = MutableStateFlow(types)
+    override fun observeMetricTypes(): Flow<List<MetricType>> = types
+    override suspend fun metricTypes() = types.value
+    override suspend fun metricType(code: String) = types.value.firstOrNull { it.code == code }
+    override suspend fun saveMetricType(type: MetricType) {
+        types.value = types.value.filterNot { it.code == type.code } + type
+    }
+    override suspend fun bloodPressureRanges() = SeedCatalog.bpRanges
+}
+
+class FakeTemplates : TemplateRepository {
+    val items = MutableStateFlow<Map<String, TemplateWithPlan>>(emptyMap())
+    override fun observeTemplates(): Flow<List<Template>> = items.map { m -> m.values.map { it.template } }
+    override suspend fun get(id: String) = items.value[id]
+    override suspend fun save(template: TemplateWithPlan) { items.value = items.value + (template.template.id to template) }
+}
+
+class FakeFasts : FastRepository {
+    val items = MutableStateFlow<Map<String, FastWithPlan>>(emptyMap())
+    override fun observeFasts(): Flow<List<Fast>> = items.map { m -> m.values.map { it.fast } }
+    override suspend fun all() = items.value.values.map { it.fast }
+    override suspend fun get(id: String) = items.value[id]
+    override suspend fun insert(fast: FastWithPlan) { items.value = items.value + (fast.fast.id to fast) }
+    override suspend fun update(fast: Fast) {
+        val current = items.value.getValue(fast.id)
+        items.value = items.value + (fast.id to current.copy(fast = fast))
+    }
+}
+
+class FakeRecords : RecordRepository {
+    val measurements = MutableStateFlow<List<Measurement>>(emptyList())
+    val readings = MutableStateFlow<List<BloodPressureReading>>(emptyList())
+    override fun observeMeasurements(fastId: String) = measurements.map { l -> l.filter { it.fastId == fastId } }
+    override fun observeBloodPressure(fastId: String) = readings.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun measurements(fastId: String) = measurements.value.filter { it.fastId == fastId }
+    override suspend fun bloodPressure(fastId: String) = readings.value.filter { it.fastId == fastId }
+    override suspend fun insertMeasurement(measurement: Measurement) { measurements.value = measurements.value + measurement }
+    override suspend fun insertBloodPressure(reading: BloodPressureReading) { readings.value = readings.value + reading }
+}
+
+class FakeAlerts : AlertRepository {
+    val items = MutableStateFlow<List<Alert>>(emptyList())
+    override fun observeAlerts(fastId: String) = items.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun alerts(fastId: String) = items.value.filter { it.fastId == fastId }
+    override suspend fun get(id: String) = items.value.firstOrNull { it.id == id }
+    override suspend fun insert(alert: Alert) { items.value = items.value + alert }
+    override suspend fun update(alert: Alert) { items.value = items.value.map { if (it.id == alert.id) alert else it } }
+}
+
+class FakeAudit : AuditRepository {
+    val entries = mutableListOf<EditLogEntry>()
+    override suspend fun append(entry: EditLogEntry) { entries += entry }
+    override suspend fun entriesFor(rowId: String) = entries.filter { it.rowId == rowId }
+}
+
+object DirectTransactions : TransactionRunner {
+    override suspend fun <T> inTransaction(block: suspend () -> T): T = block()
+}
