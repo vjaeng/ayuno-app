@@ -1,0 +1,25 @@
+# .trama-config.yaml
+# Configuración del Método TRAMA para este proyecto.
+# Human-editable; fuente de verdad post-instalación. NO borrar:
+# los scripts de instalación/upgrade del método lo requieren.
+
+# Versión del método vendorizado en metodo/.
+# Para actualizar: reemplazar metodo/ y cambiar este valor.
+version_metodo: "0.1.0"
+
+# Versión del instalador que generó esta instalación.
+version_instalador: "0.3.0"
+
+# Workflow de origen declarado en la instalación.
+# Valores: fundacion | adopcion
+tipo_proyecto: "fundacion"
+
+# Nombre del proyecto (inferido del directorio; sobrescribible).
+nombre_proyecto: "ayuno-app"
+
+# Timestamp de instalación, ISO 8601 UTC.
+instalado_en: "2026-10-08T22:04:54Z"
+
+# Skills copiados por el instalador (comunes + los del modo).
+# Un futuro upgrade sincroniza exactamente esta lista.
+skills_instalados: [trama-tejer, trama-construir, trama-evolucion, trama-evolucion-plan, trama-evolucion-actualizar, trama-evolucion-verificar, trama-evolucion-cerrar, trama-evolucion-retomar, trama-fundacion, trama-fundacion-historias, trama-fundacion-modelo, trama-fundacion-definicion]
