@@ -24,7 +24,7 @@ App móvil Android, personal y genérica, para planificar y registrar ayunos de 
 ## Stack Tecnológico
 
 - **Plataforma:** app nativa Android (solo Android; sin iPhone en esta versión)
-- **Lenguaje:** Kotlin (versión exacta, `minSdk` y `targetSdk` se fijan por ADR en Diseño)
+- **Lenguaje:** Kotlin; `minSdk 29` (Android 10), `targetSdk`/`compileSdk 36` (Android 16) — ADR-001
 - **Frontend:** Jetpack Compose + Material 3
 - **Backend:** ninguno (app sin servidor; `specs/CONTRATO-API/` no aplica)
 - **Base de datos:** SQLite local vía Room, cifrada en el dispositivo (H-042; librería de cifrado por ADR `SEG-` en Diseño)
@@ -55,11 +55,19 @@ Previstas (se crean en Construcción): `app/` (módulo Android: código y prueba
 
 ## Convenciones de Código (resumen)
 
-[p.ej. 5-10 líneas con lo no-obvio: naming, imports, manejo de errores, idioma de comentarios. Detalle en `.claude/rules/convenciones-codigo.md`.]
+- Identificadores de código en inglés; los que representan campos del modelo usan el nombre canónico (`clockStartActual` ↔ `fast.clock_start_actual`; columnas Room en `snake_case` idéntico).
+- Textos de interfaz en español y siempre en `strings.xml`; comentarios en español, solo para restricciones no evidentes.
+- Horas: `LocalDateTime` truncado a segundos y `Clock` inyectado; nunca `LocalDateTime.now()` directo (ADR-004).
+- Errores: resultados tipados del dominio (`sealed`); nunca capturar y silenciar; nada Crítico ni PII en logs (S4).
+- Corrutinas y `Flow`; sin `runBlocking` fuera de pruebas. Formato con ktlint. Detalle en `.claude/rules/convenciones-codigo.md`.
 
 ## Principios de Arquitectura (resumen)
 
-[p.ej. 5-10 líneas: patrón principal, capas, direcciones de dependencia. Detalle operacional en `specs/ARQUITECTURA.md`.]
+- Módulos `:app` (UI Compose, ViewModels, recordatorios), `:domain` (Kotlin puro: casos de uso, motor de reglas, derivados, puertos) y `:data` (Room + SQLCipher, repositorios, intercambio).
+- Dependencias: `:app → :domain`, `:data → :domain`; `:app → :data` solo desde `di/`. El dominio no conoce Android.
+- Un caso de uso por operación de historia; escrituras multi-entidad en transacción; reglas evaluadas en la misma transacción que la entrada.
+- Derivados (reloj, totales, pendientes) se calculan, nunca se guardan. Sin permiso `INTERNET` (ADR-SEG-004).
+- Detalle operacional y checklist de features en `specs/ARQUITECTURA.md`; ADRs en `specs/DISENO.md`.
 
 ## Guías de UX
 
@@ -96,7 +104,7 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-5 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta). Siguiente: Diseño (paso 6). Sin código aún.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). En preparación de Construcción: guía de estilo y estrategia de pruebas. Sin código aún.
 
 ## Decisiones Técnicas
 
@@ -104,4 +112,6 @@ Fundación: pasos 2-5 cerrados (historias, modelo, UX-UI, Tejido con compuerta a
 |---|---|---|
 | 2026-10-08 | Nombres canónicos en inglés y `snake_case` | Coinciden con las claves del archivo de exportación (MODELO-DATOS D-01) |
 | 2026-10-08 | Sin API: `specs/CONTRATO-API/` no aplica | App sin servidor; el formato del archivo se especifica en Diseño |
+| 2026-10-08 | Soporte desde Android 10 (API 29), objetivo Android 16 (API 36) | Decisión del humano; su teléfono tiene Android 16 |
+| 2026-10-08 | Diseño aprobado: ADR-001 a 009 y ADR-SEG-001 a 006 | Ver `specs/DISENO.md` |
 | 2026-10-08 | App nativa Android con Kotlin y Jetpack Compose | Solo Android; control directo de alarmas exactas y reinicio, críticos para que ningún recordatorio se pierda (H-016) |
