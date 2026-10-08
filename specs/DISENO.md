@@ -29,12 +29,13 @@ Registro de decisiones arquitectónicas (formato Nygard). Las decisiones con com
 
 **Contexto.** La app es solo para Android (CLAUDE.md). Las historias exigen formularios rápidos (H-008: 3 toques, <30 s), pantallas a pantalla completa para alertas (H-025) y accesibilidad con el tamaño de letra del sistema y lector de pantalla (UX-UI README).
 
-**Decisión.** Kotlin con Jetpack Compose y Material 3, una sola `Activity` con Navigation Compose; estado de pantalla con `ViewModel` + `StateFlow` (flujo unidireccional). `minSdk 29` (Android 10), `targetSdk 36` y `compileSdk 36` (Android 16, el teléfono de la persona). Las versiones de Kotlin y del plugin de Android se fijan al crear el proyecto (las estables compatibles con API 36) y se anotan en `ARQUITECTURA.md`.
+**Decisión.** Kotlin con Jetpack Compose y Material 3, una sola `Activity` con Navigation Compose; estado de pantalla con `ViewModel` + `StateFlow` (flujo unidireccional). `minSdk 29` (Android 10), `targetSdk 35` y `compileSdk 35` (Android 15: la plataforma y build-tools instaladas en el equipo de desarrollo). La app se ejecuta en el teléfono de la persona (Android 16) en modo de compatibilidad con API 35. Las versiones de Kotlin y del plugin de Android se fijan al crear el proyecto (las estables compatibles con API 35 y JDK 17) y se anotan en `ARQUITECTURA.md`.
 
 **Consecuencias.**
 - Gana: un solo lenguaje, accesibilidad nativa (semántica de Compose para el lector de pantalla), escalado de texto del sistema.
 - Paga: Compose obliga a cuidar recomposiciones en la línea de tiempo larga (H-033); `minSdk 29` deja fuera teléfonos con Android 9 o anterior (decisión del humano: soporte desde Android 10).
 - Difícil: portar a iPhone requerirá reescribir la UI (aceptado: fuera de alcance).
+- Con `targetSdk 35` en un teléfono Android 16, los cambios de comportamiento exclusivos de API 36 no se activan; subir a 36 requiere instalar la plataforma y revisar esos cambios (evolución futura).
 
 **Alternativas consideradas.** Flutter o React Native (multiplataforma, recomendados en la solicitud): descartados porque solo se apunta a Android y las alarmas exactas y la reprogramación tras reinicio (H-016) exigen código nativo igualmente. Vistas XML: descartadas por mayor código para formularios dinámicos (rejilla de mediciones activas).
 

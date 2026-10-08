@@ -24,7 +24,7 @@ App móvil Android, personal y genérica, para planificar y registrar ayunos de 
 ## Stack Tecnológico
 
 - **Plataforma:** app nativa Android (solo Android; sin iPhone en esta versión)
-- **Lenguaje:** Kotlin; `minSdk 29` (Android 10), `targetSdk`/`compileSdk 36` (Android 16) — ADR-001
+- **Lenguaje:** Kotlin; `minSdk 29` (Android 10), `targetSdk`/`compileSdk 35` (Android 15, plataforma instalada; corre en el teléfono con Android 16) — ADR-001
 - **Frontend:** Jetpack Compose + Material 3
 - **Backend:** ninguno (app sin servidor; `specs/CONTRATO-API/` no aplica)
 - **Base de datos:** SQLite local vía Room, cifrada en el dispositivo (H-042; librería de cifrado por ADR `SEG-` en Diseño)
@@ -112,6 +112,6 @@ Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta a
 |---|---|---|
 | 2026-10-08 | Nombres canónicos en inglés y `snake_case` | Coinciden con las claves del archivo de exportación (MODELO-DATOS D-01) |
 | 2026-10-08 | Sin API: `specs/CONTRATO-API/` no aplica | App sin servidor; el formato del archivo se especifica en Diseño |
-| 2026-10-08 | Soporte desde Android 10 (API 29), objetivo Android 16 (API 36) | Decisión del humano; su teléfono tiene Android 16 |
+| 2026-10-08 | Soporte desde Android 10 (API 29); `compileSdk`/`targetSdk` 35 | Decisión del humano: mínimo Android 10; se compila con la plataforma instalada (`android-35`, build-tools 35.0.0); la app corre en su teléfono con Android 16 |
 | 2026-10-08 | Diseño aprobado: ADR-001 a 009 y ADR-SEG-001 a 006 | Ver `specs/DISENO.md` |
 | 2026-10-08 | App nativa Android con Kotlin y Jetpack Compose | Solo Android; control directo de alarmas exactas y reinicio, críticos para que ningún recordatorio se pierda (H-016) |

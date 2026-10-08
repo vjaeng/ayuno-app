@@ -8,7 +8,7 @@ Estrategia de pruebas. Las pruebas viven en el código; aquí se define qué se 
 |---|---|---|---|---|
 | **Unitarias (U)** | Casos de uso, motor de reglas, derivados (reloj, hitos, totales, sodio, pendientes), validaciones, mapeo del formato de intercambio | `domain/src/test/` | JUnit 5, `kotlinx-coroutines-test`, `Clock` fijo | `./gradlew :domain:test` |
 | **Integración (I)** | Repositorios y DAOs contra Room real; migraciones; transacciones todo o nada; exportación validada contra el JSON Schema; carga inicial | `data/src/androidTest/` (Room necesita Android; SQLCipher activo) y `data/src/test/` para la serialización pura | AndroidX Test, Room testing, validador de JSON Schema (solo en pruebas) | `./gradlew :data:connectedAndroidTest` · `./gradlew :data:test` |
-| **E2E** | Flujos completos de las historias de prioridad **alta**, como los vería la persona | `app/src/androidTest/` | Compose UI Test en emulador API 36 | `./gradlew connectedAndroidTest` |
+| **E2E** | Flujos completos de las historias de prioridad **alta**, como los vería la persona | `app/src/androidTest/` | Compose UI Test en emulador API 35 o en el teléfono (Android 16) por depuración USB | `./gradlew connectedAndroidTest` |
 
 **Pirámide:** la mayor parte de los casos son unitarios (la lógica crítica vive en `:domain` puro, ADR-002); integración por cada operación de escritura de la matriz; E2E solo para el recorrido de cada historia de prioridad alta (`.claude/rules/pruebas-e2e.md`).
 

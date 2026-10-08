@@ -153,4 +153,4 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-08 | Inyección manual | ADR-009 |
 | 2026-10-08 | Seguridad: cifrado, bloqueo, exportación, sin red, copia cifrada, importación | ADR-SEG-001 a 006 |
 
-Plataforma: `minSdk 29` (Android 10), `targetSdk`/`compileSdk 36` (Android 16). Paquete raíz: `com.ayuno` (`com.ayuno.app`, `com.ayuno.domain`, `com.ayuno.data`). Versiones de Kotlin y del plugin de Android: se anotan aquí al crear el proyecto en Construcción.
+Plataforma: `minSdk 29` (Android 10), `targetSdk`/`compileSdk 35` (Android 15; se ejecuta en Android 16). Paquete raíz: `com.ayuno` (`com.ayuno.app`, `com.ayuno.domain`, `com.ayuno.data`). Versiones de Kotlin y del plugin de Android: se anotan aquí al crear el proyecto en Construcción.
