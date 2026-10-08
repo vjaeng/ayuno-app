@@ -104,7 +104,7 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). En preparación de Construcción: guía de estilo y estrategia de pruebas. Sin código aún.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Guía de estilo y estrategia de pruebas listas. Siguiente: Construcción (paso 7). Sin código aún.
 
 ## Decisiones Técnicas
 
