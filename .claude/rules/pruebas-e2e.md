@@ -1,10 +1,8 @@
 # Regla de Pruebas E2E
 
-<!-- Completar herramienta y comandos reales del proyecto. -->
-
-- **Herramienta:** [p.ej. Playwright | Cypress]
-- **Comando:** [p.ej. `npm run test:e2e`]
-- **Ubicación:** [p.ej. `tests/e2e/`]
+- **Herramienta:** Compose UI Test (instrumentado, en emulador Android)
+- **Comando:** `./gradlew connectedAndroidTest`
+- **Ubicación:** `app/src/androidTest/` (escenarios nombrados por historia: `H005EmpezarAyunoTest.kt`)
 
 Reglas fijas del método:
 

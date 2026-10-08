@@ -19,18 +19,20 @@ La seguridad es hilo transversal del método: consultar `metodo/SEGURIDAD.md` al
 
 ## Descripción del Proyecto
 
-[p.ej. Sistema de reservas de salas para oficinas multi-edificio. Permite a empleados reservar, modificar y liberar salas con reglas por edificio. 3-5 líneas máximo.]
+App móvil Android, personal y genérica, para planificar y registrar ayunos de cualquier duración: plantillas reutilizables, reloj del ayuno, mediciones, síntomas, líquidos y productos, recordatorios locales y reglas de alerta definidas por la propia persona. Registra, recuerda y avisa; no aconseja. Funciona sin internet ni cuentas y exporta el registro a un archivo con formato fijo. Fuente: `docs/SOLICITUD_app_movil_ayuno.md`.
 
 ## Stack Tecnológico
 
-- **Lenguaje:** [p.ej. TypeScript 5 | Python 3.12 | Go 1.22]
-- **Frontend:** [p.ej. React + Vite | ninguno (backend puro)]
-- **Backend:** [p.ej. FastAPI | NestJS | ninguno]
-- **Base de datos:** [p.ej. PostgreSQL 16 | SQLite]
-- **Autenticación:** [p.ej. OIDC corporativo | JWT propio | ninguna aún]
-- **Infraestructura:** [p.ej. Cloud Run | Docker local]
-- **CI/CD:** [p.ej. GitHub Actions | ninguno aún]
-- **Testing:** [p.ej. Vitest + Playwright | Pytest]
+- **Plataforma:** app nativa Android (solo Android; sin iPhone en esta versión)
+- **Lenguaje:** Kotlin (versión exacta, `minSdk` y `targetSdk` se fijan por ADR en Diseño)
+- **Frontend:** Jetpack Compose + Material 3
+- **Backend:** ninguno (app sin servidor; `specs/CONTRATO-API/` no aplica)
+- **Base de datos:** SQLite local vía Room, cifrada en el dispositivo (H-042; librería de cifrado por ADR `SEG-` en Diseño)
+- **Autenticación:** ninguna (sin cuentas); bloqueo opcional con la credencial del dispositivo (BiometricPrompt)
+- **Recordatorios:** notificaciones locales con alarmas exactas (AlarmManager) y reprogramación tras reinicio y cambio de hora (H-016)
+- **Infraestructura:** solo el teléfono; distribución por APK firmado (sin tienda por ahora)
+- **CI/CD:** ninguno aún
+- **Testing:** JUnit + pruebas de Room; E2E con Compose UI Test en emulador
 
 ## Estructura del Proyecto
 
@@ -40,15 +42,16 @@ La seguridad es hilo transversal del método: consultar `metodo/SEGURIDAD.md` al
 ├── specs/      ← artefactos vivos
 └── .claude/    ← rules + skills /trama-*
 ```
-[p.ej. agregar las carpetas reales: src/, tests/, infra/ — top-level, sin recursión]
+Previstas (se crean en Construcción): `app/` (módulo Android: código y pruebas), `docs/` (solicitud de origen).
 
 ## Comandos
 
-- **Dev:** [p.ej. `npm run dev`]
-- **Build:** [p.ej. `npm run build`]
-- **Lint:** [p.ej. `npm run lint`]
-- **Test:** [p.ej. `npm test`]
-- **Deploy:** [p.ej. según `specs/DESPLIEGUE.md` | n/a]
+- **Dev:** `./gradlew installDebug` (emulador o teléfono conectado)
+- **Build:** `./gradlew assembleRelease`
+- **Lint:** `./gradlew lint`
+- **Test:** `./gradlew test`
+- **E2E:** `./gradlew connectedAndroidTest`
+- **Deploy:** según `specs/DESPLIEGUE.md` (APK firmado instalado en el teléfono)
 
 ## Convenciones de Código (resumen)
 
@@ -60,7 +63,7 @@ La seguridad es hilo transversal del método: consultar `metodo/SEGURIDAD.md` al
 
 ## Guías de UX
 
-[p.ej. Laws of UX como referencia (Hick, Jakob, Fitts, Miller) — o "(no aplica — sin UI directa)".]
+Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin siglas; texto ≥17 pt y objetivos ≥48 pt; rojo reservado a las alertas. Detalle en `specs/UX-UI/README.md`.
 
 ## Artefactos de Referencia
 *Artefactos vivos en `specs/`; metodología en `metodo/` (inmutable).*
@@ -89,14 +92,16 @@ La seguridad es hilo transversal del método: consultar `metodo/SEGURIDAD.md` al
 6. Antes de tocar artefactos, consultar `specs/EVOLUCIONES-EN-CURSO.md`; para retomar una evolución registrada, `/trama-evolucion-retomar`.
 7. Todo componente de UI sigue `specs/GUIA-ESTILO.md`; las operaciones complejas se documentan en `specs/TRANSACCIONES-CLAVE/`.
 8. `metodo/` es referencia inmutable: no editar.
-9. [p.ej. reglas propias del proyecto, una por línea — o "(sin reglas adicionales)"]
+9. (sin reglas adicionales)
 
 ## Estado Actual del Proyecto
 
-[p.ej. fase del método (fundación: "historias en redacción" / adopción: "Fase 3 — extracción"); módulos completos vs. en construcción. Sin detalle día a día.]
+Fundación: pasos 2-5 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta). Siguiente: Diseño (paso 6). Sin código aún.
 
 ## Decisiones Técnicas
 
 | Fecha | Decisión | Razón |
 |---|---|---|
-| [AAAA-MM-DD] | [qué se decidió] | [por qué] |
+| 2026-10-08 | Nombres canónicos en inglés y `snake_case` | Coinciden con las claves del archivo de exportación (MODELO-DATOS D-01) |
+| 2026-10-08 | Sin API: `specs/CONTRATO-API/` no aplica | App sin servidor; el formato del archivo se especifica en Diseño |
+| 2026-10-08 | App nativa Android con Kotlin y Jetpack Compose | Solo Android; control directo de alarmas exactas y reinicio, críticos para que ningún recordatorio se pierda (H-016) |
