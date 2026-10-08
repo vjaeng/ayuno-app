@@ -42,7 +42,7 @@ App móvil Android, personal y genérica, para planificar y registrar ayunos de 
 ├── specs/      ← artefactos vivos
 └── .claude/    ← rules + skills /trama-*
 ```
-Previstas (se crean en Construcción): `app/` (módulo Android: código y pruebas), `docs/` (solicitud de origen).
+Código: `app/` (UI Compose, recordatorios, `di/`), `domain/` (Kotlin puro), `data/` (Room + SQLCipher), `gradle/` (catálogo de versiones). Otros: `docs/` (solicitud de origen).
 
 ## Comandos
 
@@ -104,7 +104,7 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Guía de estilo y estrategia de pruebas listas. Siguiente: Construcción (paso 7). Sin código aún.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: esqueleto del proyecto listo (3 módulos, Room + SQLCipher, tema, navegación); historias aún sin construir.
 
 ## Decisiones Técnicas
 

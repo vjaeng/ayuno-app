@@ -135,6 +135,8 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 
 | Deuda | Razón | Plan |
 |---|---|---|
+| Esquema de base en versión 1 sin migraciones mientras crece historia a historia | Aún no hay instalación real con datos | Desde la primera instalación en el teléfono, todo cambio de esquema lleva migración probada (ADR-003) |
+| Sin icono de la app | No lo pide ninguna historia | Añadir antes de la primera instalación |
 | `USE_EXACT_ALARM` incompatible con publicar en Google Play | La distribución es por APK (ADR-005) | Revisar ADR-005 si se decide publicar en Play |
 | Columnas JSON no consultables por SQL | Listas pequeñas (ADR-003) | Normalizar si aparece una consulta que lo necesite |
 
@@ -153,4 +155,29 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-08 | Inyección manual | ADR-009 |
 | 2026-10-08 | Seguridad: cifrado, bloqueo, exportación, sin red, copia cifrada, importación | ADR-SEG-001 a 006 |
 
-Plataforma: `minSdk 29` (Android 10), `targetSdk`/`compileSdk 35` (Android 15; se ejecuta en Android 16). Paquete raíz: `com.ayuno` (`com.ayuno.app`, `com.ayuno.domain`, `com.ayuno.data`). Versiones de Kotlin y del plugin de Android: se anotan aquí al crear el proyecto en Construcción.
+## 7. Versiones y dependencias
+
+Plataforma: `minSdk 29` (Android 10), `targetSdk`/`compileSdk 35` (Android 15; se ejecuta en Android 16). `applicationId` `com.ayuno`; paquetes `com.ayuno.app`, `com.ayuno.domain`, `com.ayuno.data`. Catálogo de versiones en `gradle/libs.versions.toml`.
+
+| Herramienta | Versión |
+|---|---|
+| Gradle | 8.11.1 |
+| Plugin de Android (AGP) | 8.7.3 |
+| Kotlin (+ plugin de Compose) | 2.0.21 |
+| KSP | 2.0.21-1.0.28 |
+| JDK | 17 |
+
+Se eligieron las versiones ya presentes en la caché local del equipo de desarrollo; lint avisa de versiones más nuevas (aviso aceptado, actualizar es una evolución).
+
+**Dependencias de ejecución** (ADR-SEG-004: toda dependencia nueva se justifica aquí y no puede incluir telemetría):
+
+| Dependencia | Versión | Justificación |
+|---|---|---|
+| AndroidX Core, Activity Compose, Lifecycle, Navigation Compose | 1.15.0 · 1.9.3 · 2.8.7 · 2.8.5 | Base de la UI (ADR-001) |
+| Compose BOM (UI, Material 3) | 2024.12.01 | UI (ADR-001) |
+| Room (runtime, ktx, compiler por KSP) | 2.6.1 | Persistencia (ADR-003) |
+| AndroidX SQLite | 2.4.0 | Requerido por SQLCipher |
+| SQLCipher for Android | 4.6.1 | Cifrado en reposo (ADR-SEG-001) |
+| kotlinx-coroutines | 1.9.0 | Asincronía |
+
+**Solo pruebas:** JUnit 5.11.3 (`:domain`), JUnit 4.13.2, Robolectric 4.14.1, AndroidX Test, Room testing, Compose UI Test.
