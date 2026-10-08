@@ -1,8 +1,8 @@
 # Regla de Pruebas E2E
 
-- **Herramienta:** Compose UI Test (instrumentado, en emulador Android)
-- **Comando:** `./gradlew connectedAndroidTest`
-- **Ubicación:** `app/src/androidTest/` (escenarios nombrados por historia: `H005EmpezarAyunoTest.kt`)
+- **Herramienta:** Compose UI Test sobre Robolectric (JVM, sin dispositivo); lo que exige hardware real va en `androidTest/` (nivel D de `specs/PRUEBAS.md`)
+- **Comando:** `./gradlew :app:testDebugUnitTest` (E2E) · `./gradlew connectedAndroidTest` (nivel D, con dispositivo)
+- **Ubicación:** `app/src/test/.../e2e/` (escenarios nombrados por historia: `H005StartFastE2eTest.kt`)
 
 Reglas fijas del método:
 

@@ -7,8 +7,11 @@ Estrategia de pruebas. Las pruebas viven en el código; aquí se define qué se 
 | Nivel | Qué cubre | Dónde | Herramientas | Comando |
 |---|---|---|---|---|
 | **Unitarias (U)** | Casos de uso, motor de reglas, derivados (reloj, hitos, totales, sodio, pendientes), validaciones, mapeo del formato de intercambio | `domain/src/test/` | JUnit 5, `kotlinx-coroutines-test`, `Clock` fijo | `./gradlew :domain:test` |
-| **Integración (I)** | Repositorios y DAOs contra Room real; migraciones; transacciones todo o nada; exportación validada contra el JSON Schema; carga inicial | `data/src/androidTest/` (Room necesita Android; SQLCipher activo) y `data/src/test/` para la serialización pura | AndroidX Test, Room testing, validador de JSON Schema (solo en pruebas) | `./gradlew :data:connectedAndroidTest` · `./gradlew :data:test` |
-| **E2E** | Flujos completos de las historias de prioridad **alta**, como los vería la persona | `app/src/androidTest/` | Compose UI Test en emulador API 35 o en el teléfono (Android 16) por depuración USB | `./gradlew connectedAndroidTest` |
+| **Integración (I)** | Repositorios y DAOs contra Room real (SQLite sin cifrar); migraciones; transacciones todo o nada; exportación validada contra el JSON Schema; carga inicial | `data/src/test/` | Robolectric, Room testing, validador de JSON Schema (solo en pruebas) | `./gradlew :data:testDebugUnitTest` |
+| **E2E** | Flujos completos de las historias de prioridad **alta**, como los vería la persona | `app/src/test/` | Compose UI Test sobre Robolectric (JVM, sin dispositivo) | `./gradlew :app:testDebugUnitTest` |
+| **Dispositivo (D)** | Lo que Robolectric no puede reproducir (ver §4.7) | `app/src/androidTest/`, `data/src/androidTest/` | AndroidX Test en el teléfono (Android 16) o emulador API 35 | `./gradlew connectedAndroidTest` |
+
+**Sin dispositivo por ahora** (decisión del humano, 2026-10-08): integración y E2E corren en la JVM con Robolectric; lo que exige hardware real se agrupa en el nivel D y queda pendiente hasta conectar el teléfono (§4.7).
 
 **Pirámide:** la mayor parte de los casos son unitarios (la lógica crítica vive en `:domain` puro, ADR-002); integración por cada operación de escritura de la matriz; E2E solo para el recorrido de cada historia de prioridad alta (`.claude/rules/pruebas-e2e.md`).
 
@@ -102,7 +105,8 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 ### 4.3 Recordatorios (H-016, H-017)
 
 - **U:** el cálculo de pendientes produce las horas correctas por etapa, solo productos que siguen u opcionales activados, respeta el silencio nocturno salvo recordatorios de reglas.
-- **E2E instrumentada:** con la app cerrada, una alarma programada a 1 min dispara la notificación; tras enviar `BOOT_COMPLETED` y `TIME_SET` al emulador, las alarmas se vuelven a programar.
+- **I (Robolectric):** el `ReminderScheduler` registra en `AlarmManager` (sombra de Robolectric) exactamente las alarmas esperadas; los receptores de `BOOT_COMPLETED`, `TIME_SET` y `TIMEZONE_CHANGED` las vuelven a programar.
+- **D:** con la app cerrada, una alarma programada a 1 min dispara la notificación real; tras reiniciar el dispositivo las alarmas siguen programadas.
 - **Manual en el teléfono real (Android 16), antes del primer ayuno:** 3 días seguidos con la app cerrada sin perder ningún recordatorio de 07:00, 12:00, 18:00 y 22:00, incluido un reinicio. Se registra en `specs/DESPLIEGUE.md`.
 
 ### 4.4 Intercambio (H-036 a H-040)
@@ -119,20 +123,36 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 |---|---|---|
 | El manifiesto fusionado no contiene `android.permission.INTERNET` | S7, ADR-SEG-004 | construcción |
 | `allowBackup="false"` y reglas de extracción vacías | S4, ADR-SEG-001 | construcción |
-| El archivo de base no se abre sin la clave (abrir con SQLite plano falla) | S4, ADR-SEG-001 | I |
-| Ningún log contiene valores de campos Crítico o PII (se captura `Logcat` durante una sesión E2E y se buscan valores sembrados) | S4 | E2E |
+| El archivo de base no se abre sin la clave (abrir con SQLite plano falla) | S4, ADR-SEG-001 | D |
+| Ningún log contiene valores de campos Crítico o PII (se capturan los logs de Robolectric durante las E2E y se buscan valores sembrados) | S4 | E2E |
 | Exportar sin opt-in: `person` vacío; con opt-in: incluido; `emergency_contact` nunca | S4, ADR-SEG-003 | I |
 | Con bloqueo activo: Historial, Anotar, exportar e importar piden autenticación; Seguridad y la alerta roja no | ADR-SEG-002 | E2E |
 | Activar bloqueo sin credencial en el teléfono: no se activa | S6 | U + E2E |
-| Pantallas con datos de salud con `FLAG_SECURE` | S4 | E2E |
+| Pantallas con datos de salud con `FLAG_SECURE` (bandera presente: E2E; captura bloqueada: D) | S4 | E2E + D |
 | Copia cifrada con contraseña incorrecta o archivo alterado: mensaje único, nada se restaura | S6, ADR-SEG-005 | I |
 | Importación de archivo malicioso (tipos erróneos, referencias rotas, 60 MB, XOR de propietario violado): rechazo sin cambios | S1, ADR-SEG-006 | I |
 | Alertas no editables ni borrables; toda corrección deja fila en `edit_log` | S8 | U + I |
 
 ### 4.6 Rendimiento y usabilidad con criterio cuantitativo
 
-- Inicio muestra el reloj en < 1 s en arranque en frío (H-006): prueba instrumentada con medición de tiempo hasta el primer fotograma con reloj, en emulador de referencia.
+- Inicio muestra el reloj en < 1 s en arranque en frío (H-006): prueba **D** con medición de tiempo hasta el primer fotograma con reloj, en el teléfono.
 - Anotar una medición en ≤ 3 toques desde Inicio (H-008): E2E que cuenta las interacciones.
+
+### 4.7 Verificación en dispositivo (nivel D) — pendiente
+
+Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificaciones o ventanas. Estos casos solo se verifican en el teléfono (o emulador) y quedan **pendientes** mientras no haya dispositivo conectado:
+
+| Caso | Historias / ADR |
+|---|---|
+| Cifrado real con SQLCipher y clave en Android Keystore | H-042, ADR-SEG-001 |
+| Alarmas suenan con la app cerrada; se reprograman tras reinicio real y cambio de hora | H-016, ADR-005 |
+| Notificaciones reales con acciones directas (anotar, posponer, no se hizo) | H-017 |
+| Autenticación real con huella o PIN del teléfono | H-042, ADR-SEG-002 |
+| Captura de pantalla bloqueada (`FLAG_SECURE`) | ADR-SEG-002 |
+| Reloj visible en < 1 s en arranque en frío | H-006 |
+| Prueba manual de 3 días de recordatorios | H-016 |
+
+**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017 y H-042.
 
 ## 5. Excepciones registradas
 

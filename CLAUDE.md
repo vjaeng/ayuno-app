@@ -32,7 +32,7 @@ App móvil Android, personal y genérica, para planificar y registrar ayunos de 
 - **Recordatorios:** notificaciones locales con alarmas exactas (AlarmManager) y reprogramación tras reinicio y cambio de hora (H-016)
 - **Infraestructura:** solo el teléfono; distribución por APK firmado (sin tienda por ahora)
 - **CI/CD:** ninguno aún
-- **Testing:** JUnit + pruebas de Room; E2E con Compose UI Test en emulador
+- **Testing:** JUnit 5 (dominio); Robolectric para Room y E2E con Compose UI Test en la JVM; verificación en dispositivo pendiente (`specs/PRUEBAS.md` §4.7)
 
 ## Estructura del Proyecto
 
@@ -50,7 +50,7 @@ Previstas (se crean en Construcción): `app/` (módulo Android: código y prueba
 - **Build:** `./gradlew assembleRelease`
 - **Lint:** `./gradlew lint`
 - **Test:** `./gradlew test`
-- **E2E:** `./gradlew connectedAndroidTest`
+- **E2E:** `./gradlew :app:testDebugUnitTest` (Robolectric) · nivel D en dispositivo: `./gradlew connectedAndroidTest`
 - **Deploy:** según `specs/DESPLIEGUE.md` (APK firmado instalado en el teléfono)
 
 ## Convenciones de Código (resumen)
