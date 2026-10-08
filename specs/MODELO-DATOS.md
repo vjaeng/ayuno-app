@@ -70,10 +70,16 @@ erDiagram
 
 *Justificación:* H-001 (nombre, duración, hitos), H-003 (duplicar, borrar y restaurar, plantilla de ejemplo), H-039/H-040 (importar y restaurar plantillas). Borrar es borrado blando (control `deleted_at`) para poder restaurar.
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-001 | C, R, U | todos |
+| H-003 | C, R, D | todos |
+| H-004 | R | target_hours |
+| H-036 | R | todos |
+| H-039 | C, R | todos |
+| H-040 | C | todos |
+| H-041 | C | name |
 
 #### FAST (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -95,10 +101,22 @@ erDiagram
 
 *Justificación:* H-004 (creación desde plantilla o desde cero, hitos planificado/real, estado planificado, notas generales), H-005 (inicio real, corrección con motivo, un solo ayuno en curso), H-006 (reloj calculado desde la hora de inicio), H-030 (fin, motivo, regla, sin reanudar), H-033 (lista con duración, objetivo y motivo), H-036 (nombre del archivo, desfase en cabecera).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-003 | R | template_id |
+| H-004 | C, R, U | template_id, status, target_hours, milestone_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, end_actual, notes |
+| H-005 | C, R, U | status, target_hours, milestone_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, tz_offset |
+| H-006 | R | status, target_hours, milestone_hours, clock_start_planned, clock_start_actual, end_actual, end_reason |
+| H-012 | R | status |
+| H-018 | R | clock_start_actual |
+| H-030 | C, R, U | status, clock_start_actual, end_actual, end_reason, end_reason_detail, end_rule_id |
+| H-031 | R | end_actual |
+| H-033 | R | target_hours, clock_start_actual, end_actual, end_reason, end_reason_detail, end_rule_id |
+| H-036 | R | todos |
+| H-037 | R | todos |
+| H-040 | C | todos |
+| H-041 | C | template_id, clock_start_actual |
 
 #### STAGE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -109,10 +127,16 @@ erDiagram
 
 *Justificación:* H-001 (etapas y su duración), H-004 (fechas de etapas calculadas), H-002 y H-024 (avisos y filtros por etapa).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-001 | C, R, U, D | todos |
+| H-002 | R | kind |
+| H-003 | C | kind |
+| H-004 | C, R | todos |
+| H-024 | R | kind |
+| H-030 | R | kind |
+| H-036 | R | todos |
 
 #### PLAN_METRIC (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -121,10 +145,14 @@ erDiagram
 
 *Justificación:* H-001 (activar o desactivar mediciones por plantilla; una desactivada no aparece en la rejilla ni genera recordatorios), H-008 (rejilla con mediciones activas).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-001 | C, R, D | metric_type_code |
+| H-003 | C | metric_type_code |
+| H-004 | C | metric_type_code |
+| H-008 | R | metric_type_code |
+| H-036 | R | metric_type_code |
 
 #### METRIC_SCHEDULE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -134,10 +162,16 @@ erDiagram
 
 *Justificación:* H-001 (horarios de recordatorio por etapa), H-016/H-017/H-018 (recordatorios y pendientes del día).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-001 | C, R, U, D | todos |
+| H-004 | C | todos |
+| H-006 | R | time_of_day |
+| H-016 | R | time_of_day |
+| H-018 | R | time_of_day |
+| H-019 | R | time_of_day |
+| H-036 | R | todos |
 
 #### INTAKE_GOAL (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -148,24 +182,30 @@ erDiagram
 
 *Justificación:* H-002 (metas por tipo de ingesta), H-006 y H-012 (totales frente a la meta), H-022 (regla de ingesta bajo la meta).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-002 | C, R, U, D | todos |
+| H-004 | C | daily_amount |
+| H-006 | R | daily_amount |
+| H-012 | R | daily_amount |
+| H-022 | R | daily_amount |
+| H-036 | R | todos |
 
 #### CHECKLIST_ITEM (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
 |---|---|---|---|---|
 | text | TEXT | no nulo | Sensible | texto libre (p. ej. «comprar sal») |
-| position | INTEGER | ≥ 0 | Público | orden en la lista |
 | is_checked | BOOLEAN | default false | Público | solo informa; nunca bloquea empezar el ayuno |
 
 *Justificación:* H-002 (lista previa marcable que no bloquea).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-002 | C, R, U, D | todos |
+| H-004 | C | text |
+| H-036 | R | todos |
 
 #### STAGE_NOTICE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -175,10 +215,12 @@ erDiagram
 
 *Justificación:* H-002 (avisos fijos por etapa).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-002 | C, R, U, D | todos |
+| H-004 | C | text |
+| H-036 | R | todos |
 
 #### PLAN_PRODUCT (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -190,10 +232,13 @@ erDiagram
 
 *Justificación:* H-014 (sigue / sale / opcional con motivo; recordatorio solo de los que siguen y de los opcionales activados).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-004 | C | during_fast |
+| H-014 | C, R, U | todos |
+| H-016 | R | during_fast |
+| H-036 | R | todos |
 
 #### RULE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -218,10 +263,23 @@ erDiagram
 
 *Justificación:* H-019 (umbral, campos comunes, pertenece a la plantilla y se copia al ayuno, sin umbrales precargados), H-020 (sostenida), H-021 (síntoma de alarma concreto o cualquiera), H-022 (ingesta bajo meta a una hora), H-023 (regla manual), H-024 (filtros), H-025 (nivel y mensaje), H-026 (acción), H-028 (reglas activas en lenguaje llano). Clasificadas *Sensible*: alterarlas puede suprimir una alerta de seguridad.
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-003 | C | condition_kind |
+| H-004 | C | condition_kind |
+| H-017 | R | action |
+| H-019 | C, R, U | name, active, condition_kind, metric_type_code, bp_component, threshold, level, message, action |
+| H-020 | C, R, U | sustained_minutes |
+| H-021 | C, R, U | symptom_type_code |
+| H-022 | C, R, U | intake_type_code, check_time |
+| H-023 | C, R | condition_kind, message, action |
+| H-024 | C, R, U | filter_stage_kinds, filter_on_waking, filter_position |
+| H-025 | C, R, U | level, message |
+| H-026 | C, R, U | action, action_minutes |
+| H-027 | R | name, message |
+| H-028 | R | name, active, condition_kind, metric_type_code, bp_component, threshold, sustained_minutes, symptom_type_code, intake_type_code, check_time, filter_stage_kinds, filter_on_waking, filter_position, level, action |
+| H-036 | R | todos |
 
 #### REFEED_STEP (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -235,10 +293,12 @@ erDiagram
 
 *Justificación:* H-031 (pasos con hora relativa o repetición, reintroducción por día, horas calculadas desde el fin real), H-030 (la vuelta a comer empieza al terminar si la plantilla la usa).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-004 | C | description |
+| H-031 | C, R, U | todos |
+| H-036 | R | todos |
 
 ### 2.2 Catálogos
 
@@ -256,10 +316,14 @@ erDiagram
 
 *Justificación:* H-007 (catálogo precargado, desactivable, mediciones propias con nombre, unidad, numérica y rango; unidad principal y alternativa), H-008 (teclado numérico, rango válido), H-043 (unidades por defecto). El catálogo precargado incluye las escalas 0-10 de hambre, energía, ánimo y claridad mental como tipos numéricos con rango 0-10.
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-001 | R | name |
+| H-007 | C, R, U | todos |
+| H-008 | R | unit, alt_unit, entry_unit, is_numeric, min_valid, max_valid |
+| H-036 | R | todos |
+| H-043 | R, U | alt_unit, entry_unit |
 
 #### SYMPTOM_TYPE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -271,10 +335,12 @@ erDiagram
 
 *Justificación:* H-010 (catálogo editable con grupo y marca de alarma), H-021 (reglas por síntoma de alarma).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-010 | C, R, U | todos |
+| H-021 | R | is_alarm |
+| H-036 | R | todos |
 
 #### INTAKE_TYPE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -286,10 +352,12 @@ erDiagram
 
 *Justificación:* H-011 (tipos editables, «rompe el ayuno», factor de sodio), H-012 (sodio calculado, pregunta al anotar).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-011 | C, R, U | todos |
+| H-012 | R | breaks_fast, sodium_factor |
+| H-036 | R | todos |
 
 #### PRODUCT (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -304,10 +372,13 @@ erDiagram
 
 *Justificación:* H-013 (lista con nombre, código, tipo, dosis, unidad; a evitar; desactivar; código inmutable), H-039 (importar conservando códigos y actualizando por código).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-013 | C, R, U | todos |
+| H-014 | R | name |
+| H-036 | R | todos |
+| H-039 | C, R, U | todos |
 
 #### PRODUCT_SCHEDULE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -318,10 +389,14 @@ erDiagram
 
 *Justificación:* H-013 («horarios» del producto), H-014 y H-015 (recordatorios y tomas pendientes a esas horas).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-013 | C, R, U, D | todos |
+| H-014 | R | time_of_day |
+| H-015 | R | time_of_day, amount |
+| H-016 | R | time_of_day |
+| H-036 | R | todos |
 
 ### 2.3 Registro del ayuno
 
@@ -343,10 +418,24 @@ erDiagram
 
 *Justificación:* H-008 (anotar con fecha y hora editable, nota, origen y tendencia de la glucosa, unidad tecleada y equivalente, fuera de rango tal cual), H-017 (no se hizo con motivo, hora programada), H-020 y H-024 (lecturas para reglas sostenidas y al despertar). La presión arterial **no** se guarda aquí: tiene entidad propia (D-09).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-006 | R | metric_type_code, taken_at, value_entered, unit_entered |
+| H-007 | R | metric_type_code |
+| H-008 | C, U | metric_type_code, taken_at, value_num, value_text, value_entered, unit_entered, source, trend, on_waking, note |
+| H-017 | C, R | scheduled_for, not_done_reason |
+| H-018 | R | taken_at, scheduled_for, not_done_reason |
+| H-019 | R | metric_type_code, value_num |
+| H-020 | R | taken_at, value_num |
+| H-024 | R | on_waking |
+| H-033 | R | todos |
+| H-034 | U, D | todos |
+| H-036 | R | todos |
+| H-037 | R | todos |
+| H-040 | C | todos |
+| H-041 | C | value_entered |
+| H-043 | R | unit_entered |
 
 #### BLOOD_PRESSURE_READING (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -364,10 +453,18 @@ erDiagram
 
 *Justificación:* H-009 (sistólica, diastólica, pulso y posición; tras la sentada se ofrece la de pie; ambas vinculadas; diferencia calculada; se puede guardar solo la sentada), H-008 (hora editable, nota, rango válido), H-017 (no se hizo), H-019 y H-024 (reglas por componente y por posición). Activación y horarios siguen en `metric_type` / `plan_metric` con el tipo «presión arterial».
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-008 | C | on_waking, note |
+| H-009 | C, R | taken_at, systolic, diastolic, pulse, position, paired_reading_id |
+| H-017 | C, R | scheduled_for, not_done_reason |
+| H-018 | R | taken_at, scheduled_for |
+| H-019 | R | systolic, diastolic, pulse |
+| H-024 | R | position, on_waking |
+| H-033 | R | todos |
+| H-034 | U, D | todos |
+| H-036 | R | todos |
 
 #### SYMPTOM (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -379,10 +476,15 @@ erDiagram
 
 *Justificación:* H-010 (registro con hora, intensidad y nota; un síntoma de alarma evalúa reglas).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-010 | C, R | todos |
+| H-021 | R | symptom_type_code |
+| H-033 | R | todos |
+| H-034 | U, D | todos |
+| H-036 | R | todos |
+| H-041 | C | symptom_type_code |
 
 #### INTAKE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -395,10 +497,16 @@ erDiagram
 
 *Justificación:* H-012 (hora, tipo, cantidad, unidad y nota; se guarda aunque se responda que no se termina el ayuno), H-022 (totales del día para reglas).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-006 | R | amount |
+| H-012 | C, R | todos |
+| H-022 | R | amount |
+| H-033 | R | todos |
+| H-034 | U, D | todos |
+| H-036 | R | todos |
+| H-041 | C | amount |
 
 #### PRODUCT_LOG (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -414,10 +522,17 @@ erDiagram
 
 *Justificación:* H-015 (tomado con hora real, no tomado con motivo, dosis cambiada sin borrar la planificada, pendientes del día), H-013 (aviso al anotar un producto a evitar; la toma se registra igual).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-013 | C | product_code |
+| H-015 | C, R | todos |
+| H-017 | C | status, reason |
+| H-018 | R | scheduled_at, status |
+| H-033 | R | todos |
+| H-034 | U, D | todos |
+| H-036 | R | todos |
+| H-041 | C | status |
 
 #### ALERT (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -427,14 +542,21 @@ erDiagram
 | trigger_entry_ids | LIST<UUID> | vacío solo en regla `manual` | Crítico | lecturas, síntomas o ingestas que la dispararon |
 | user_choice | ENUM(end_fast, continue) | nulo hasta que la persona decide | Crítico | la app nunca termina el ayuno por su cuenta |
 | choice_reason | TEXT | obligatorio si `user_choice = continue` | Crítico | — |
-| decided_at | LOCAL_DATETIME | obligatorio si hay `user_choice` | Crítico | — |
 
 *Justificación:* H-027 (decisión obligatoria, motivo al seguir, registro con hora, regla, lecturas y decisión), H-023 (la alerta manual queda registrada igual), H-026 (punto de partida del recordatorio programado). Es un registro de seguridad: no se edita sin rastro (S8).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-019 | C | rule_id, fired_at, trigger_entry_ids |
+| H-020 | C | rule_id, trigger_entry_ids |
+| H-021 | C | rule_id, trigger_entry_ids |
+| H-022 | C | rule_id, fired_at |
+| H-023 | C | rule_id, fired_at |
+| H-026 | R | fired_at |
+| H-027 | C, R | todos |
+| H-033 | R | todos |
+| H-036 | R | todos |
 
 #### REFEED_CHECK (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -445,10 +567,14 @@ erDiagram
 
 *Justificación:* H-031 (recordatorio de cada paso y casilla que guarda la hora real; un paso repetido genera varias ocurrencias).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-016 | R | scheduled_at |
+| H-018 | R | done_at |
+| H-031 | C, R, U | todos |
+| H-033 | R | todos |
+| H-036 | R | todos |
 
 #### MEAL (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -461,10 +587,12 @@ erDiagram
 
 *Justificación:* H-032 (comida con hora, descripción, cantidad aproximada y cómo cayó; «otro» con texto).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-032 | C | todos |
+| H-034 | U, D | todos |
+| H-036 | R | todos |
 
 #### NOTE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -474,10 +602,13 @@ erDiagram
 
 *Justificación:* H-035 (nota libre con hora, en la línea de tiempo).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-033 | R | todos |
+| H-034 | U, D | todos |
+| H-035 | C, U | todos |
+| H-036 | R | todos |
 
 #### EDIT_LOG (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -493,10 +624,12 @@ erDiagram
 
 *Justificación:* H-034 (bitácora con valor anterior, nuevo, hora y motivo; borrar y restaurar quedan registrados), H-005 (corrección de la hora de inicio con motivo). Es dominio, no control: las historias la piden expresamente (S8).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-005 | C | todos |
+| H-034 | C, R | todos |
+| H-036 | R | todos |
 
 ### 2.4 Configuración y datos personales
 
@@ -510,10 +643,13 @@ erDiagram
 
 *Justificación:* H-017 (silencio nocturno), H-038 (datos personales opt-in), H-042 (bloqueo opcional). Las unidades por defecto (H-043) viven en `metric_type.entry_unit`, no aquí.
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-008 | R | quiet_end |
+| H-017 | C, R, U | quiet_start, quiet_end |
+| H-038 | C, R, U | export_person_enabled |
+| H-042 | C, R, U | app_lock_enabled |
 
 #### PERSON_PROFILE (dominio, registro único)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -524,10 +660,10 @@ erDiagram
 
 *Justificación:* H-038 (nombre, documento de identidad y fecha de nacimiento guardados en ajustes).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-038 | C, R, U | todos |
 
 #### EMERGENCY_CONTACT (dominio, registro único)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -537,10 +673,10 @@ erDiagram
 
 *Justificación:* H-029 (contacto opcional con nombre y teléfono). Pendiente de decidir si entra en la versión base (pregunta abierta de las historias).
 
-**Mapa de Consumo**
-*Pendiente — se puebla en el Tejido.*
+**Mapa de Consumo** (tejido el 2026-10-08)
 | Historia | Operaciones | Campos |
 |---|---|---|
+| H-029 | C, R, U, D | todos |
 
 ### 2.5 Derivados (se calculan, no se almacenan)
 
@@ -619,6 +755,8 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-09 | 2026-10-08 | La presión arterial tiene entidad propia (`blood_pressure_reading`) con vínculo de la toma de pie a la sentada | Decisión del humano (P-07): el modelo largo con `group_id` no distinguía tomas al vincular sentado y de pie. Se retiran `measurement.position` y `measurement.group_id`; las reglas sobre presión indican el componente (`rule.bp_component`). |
 | D-10 | 2026-10-08 | Se retira el filtro «solo despierto»; queda solo «al despertar» (`rule.filter_on_waking`) | Decisión del humano (P-04): ninguna historia registra el estado de sueño. H-024 actualizada. |
 | D-11 | 2026-10-08 | Entra `fast.notes`; se descarta `fast.name` | Decisión del humano (P-02). H-004 actualizada con el criterio de notas generales. |
+| D-12 | 2026-10-08 | Tejido: se retiran `checklist_item.position` y `alert.decided_at` (nudos N2) | Ninguna historia los pide: la lista previa se ordena por creación y la hora de la alerta (`alert.fired_at`) basta. Decisión del humano. |
+| D-13 | 2026-10-08 | Tejido: `fast.last_meal_actual` y `*.on_waking` quedan justificados por criterios nuevos en H-005 y H-008 (nudos N4) | Se leían sin que ninguna historia los escribiera. Decisión del humano. |
 
 ## 6. Preguntas para el humano
 

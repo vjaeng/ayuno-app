@@ -121,7 +121,6 @@ Lista de reglas (`rule.name`, `rule.level`, `rule.active`) → [reglas-editar.md
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Texto | `checklist_item.text` | escritura |
-| Orden (arrastrar) | `checklist_item.position` | escritura |
 
 #### Subpantalla: Avisos fijos
 | Elemento UI | Campo canónico | Modo |

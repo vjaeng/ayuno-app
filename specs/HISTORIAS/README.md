@@ -8,49 +8,49 @@ Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la 
 
 | Id | Título | Módulo | Prioridad | Estado |
 |---|---|---|---|---|
-| H-001 | [Crear una plantilla con qué medir y cuándo](plantillas-001-crear-plantilla.md) | plantillas | alta | borrador |
-| H-002 | [Completar la plantilla con metas, lista previa y avisos](plantillas-002-metas-lista-avisos.md) | plantillas | media | borrador |
-| H-003 | [Duplicar, borrar y partir de una plantilla de ejemplo](plantillas-003-gestionar-plantillas.md) | plantillas | media | borrador |
-| H-004 | [Crear un ayuno desde una plantilla con dos datos](ayuno-004-crear-ayuno.md) | ayuno | alta | borrador |
-| H-005 | [Empezar el ayuno con un toque](reloj-005-empezar-ayuno.md) | reloj | alta | borrador |
-| H-006 | [Ver de un vistazo dónde estoy](reloj-006-pantalla-inicio.md) | reloj | alta | borrador |
-| H-007 | [Ajustar el catálogo de mediciones a lo que uso](mediciones-007-catalogo-mediciones.md) | mediciones | alta | borrador |
-| H-008 | [Anotar una medición en tres toques](mediciones-008-anotar-medicion.md) | mediciones | alta | borrador |
-| H-009 | [Anotar la presión sentado y de pie](mediciones-009-presion-sentado-de-pie.md) | mediciones | alta | borrador |
-| H-010 | [Marcar síntomas de mi propio catálogo](sintomas-010-sintomas.md) | sintomas | alta | borrador |
-| H-011 | [Definir mis tipos de líquidos y electrolitos](liquidos-011-tipos-ingesta.md) | liquidos | alta | borrador |
-| H-012 | [Anotar lo que bebo y ver cuánto llevo](liquidos-012-anotar-ingesta.md) | liquidos | alta | borrador |
-| H-013 | [Mantener mi lista de suplementos y medicamentos](productos-013-lista-productos.md) | productos | alta | borrador |
-| H-014 | [Decidir qué productos siguen y cuáles salen en el ayuno](productos-014-estado-durante-ayuno.md) | productos | alta | borrador |
-| H-015 | [Marcar cada toma de un producto](productos-015-marcar-toma.md) | productos | alta | borrador |
-| H-016 | [Que cada recordatorio suene a su hora pase lo que pase](recordatorios-016-recordatorio-fiable.md) | recordatorios | alta | borrador |
-| H-017 | [Resolver un pendiente desde la notificación](recordatorios-017-gestionar-pendiente.md) | recordatorios | alta | borrador |
-| H-018 | [Ver el día como una línea de tiempo](recordatorios-018-vista-hoy.md) | recordatorios | alta | borrador |
-| H-019 | [Definir una regla de alerta por umbral](reglas-019-regla-umbral.md) | reglas | alta | borrador |
-| H-020 | [Definir una regla de alerta sostenida en el tiempo](reglas-020-regla-sostenida.md) | reglas | alta | borrador |
-| H-021 | [Definir una regla que salte con un síntoma de alarma](reglas-021-regla-sintoma-alarma.md) | reglas | alta | borrador |
-| H-022 | [Definir una regla por ingesta bajo la meta a cierta hora](reglas-022-regla-ingesta-bajo-meta.md) | reglas | media | borrador |
-| H-023 | [Pedir una alerta manual cuando algo no va bien](reglas-023-boton-algo-no-va-bien.md) | reglas | alta | borrador |
-| H-024 | [Limitar una regla a ciertos momentos o contextos](reglas-024-filtros-regla.md) | reglas | media | borrador |
-| H-025 | [Elegir el nivel y el mensaje de cada regla](reglas-025-nivel-y-mensaje.md) | reglas | alta | borrador |
-| H-026 | [Que una regla programe otra medición u ofrezca terminar](reglas-026-accion-regla.md) | reglas | alta | borrador |
-| H-027 | [Decidir yo ante cada alerta y que quede constancia](reglas-027-decision-y-registro.md) | reglas | alta | borrador |
-| H-028 | [Tener mis reglas siempre a un toque](reglas-028-boton-seguridad.md) | reglas | alta | borrador |
-| H-029 | [Llamar a mi contacto de emergencia con un toque](reglas-029-contacto-emergencia.md) | reglas | media | borrador |
-| H-030 | [Terminar el ayuno con su hora y motivo](fin-030-terminar-ayuno.md) | fin | alta | borrador |
-| H-031 | [Definir y seguir mi plan de vuelta a comer](vuelta-a-comer-031-plan-vuelta.md) | vuelta-a-comer | media | borrador |
-| H-032 | [Anotar cada comida y cómo me cayó](vuelta-a-comer-032-registrar-comida.md) | vuelta-a-comer | media | borrador |
-| H-033 | [Revisar mis ayunos pasados](historial-033-historial-ayunos.md) | historial | media | borrador |
-| H-034 | [Corregir o borrar una entrada dejando rastro](historial-034-corregir-borrar.md) | historial | alta | borrador |
-| H-035 | [Escribir una nota libre](notas-035-nota-libre.md) | notas | alta | borrador |
-| H-036 | [Exportar un ayuno o todo a un archivo con formato fijo](exportacion-036-exportar.md) | exportacion | alta | borrador |
-| H-037 | [Exportar también en tablas](exportacion-037-exportar-tablas.md) | exportacion | baja | borrador |
-| H-038 | [Decidir si el archivo lleva mis datos personales](exportacion-038-datos-identidad.md) | exportacion | media | borrador |
-| H-039 | [Importar plantillas y mi lista de productos](importacion-039-importar-plantillas-productos.md) | importacion | media | borrador |
-| H-040 | [Restaurar todo desde un archivo exportado](importacion-040-restaurar.md) | importacion | alta | borrador |
-| H-041 | [Usar la app entera sin internet ni cuenta](privacidad-041-sin-conexion-sin-cuenta.md) | privacidad | alta | borrador |
-| H-042 | [Proteger mis datos en el teléfono y en copias](privacidad-042-proteger-datos.md) | privacidad | media | borrador |
-| H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | borrador |
+| H-001 | [Crear una plantilla con qué medir y cuándo](plantillas-001-crear-plantilla.md) | plantillas | alta | tejida |
+| H-002 | [Completar la plantilla con metas, lista previa y avisos](plantillas-002-metas-lista-avisos.md) | plantillas | media | tejida |
+| H-003 | [Duplicar, borrar y partir de una plantilla de ejemplo](plantillas-003-gestionar-plantillas.md) | plantillas | media | tejida |
+| H-004 | [Crear un ayuno desde una plantilla con dos datos](ayuno-004-crear-ayuno.md) | ayuno | alta | tejida |
+| H-005 | [Empezar el ayuno con un toque](reloj-005-empezar-ayuno.md) | reloj | alta | tejida |
+| H-006 | [Ver de un vistazo dónde estoy](reloj-006-pantalla-inicio.md) | reloj | alta | tejida |
+| H-007 | [Ajustar el catálogo de mediciones a lo que uso](mediciones-007-catalogo-mediciones.md) | mediciones | alta | tejida |
+| H-008 | [Anotar una medición en tres toques](mediciones-008-anotar-medicion.md) | mediciones | alta | tejida |
+| H-009 | [Anotar la presión sentado y de pie](mediciones-009-presion-sentado-de-pie.md) | mediciones | alta | tejida |
+| H-010 | [Marcar síntomas de mi propio catálogo](sintomas-010-sintomas.md) | sintomas | alta | tejida |
+| H-011 | [Definir mis tipos de líquidos y electrolitos](liquidos-011-tipos-ingesta.md) | liquidos | alta | tejida |
+| H-012 | [Anotar lo que bebo y ver cuánto llevo](liquidos-012-anotar-ingesta.md) | liquidos | alta | tejida |
+| H-013 | [Mantener mi lista de suplementos y medicamentos](productos-013-lista-productos.md) | productos | alta | tejida |
+| H-014 | [Decidir qué productos siguen y cuáles salen en el ayuno](productos-014-estado-durante-ayuno.md) | productos | alta | tejida |
+| H-015 | [Marcar cada toma de un producto](productos-015-marcar-toma.md) | productos | alta | tejida |
+| H-016 | [Que cada recordatorio suene a su hora pase lo que pase](recordatorios-016-recordatorio-fiable.md) | recordatorios | alta | tejida |
+| H-017 | [Resolver un pendiente desde la notificación](recordatorios-017-gestionar-pendiente.md) | recordatorios | alta | tejida |
+| H-018 | [Ver el día como una línea de tiempo](recordatorios-018-vista-hoy.md) | recordatorios | alta | tejida |
+| H-019 | [Definir una regla de alerta por umbral](reglas-019-regla-umbral.md) | reglas | alta | tejida |
+| H-020 | [Definir una regla de alerta sostenida en el tiempo](reglas-020-regla-sostenida.md) | reglas | alta | tejida |
+| H-021 | [Definir una regla que salte con un síntoma de alarma](reglas-021-regla-sintoma-alarma.md) | reglas | alta | tejida |
+| H-022 | [Definir una regla por ingesta bajo la meta a cierta hora](reglas-022-regla-ingesta-bajo-meta.md) | reglas | media | tejida |
+| H-023 | [Pedir una alerta manual cuando algo no va bien](reglas-023-boton-algo-no-va-bien.md) | reglas | alta | tejida |
+| H-024 | [Limitar una regla a ciertos momentos o contextos](reglas-024-filtros-regla.md) | reglas | media | tejida |
+| H-025 | [Elegir el nivel y el mensaje de cada regla](reglas-025-nivel-y-mensaje.md) | reglas | alta | tejida |
+| H-026 | [Que una regla programe otra medición u ofrezca terminar](reglas-026-accion-regla.md) | reglas | alta | tejida |
+| H-027 | [Decidir yo ante cada alerta y que quede constancia](reglas-027-decision-y-registro.md) | reglas | alta | tejida |
+| H-028 | [Tener mis reglas siempre a un toque](reglas-028-boton-seguridad.md) | reglas | alta | tejida |
+| H-029 | [Llamar a mi contacto de emergencia con un toque](reglas-029-contacto-emergencia.md) | reglas | media | tejida |
+| H-030 | [Terminar el ayuno con su hora y motivo](fin-030-terminar-ayuno.md) | fin | alta | tejida |
+| H-031 | [Definir y seguir mi plan de vuelta a comer](vuelta-a-comer-031-plan-vuelta.md) | vuelta-a-comer | media | tejida |
+| H-032 | [Anotar cada comida y cómo me cayó](vuelta-a-comer-032-registrar-comida.md) | vuelta-a-comer | media | tejida |
+| H-033 | [Revisar mis ayunos pasados](historial-033-historial-ayunos.md) | historial | media | tejida |
+| H-034 | [Corregir o borrar una entrada dejando rastro](historial-034-corregir-borrar.md) | historial | alta | tejida |
+| H-035 | [Escribir una nota libre](notas-035-nota-libre.md) | notas | alta | tejida |
+| H-036 | [Exportar un ayuno o todo a un archivo con formato fijo](exportacion-036-exportar.md) | exportacion | alta | tejida |
+| H-037 | [Exportar también en tablas](exportacion-037-exportar-tablas.md) | exportacion | baja | tejida |
+| H-038 | [Decidir si el archivo lleva mis datos personales](exportacion-038-datos-identidad.md) | exportacion | media | tejida |
+| H-039 | [Importar plantillas y mi lista de productos](importacion-039-importar-plantillas-productos.md) | importacion | media | tejida |
+| H-040 | [Restaurar todo desde un archivo exportado](importacion-040-restaurar.md) | importacion | alta | tejida |
+| H-041 | [Usar la app entera sin internet ni cuenta](privacidad-041-sin-conexion-sin-cuenta.md) | privacidad | alta | tejida |
+| H-042 | [Proteger mis datos en el teléfono y en copias](privacidad-042-proteger-datos.md) | privacidad | media | tejida |
+| H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | tejida |
 
 ## Épicas
 
@@ -93,3 +93,21 @@ La sección *Después de la versión base* de la solicitud no genera historias t
 - **Unidades por defecto** (mg/dL o mmol/L, kg o lb, °C o °F): la historia de unidades las deja configurables; falta el valor inicial.
 - **Plataforma** (Android, iPhone o ambos): no cambia las historias, pero condiciona la viabilidad de los recordatorios fiables.
 - ¿Entra ya algún punto de *Después de la versión base*? Si sí, se añade como historia nueva.
+
+## Tejido (completo, 2026-10-08)
+
+Matriz CRUD poblada en las 43 historias y Mapa de Consumo en las 29 entidades de `specs/MODELO-DATOS.md`.
+
+| Nudo | Tipo | Ubicación | Descripción | Resolución |
+|---|---|---|---|---|
+| T-01 | N4 | H-004 · `fast.last_meal_actual` | Se mostraba la hora real de la última comida pero ninguna historia la registraba | Criterio nuevo en H-005; botón «Registrar última comida» en Inicio (D-13) |
+| T-02 | N4 | H-024 · `measurement.on_waking`, `blood_pressure_reading.on_waking` | El filtro «solo al despertar» leía una marca que nada escribía | Criterio nuevo en H-008 (D-13) |
+| T-03 | N2 | `checklist_item.position` | Campo sin historia | Eliminado del modelo y de UX-UI (D-12) |
+| T-04 | N2 | `alert.decided_at` | Campo sin historia | Eliminado del modelo y de UX-UI (D-12) |
+| T-05 | N5 | UX-UI `reglas-editar.md` | Borrar reglas: operación sin historia | Quitada; las reglas se desactivan (H-019) |
+
+Sin N3 (el glosario del modelo cubre los sinónimos detectados). Sin N5 de nombres: todo campo citado en UX-UI existe en el modelo.
+
+Convención: las historias de exportación, importación y corrección (H-034, H-036, H-037, H-039, H-040) usan comodines `entidad.*`; no cuentan para detectar campos huérfanos ni como origen de datos.
+
+**Veredicto: compuerta abierta** — sin N1 ni N4. Resoluciones aprobadas por el humano.

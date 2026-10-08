@@ -18,5 +18,20 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| tiempo transcurrido desde la hora de inicio guardada | `fast.clock_start_actual` |  | ✓ |  |  |
+| tiempo restante y fin previsto | `fast.target_hours` |  | ✓ |  |  |
+| hitos con fecha y hora | `fast.milestone_hours` |  | ✓ |  |  |
+| ayuno en curso / planificado / terminado | `fast.status` |  | ✓ |  |  |
+| próximo ayuno planificado | `fast.clock_start_planned` |  | ✓ |  |  |
+| último ayuno terminado | `fast.end_actual` |  | ✓ |  |  |
+| motivo del último ayuno | `fast.end_reason` |  | ✓ |  |  |
+| próximo pendiente | `metric_schedule.time_of_day` |  | ✓ |  |  |
+| totales del día | `intake.amount` |  | ✓ |  |  |
+| metas del día | `intake_goal.daily_amount` |  | ✓ |  |  |
+| última medición: tipo | `measurement.metric_type_code` |  | ✓ |  |  |
+| última medición: valor | `measurement.value_entered` |  | ✓ |  |  |
+| última medición: unidad | `measurement.unit_entered` |  | ✓ |  |  |
+| última medición: hora | `measurement.taken_at` |  | ✓ |  |  |

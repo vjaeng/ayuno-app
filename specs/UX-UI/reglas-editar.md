@@ -26,7 +26,7 @@ El editor construye la regla como una frase que se lee de arriba abajo («Si …
 | Nombre | `rule.name` | lectura |
 | Nivel | `rule.level` | lectura |
 
-**Acciones:** + → editor vacío · tocar → editor · deslizar → borrar (blando, con confirmación).
+**Acciones:** + → editor vacío · tocar → editor. Las reglas no se borran: se desactivan con el interruptor (H-019).
 **Estados:** vacío («Esta plantilla no tiene reglas. La app no trae umbrales: tú decides cuándo avisar.» + «Crear regla») · cargando · error · sin permisos (bloqueo activo).
 
 ### Pantalla: Editor de regla

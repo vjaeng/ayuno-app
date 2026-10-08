@@ -15,5 +15,16 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| tipo de paso | `refeed_step.kind` | ✓ | ✓ |  |  |
+| descripción del paso | `refeed_step.description` | ✓ | ✓ | ✓ |  |
+| hora relativa al fin | `refeed_step.offset_minutes` | ✓ | ✓ | ✓ |  |
+| intervalo de repetición | `refeed_step.repeat_every_minutes` | ✓ | ✓ | ✓ |  |
+| durante cuánto se repite | `refeed_step.repeat_for_minutes` | ✓ | ✓ | ✓ |  |
+| día N tras el fin | `refeed_step.day_offset` | ✓ | ✓ | ✓ |  |
+| hora real de fin del ayuno | `fast.end_actual` |  | ✓ |  |  |
+| ocurrencia de cada paso | `refeed_check.refeed_step_id` | ✓ |  |  |  |
+| hora calculada del paso | `refeed_check.scheduled_at` | ✓ | ✓ |  |  |
+| casilla marcada guarda la hora real | `refeed_check.done_at` | ✓ | ✓ | ✓ |  |

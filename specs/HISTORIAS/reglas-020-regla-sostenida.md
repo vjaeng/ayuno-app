@@ -14,5 +14,11 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| durante N minutos | `rule.sustained_minutes` | ✓ | ✓ | ✓ |  |
+| lecturas bajo X | `measurement.value_num` |  | ✓ |  |  |
+| separadas 20 minutos o más | `measurement.taken_at` |  | ✓ |  |  |
+| registro de la regla cumplida | `alert.rule_id` | ✓ |  |  |  |
+| lecturas que la disparan | `alert.trigger_entry_ids` | ✓ |  |  |  |

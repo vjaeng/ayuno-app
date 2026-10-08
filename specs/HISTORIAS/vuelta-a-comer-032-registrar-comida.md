@@ -13,5 +13,11 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| hora de la comida | `meal.eaten_at` | ✓ |  |  |  |
+| descripción | `meal.description` | ✓ |  |  |  |
+| cantidad aproximada | `meal.approx_amount` | ✓ |  |  |  |
+| cómo cayó | `meal.tolerance` | ✓ |  |  |  |
+| texto de «otro» | `meal.tolerance_detail` | ✓ |  |  |  |

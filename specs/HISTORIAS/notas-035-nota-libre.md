@@ -14,5 +14,8 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| fecha y hora de la nota | `note.noted_at` | ✓ |  | ✓ |  |
+| texto libre | `note.text` | ✓ |  |  |  |

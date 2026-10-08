@@ -14,5 +14,11 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| regla manual «algo no va bien» | `rule.condition_kind` | ✓ | ✓ |  |  |
+| mensaje de la regla manual | `rule.message` |  | ✓ |  |  |
+| acción de la regla manual | `rule.action` |  | ✓ |  |  |
+| queda registrado como alerta | `alert.rule_id` | ✓ |  |  |  |
+| hora | `alert.fired_at` | ✓ |  |  |  |

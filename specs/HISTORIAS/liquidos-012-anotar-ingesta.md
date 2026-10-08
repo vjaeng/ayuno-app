@@ -16,5 +16,15 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| hora de la ingesta | `intake.taken_at` | ✓ |  |  |  |
+| tipo de ingesta | `intake.intake_type_code` | ✓ | ✓ |  |  |
+| cantidad | `intake.amount` | ✓ | ✓ |  |  |
+| unidad | `intake.unit` | ✓ |  |  |  |
+| nota opcional | `intake.note` | ✓ |  |  |  |
+| sodio calculado | `intake_type.sodium_factor` |  | ✓ |  |  |
+| meta del día («llevas X de Y») | `intake_goal.daily_amount` |  | ✓ |  |  |
+| tipo marcado «rompe el ayuno» | `intake_type.breaks_fast` |  | ✓ |  |  |
+| durante el ayuno | `fast.status` |  | ✓ |  |  |

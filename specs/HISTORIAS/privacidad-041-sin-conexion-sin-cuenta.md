@@ -14,5 +14,13 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4); dependencias como superficie de ataque (S7).
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| crear una plantilla | `template.name` | ✓ |  |  |  |
+| crear un ayuno desde ella | `fast.template_id` | ✓ |  |  |  |
+| iniciar el reloj | `fast.clock_start_actual` | ✓ |  |  |  |
+| anotar mediciones | `measurement.value_entered` | ✓ |  |  |  |
+| anotar síntomas | `symptom.symptom_type_code` | ✓ |  |  |  |
+| anotar líquidos | `intake.amount` | ✓ |  |  |  |
+| anotar suplementos | `product_log.status` | ✓ |  |  |  |

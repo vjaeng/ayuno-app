@@ -15,5 +15,14 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| meta diaria por tipo de ingesta | `intake_goal.intake_type_code` | ✓ | ✓ |  | ✓ |
+| cantidad de la meta | `intake_goal.daily_amount` | ✓ | ✓ | ✓ |  |
+| unidad de la meta | `intake_goal.unit` | ✓ | ✓ | ✓ |  |
+| elemento de la lista previa | `checklist_item.text` | ✓ | ✓ | ✓ | ✓ |
+| elemento marcado | `checklist_item.is_checked` | ✓ | ✓ | ✓ |  |
+| aviso fijo de texto libre | `stage_notice.text` | ✓ | ✓ | ✓ | ✓ |
+| etapas en que se muestra el aviso | `stage_notice.stage_kinds` | ✓ | ✓ | ✓ |  |
+| etapa en curso (para mostrar el aviso) | `stage.kind` |  | ✓ |  |  |

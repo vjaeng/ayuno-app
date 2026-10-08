@@ -15,5 +15,13 @@
 ### Consideraciones de Seguridad
 Lo crítico deja rastro (S8): el registro de alertas no se pierde ni se edita sin rastro.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| decisión: termino o sigo | `alert.user_choice` | ✓ | ✓ |  |  |
+| motivo obligatorio si sigo | `alert.choice_reason` | ✓ | ✓ |  |  |
+| hora | `alert.fired_at` |  | ✓ |  |  |
+| regla | `alert.rule_id` |  | ✓ |  |  |
+| lecturas que la dispararon | `alert.trigger_entry_ids` |  | ✓ |  |  |
+| nombre de la regla mostrada | `rule.name` |  | ✓ |  |  |
+| mensaje mostrado | `rule.message` |  | ✓ |  |  |

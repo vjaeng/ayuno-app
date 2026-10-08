@@ -14,5 +14,12 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| producto en la plantilla | `plan_product.product_code` | ✓ | ✓ |  |  |
+| estado: sigue, sale u opcional | `plan_product.during_fast` | ✓ | ✓ | ✓ |  |
+| opcionales que active | `plan_product.optional_enabled` | ✓ | ✓ | ✓ |  |
+| motivo opcional | `plan_product.reason` | ✓ | ✓ | ✓ |  |
+| horarios a recordar | `product_schedule.time_of_day` |  | ✓ |  |  |
+| nombre del producto (en gris si sale) | `product.name` |  | ✓ |  |  |

@@ -15,5 +15,21 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| fecha de inicio | `fast.clock_start_actual` |  | ✓ |  |  |
+| duración final | `fast.end_actual` |  | ✓ |  |  |
+| duración objetivo | `fast.target_hours` |  | ✓ |  |  |
+| motivo de fin | `fast.end_reason` |  | ✓ |  |  |
+| detalle del motivo | `fast.end_reason_detail` |  | ✓ |  |  |
+| regla del fin | `fast.end_rule_id` |  | ✓ |  |  |
+| línea de tiempo: mediciones | `measurement.*` |  | ✓ |  |  |
+| línea de tiempo: presión | `blood_pressure_reading.*` |  | ✓ |  |  |
+| línea de tiempo: síntomas | `symptom.*` |  | ✓ |  |  |
+| línea de tiempo: ingestas | `intake.*` |  | ✓ |  |  |
+| línea de tiempo: tomas | `product_log.*` |  | ✓ |  |  |
+| línea de tiempo: alertas | `alert.*` |  | ✓ |  |  |
+| línea de tiempo: notas | `note.*` |  | ✓ |  |  |
+| línea de tiempo: pasos de vuelta a comer | `refeed_check.*` |  | ✓ |  |  |
+| totales de ingesta por día | `intake.amount` |  | ✓ |  |  |

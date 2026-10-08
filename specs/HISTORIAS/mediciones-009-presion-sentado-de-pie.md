@@ -15,5 +15,12 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| sistólica | `blood_pressure_reading.systolic` | ✓ | ✓ |  |  |
+| diastólica | `blood_pressure_reading.diastolic` | ✓ | ✓ |  |  |
+| pulso | `blood_pressure_reading.pulse` | ✓ | ✓ |  |  |
+| posición (sentado, de pie, acostado) | `blood_pressure_reading.position` | ✓ | ✓ |  |  |
+| hora de la toma | `blood_pressure_reading.taken_at` | ✓ |  |  |  |
+| toma de pie vinculada a la sentada | `blood_pressure_reading.paired_reading_id` | ✓ | ✓ |  |  |

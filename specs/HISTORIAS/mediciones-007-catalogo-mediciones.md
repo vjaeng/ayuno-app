@@ -15,5 +15,15 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| nombre de la medición (precargada o propia) | `metric_type.name` | ✓ | ✓ | ✓ |  |
+| unidad principal | `metric_type.unit` | ✓ | ✓ |  |  |
+| unidad alternativa | `metric_type.alt_unit` | ✓ | ✓ |  |  |
+| unidad por defecto al teclear | `metric_type.entry_unit` | ✓ |  |  |  |
+| si es numérica | `metric_type.is_numeric` | ✓ | ✓ |  |  |
+| rango válido (mínimo) | `metric_type.min_valid` | ✓ | ✓ | ✓ |  |
+| rango válido (máximo) | `metric_type.max_valid` | ✓ | ✓ | ✓ |  |
+| activar o desactivar el tipo | `metric_type.active` | ✓ | ✓ | ✓ |  |
+| mediciones ya anotadas no se borran | `measurement.metric_type_code` |  | ✓ |  |  |

@@ -15,5 +15,7 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4); secretos fuera del código (S3); fallar cerrado y sin filtrar (S6).
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| bloqueo opcional con huella o PIN | `settings.app_lock_enabled` | ✓ | ✓ | ✓ |  |

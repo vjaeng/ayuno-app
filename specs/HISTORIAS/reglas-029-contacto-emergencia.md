@@ -14,5 +14,8 @@
 ### Consideraciones de Seguridad
 Dato personal de un tercero (S4): solo en el teléfono, no se exporta.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| nombre del contacto | `emergency_contact.name` | ✓ | ✓ | ✓ | ✓ |
+| teléfono | `emergency_contact.phone` | ✓ | ✓ | ✓ | ✓ |

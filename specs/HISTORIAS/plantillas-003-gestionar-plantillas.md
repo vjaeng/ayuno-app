@@ -15,5 +15,14 @@
 ### Consideraciones de Seguridad
 La app no aconseja: ningún valor clínico precargado.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| duplicar la plantilla con todo su contenido | `template.name` | ✓ | ✓ |  |  |
+| duración de la copia | `template.target_hours` | ✓ |  |  |  |
+| hitos de la copia | `template.milestone_hours` | ✓ |  |  |  |
+| borrar y restaurar la plantilla | `template.name` |  |  |  | ✓ |
+| plantilla de ejemplo con etapas | `stage.kind` | ✓ |  |  |  |
+| plantilla de ejemplo con mediciones | `plan_metric.metric_type_code` | ✓ |  |  |  |
+| plantilla de ejemplo con estructura de reglas, sin umbrales | `rule.condition_kind` | ✓ |  |  |  |
+| ayunos creados desde la plantilla no cambian | `fast.template_id` |  | ✓ |  |  |

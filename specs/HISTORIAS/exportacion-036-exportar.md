@@ -20,5 +20,35 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4): la exportación es la única vía de salida y la decide el usuario.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| fecha del inicio real del reloj (nombre del archivo) | `fast.clock_start_actual` |  | ✓ |  |  |
+| desfase horario en la cabecera | `fast.tz_offset` |  | ✓ |  |  |
+| plantilla usada | `fast.template_id` |  | ✓ |  |  |
+| ayuno | `fast.*` |  | ✓ |  |  |
+| plantillas | `template.*` |  | ✓ |  |  |
+| plan: etapas | `stage.*` |  | ✓ |  |  |
+| plan: mediciones activas | `plan_metric.*` |  | ✓ |  |  |
+| plan: horarios | `metric_schedule.*` |  | ✓ |  |  |
+| plan: metas | `intake_goal.*` |  | ✓ |  |  |
+| plan: lista previa | `checklist_item.*` |  | ✓ |  |  |
+| plan: avisos | `stage_notice.*` |  | ✓ |  |  |
+| plan: productos | `plan_product.*` |  | ✓ |  |  |
+| plan: reglas | `rule.*` |  | ✓ |  |  |
+| plan: vuelta a comer | `refeed_step.*` |  | ✓ |  |  |
+| catálogo de mediciones | `metric_type.*` |  | ✓ |  |  |
+| catálogo de síntomas | `symptom_type.*` |  | ✓ |  |  |
+| catálogo de ingestas | `intake_type.*` |  | ✓ |  |  |
+| catálogo de productos | `product.*` |  | ✓ |  |  |
+| horarios de productos | `product_schedule.*` |  | ✓ |  |  |
+| mediciones | `measurement.*` |  | ✓ |  |  |
+| presión | `blood_pressure_reading.*` |  | ✓ |  |  |
+| síntomas | `symptom.*` |  | ✓ |  |  |
+| ingestas | `intake.*` |  | ✓ |  |  |
+| tomas | `product_log.*` |  | ✓ |  |  |
+| alertas | `alert.*` |  | ✓ |  |  |
+| pasos de vuelta a comer | `refeed_check.*` |  | ✓ |  |  |
+| comidas | `meal.*` |  | ✓ |  |  |
+| notas | `note.*` |  | ✓ |  |  |
+| bitácora | `edit_log.*` |  | ✓ |  |  |

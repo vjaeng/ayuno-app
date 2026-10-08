@@ -14,5 +14,16 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| hora programada de cada pendiente | `metric_schedule.time_of_day` |  | ✓ |  |  |
+| hecho: medición anotada | `measurement.taken_at` |  | ✓ |  |  |
+| pendiente al que responde | `measurement.scheduled_for` |  | ✓ |  |  |
+| no hecho | `measurement.not_done_reason` |  | ✓ |  |  |
+| hecho: presión anotada | `blood_pressure_reading.taken_at` |  | ✓ |  |  |
+| pendiente al que responde (presión) | `blood_pressure_reading.scheduled_for` |  | ✓ |  |  |
+| toma hecha o no hecha | `product_log.status` |  | ✓ |  |  |
+| toma pendiente a la que responde | `product_log.scheduled_at` |  | ✓ |  |  |
+| pasos de vuelta a comer | `refeed_check.done_at` |  | ✓ |  |  |
+| hora del ayuno junto a la hora real | `fast.clock_start_actual` |  | ✓ |  |  |

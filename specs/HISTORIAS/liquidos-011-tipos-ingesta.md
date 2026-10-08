@@ -14,5 +14,10 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| nombre del tipo de ingesta | `intake_type.name` | ✓ | ✓ | ✓ |  |
+| unidad del tipo | `intake_type.unit` | ✓ | ✓ | ✓ |  |
+| «rompe el ayuno» | `intake_type.breaks_fast` | ✓ | ✓ | ✓ |  |
+| factor de sodio de la sal (0.393, editable) | `intake_type.sodium_factor` | ✓ | ✓ | ✓ |  |

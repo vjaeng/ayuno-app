@@ -14,5 +14,13 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| solo en ciertas etapas | `rule.filter_stage_kinds` | ✓ | ✓ | ✓ |  |
+| solo al despertar | `rule.filter_on_waking` | ✓ | ✓ | ✓ |  |
+| solo con cierta posición | `rule.filter_position` | ✓ | ✓ | ✓ |  |
+| etapa en curso | `stage.kind` |  | ✓ |  |  |
+| lecturas marcadas al despertar | `measurement.on_waking` |  | ✓ |  |  |
+| lecturas de presión marcadas al despertar | `blood_pressure_reading.on_waking` |  | ✓ |  |  |
+| mediciones con esa posición | `blood_pressure_reading.position` |  | ✓ |  |  |

@@ -16,5 +16,14 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exportación explícita.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| nombre del síntoma | `symptom_type.name` | ✓ | ✓ | ✓ |  |
+| grupo libre | `symptom_type.group_name` | ✓ | ✓ | ✓ |  |
+| marca «de alarma» | `symptom_type.is_alarm` | ✓ | ✓ | ✓ |  |
+| desactivar síntomas | `symptom_type.active` | ✓ | ✓ | ✓ |  |
+| síntoma registrado | `symptom.symptom_type_code` | ✓ | ✓ |  |  |
+| hora con segundos | `symptom.noted_at` | ✓ |  |  |  |
+| intensidad 0-10 | `symptom.severity` | ✓ |  |  |  |
+| nota opcional | `symptom.note` | ✓ |  |  |  |

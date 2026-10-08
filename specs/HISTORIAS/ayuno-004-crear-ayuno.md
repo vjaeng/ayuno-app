@@ -18,5 +18,29 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exportación explícita.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| plantilla elegida (o desde cero) | `fast.template_id` | ✓ |  |  |  |
+| fecha y hora de la última comida (planificada) | `fast.last_meal_planned` | ✓ | ✓ |  |  |
+| hora prevista de inicio del reloj | `fast.clock_start_planned` | ✓ | ✓ |  |  |
+| hora real de la última comida | `fast.last_meal_actual` |  | ✓ |  |  |
+| hora real de inicio del reloj | `fast.clock_start_actual` |  | ✓ |  |  |
+| hora real de fin | `fast.end_actual` |  | ✓ |  |  |
+| duración objetivo (para el fin previsto) | `fast.target_hours` | ✓ | ✓ |  |  |
+| hitos copiados | `fast.milestone_hours` | ✓ |  |  |  |
+| ayuno recién creado queda planificado | `fast.status` | ✓ |  |  |  |
+| notas generales del ayuno | `fast.notes` | ✓ | ✓ | ✓ |  |
+| plantilla: duración y hitos de origen | `template.target_hours` |  | ✓ |  |  |
+| copia del plan: etapas | `stage.kind` | ✓ | ✓ |  |  |
+| copia del plan: duración de etapas | `stage.duration_value` | ✓ | ✓ |  |  |
+| copia del plan: unidad de etapas | `stage.duration_unit` | ✓ |  |  |  |
+| copia del plan: mediciones activas | `plan_metric.metric_type_code` | ✓ |  |  |  |
+| copia del plan: horarios | `metric_schedule.time_of_day` | ✓ |  |  |  |
+| copia del plan: etapa de horarios | `metric_schedule.stage_kind` | ✓ |  |  |  |
+| copia del plan: metas | `intake_goal.daily_amount` | ✓ |  |  |  |
+| copia del plan: lista previa | `checklist_item.text` | ✓ |  |  |  |
+| copia del plan: avisos | `stage_notice.text` | ✓ |  |  |  |
+| copia del plan: estado de productos | `plan_product.during_fast` | ✓ |  |  |  |
+| copia del plan: reglas | `rule.condition_kind` | ✓ |  |  |  |
+| copia del plan: vuelta a comer | `refeed_step.description` | ✓ |  |  |  |

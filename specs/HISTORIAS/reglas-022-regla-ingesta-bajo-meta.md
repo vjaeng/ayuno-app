@@ -13,5 +13,12 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| tipo de ingesta | `rule.intake_type_code` | ✓ | ✓ | ✓ |  |
+| hora dada | `rule.check_time` | ✓ | ✓ | ✓ |  |
+| total del día | `intake.amount` |  | ✓ |  |  |
+| meta | `intake_goal.daily_amount` |  | ✓ |  |  |
+| registro de la regla cumplida | `alert.rule_id` | ✓ |  |  |  |
+| hora en que se cumple | `alert.fired_at` | ✓ |  |  |  |

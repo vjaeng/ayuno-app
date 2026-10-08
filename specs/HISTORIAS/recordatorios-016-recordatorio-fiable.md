@@ -15,5 +15,10 @@
 ### Consideraciones de Seguridad
 Un recordatorio perdido es un fallo de seguridad: prueba de fiabilidad obligatoria.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| recordatorios de mediciones | `metric_schedule.time_of_day` |  | ✓ |  |  |
+| recordatorios de productos | `product_schedule.time_of_day` |  | ✓ |  |  |
+| solo productos que siguen | `plan_product.during_fast` |  | ✓ |  |  |
+| recordatorios de vuelta a comer | `refeed_check.scheduled_at` |  | ✓ |  |  |

@@ -16,5 +16,13 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| hora real de fin | `fast.end_actual` | ✓ | ✓ |  |  |
+| motivo obligatorio | `fast.end_reason` | ✓ | ✓ |  |  |
+| texto de «otro» | `fast.end_reason_detail` | ✓ | ✓ |  |  |
+| qué regla de alerta | `fast.end_rule_id` | ✓ | ✓ |  |  |
+| duración desde el inicio real | `fast.clock_start_actual` |  | ✓ |  |  |
+| terminado, no se reanuda | `fast.status` |  | ✓ | ✓ |  |
+| la plantilla usa vuelta a comer | `stage.kind` |  | ✓ |  |  |

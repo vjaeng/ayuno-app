@@ -18,5 +18,16 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| nombre de la plantilla | `template.name` | ✓ | ✓ | ✓ |  |
+| duración objetivo en horas | `template.target_hours` | ✓ | ✓ | ✓ |  |
+| hitos del reloj | `template.milestone_hours` | ✓ | ✓ | ✓ |  |
+| etapas que usa la plantilla | `stage.kind` | ✓ | ✓ |  | ✓ |
+| duración de cada etapa | `stage.duration_value` | ✓ | ✓ | ✓ |  |
+| unidad de la duración (días u horas) | `stage.duration_unit` | ✓ | ✓ |  |  |
+| medición activa en la plantilla | `plan_metric.metric_type_code` | ✓ | ✓ |  | ✓ |
+| tipos del catálogo de mediciones | `metric_type.name` |  | ✓ |  |  |
+| horarios de recordatorio por etapa | `metric_schedule.time_of_day` | ✓ | ✓ | ✓ | ✓ |
+| etapa del horario | `metric_schedule.stage_kind` | ✓ | ✓ | ✓ |  |

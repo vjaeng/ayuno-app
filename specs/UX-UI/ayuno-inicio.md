@@ -1,6 +1,6 @@
 # Flujo: Inicio y reloj
 
-**Historias que cubre:** H-005, H-006, H-041
+**Historias que cubre:** H-005, H-006, H-041 (H-005 incluye registrar la última comida real)
 **Entrada:** apertura de la app, pestaña Inicio · **Salida:** Crear ayuno, Anotar, Seguridad, Terminar el ayuno
 
 ## Pantallas
@@ -13,6 +13,7 @@
 │  Última comida: jueves 22 oct,   │
 │  18:00 · Reloj: 22:00            │
 │  Objetivo: 57 horas              │
+│  [ Registrar última comida ]     │
 │  [ Empieza el ayuno ahora ]      │  ← solo si hay uno planificado
 │──────────────────────────────────│
 │ Último ayuno                     │
@@ -33,6 +34,7 @@
 | Fecha del último ayuno | `fast.end_actual` | lectura |
 | Duración del último ayuno | duración final | derivado |
 | Motivo de fin del último | `fast.end_reason`, `fast.end_reason_detail` | lectura |
+| Botón «Registrar última comida» (ayuno planificado) | `fast.last_meal_actual` | escritura (default `fast.last_meal_planned`, editable) |
 | Botón «Nuevo ayuno» | — | acción → Crear ayuno |
 
 **Acciones:** «Empieza el ayuno ahora» (fija `clock_start_actual` con segundos, `status = in_progress`, recalcula derivados y reprograma recordatorios; rechazado si ya hay un ayuno `in_progress`). «Nuevo ayuno» → [ayuno-crear.md](ayuno-crear.md). Tocar el último ayuno → detalle en [historial-revisar.md](historial-revisar.md).

@@ -14,5 +14,16 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| estado de la toma (tomado, no tomado, dosis cambiada) | `product_log.status` | ✓ |  |  |  |
+| hora real | `product_log.taken_at` | ✓ |  |  |  |
+| motivo (no tomado, dosis cambiada) | `product_log.reason` | ✓ |  |  |  |
+| nueva dosis | `product_log.amount` | ✓ |  |  |  |
+| unidad de la dosis | `product_log.unit` | ✓ |  |  |  |
+| dosis planificada conservada | `product_log.planned_amount` | ✓ | ✓ |  |  |
+| toma pendiente a la que responde | `product_log.scheduled_at` | ✓ | ✓ |  |  |
+| producto | `product_log.product_code` | ✓ |  |  |  |
+| tomas pendientes del día | `product_schedule.time_of_day` |  | ✓ |  |  |
+| dosis planificada de origen | `product_schedule.amount` |  | ✓ |  |  |

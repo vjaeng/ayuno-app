@@ -14,5 +14,17 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| nombre del producto | `product.name` | ✓ | ✓ | ✓ |  |
+| código interno, inmutable | `product.code` | ✓ | ✓ |  |  |
+| tipo (suplemento o medicamento) | `product.kind` | ✓ | ✓ | ✓ |  |
+| dosis | `product.default_amount` | ✓ | ✓ | ✓ |  |
+| unidad | `product.unit` | ✓ | ✓ | ✓ |  |
+| horarios | `product_schedule.time_of_day` | ✓ | ✓ | ✓ | ✓ |
+| producto del horario | `product_schedule.product_code` | ✓ |  |  |  |
+| dosis de cada toma | `product_schedule.amount` | ✓ | ✓ | ✓ |  |
+| desactivar productos | `product.active` | ✓ | ✓ | ✓ |  |
+| marca «a evitar» | `product.avoid` | ✓ | ✓ | ✓ |  |
+| la toma se registra igual | `product_log.product_code` | ✓ |  |  |  |

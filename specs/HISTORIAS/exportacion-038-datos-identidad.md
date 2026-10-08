@@ -13,5 +13,10 @@
 ### Consideraciones de Seguridad
 Minimización de datos personales (S4): opt-in explícito.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| incluir datos personales en el archivo | `settings.export_person_enabled` | ✓ | ✓ | ✓ |  |
+| nombre | `person_profile.full_name` | ✓ | ✓ | ✓ |  |
+| documento de identidad | `person_profile.id_number` | ✓ | ✓ | ✓ |  |
+| fecha de nacimiento | `person_profile.birth_date` | ✓ | ✓ | ✓ |  |

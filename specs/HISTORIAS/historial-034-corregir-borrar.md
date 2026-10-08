@@ -15,5 +15,21 @@
 ### Consideraciones de Seguridad
 Lo crítico deja rastro (S8): nada se sobrescribe ni se borra sin rastro.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| editar cualquier entrada: mediciones | `measurement.*` |  |  | ✓ | ✓ |
+| editar cualquier entrada: presión | `blood_pressure_reading.*` |  |  | ✓ | ✓ |
+| editar cualquier entrada: síntomas | `symptom.*` |  |  | ✓ | ✓ |
+| editar cualquier entrada: ingestas | `intake.*` |  |  | ✓ | ✓ |
+| editar cualquier entrada: tomas | `product_log.*` |  |  | ✓ | ✓ |
+| editar cualquier entrada: notas | `note.*` |  |  | ✓ | ✓ |
+| editar cualquier entrada: comidas | `meal.*` |  |  | ✓ | ✓ |
+| valor anterior | `edit_log.old_value` | ✓ | ✓ |  |  |
+| valor nuevo | `edit_log.new_value` | ✓ | ✓ |  |  |
+| hora del cambio | `edit_log.edited_at` | ✓ | ✓ |  |  |
+| motivo | `edit_log.reason` | ✓ | ✓ |  |  |
+| campo cambiado | `edit_log.field` | ✓ | ✓ |  |  |
+| entrada afectada | `edit_log.row_id` | ✓ |  |  |  |
+| entidad afectada | `edit_log.entity_name` | ✓ |  |  |  |
+| edición, borrado o restauración | `edit_log.action` | ✓ | ✓ |  |  |

@@ -14,5 +14,21 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| reglas activas | `rule.active` |  | ✓ |  |  |
+| nombre | `rule.name` |  | ✓ |  |  |
+| condición | `rule.condition_kind` |  | ✓ |  |  |
+| medición | `rule.metric_type_code` |  | ✓ |  |  |
+| valor de la presión | `rule.bp_component` |  | ✓ |  |  |
+| umbral | `rule.threshold` |  | ✓ |  |  |
+| minutos sostenida | `rule.sustained_minutes` |  | ✓ |  |  |
+| síntoma | `rule.symptom_type_code` |  | ✓ |  |  |
+| ingesta | `rule.intake_type_code` |  | ✓ |  |  |
+| hora de comprobación | `rule.check_time` |  | ✓ |  |  |
+| filtros | `rule.filter_stage_kinds` |  | ✓ |  |  |
+| filtro al despertar | `rule.filter_on_waking` |  | ✓ |  |  |
+| filtro de posición | `rule.filter_position` |  | ✓ |  |  |
+| nivel (alerta roja) | `rule.level` |  | ✓ |  |  |
+| acción | `rule.action` |  | ✓ |  |  |

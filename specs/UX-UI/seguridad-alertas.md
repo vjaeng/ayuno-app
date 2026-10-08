@@ -77,8 +77,8 @@
 | «Por:» lecturas que la dispararon | `alert.trigger_entry_ids` → `measurement.*`, `blood_pressure_reading.*`, `symptom.*`, `intake.*` | lectura |
 | Regla | `alert.rule_id` → `rule.name` | lectura |
 | Aviso de recordatorio programado | `rule.action = schedule_measurement`, `rule.action_minutes` | lectura / derivado |
-| Botón «Termino el ayuno» | `alert.user_choice = end_fast`, `alert.decided_at` | escritura → [fin-terminar.md](fin-terminar.md) con motivo «regla de alerta» prellenado |
-| Botón «Sigo» + motivo | `alert.user_choice = continue`, `alert.choice_reason`, `alert.decided_at` | escritura (motivo obligatorio) |
+| Botón «Termino el ayuno» | `alert.user_choice = end_fast` | escritura → [fin-terminar.md](fin-terminar.md) con motivo «regla de alerta» prellenado |
+| Botón «Sigo» + motivo | `alert.user_choice = continue`, `alert.choice_reason` | escritura (motivo obligatorio) |
 | Botón «Llamar a …» (solo alerta roja) | `emergency_contact.phone` | acción |
 
 **Acciones:** la app **nunca** termina el ayuno sola. El aviso o la alerta no se cierran sin elegir; si la persona sale de la app, la alerta queda registrada sin decisión (`user_choice` vacío) y vuelve a mostrarse al abrir. «Termino el ayuno» solo aparece como botón principal si `rule.action = offer_end`; si no, aparece como secundario. Con `rule.action = schedule_measurement` se programa el recordatorio, que ignora el silencio nocturno.

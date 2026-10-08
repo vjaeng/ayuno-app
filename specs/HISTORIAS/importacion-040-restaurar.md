@@ -15,5 +15,9 @@
 ### Consideraciones de Seguridad
 Toda entrada es hostil hasta validarse (S1); fallar cerrado (S6) ante versión incompatible.
 
-### Matriz CRUD
-*Pendiente — se puebla en el Tejido.*
+### Matriz CRUD (tejida el 2026-10-08)
+| Concepto en criterio | Campo canónico | C | R | U | D |
+|---|---|---|---|---|---|
+| ayunos restaurados | `fast.*` | ✓ |  |  |  |
+| plantillas restauradas | `template.*` | ✓ |  |  |  |
+| entradas restauradas con las horas al segundo | `measurement.*` | ✓ |  |  |  |
