@@ -59,4 +59,5 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.INTAKE_TYPE_NOT_FOUND -> R.string.error_not_found
     ValidationError.TAKEN_AT_REQUIRED -> R.string.error_taken_at
     ValidationError.SODIUM_FACTOR_NOT_POSITIVE -> R.string.error_sodium_factor
+    ValidationError.PLANNED_END_NOT_AFTER_START -> R.string.error_planned_end
 }

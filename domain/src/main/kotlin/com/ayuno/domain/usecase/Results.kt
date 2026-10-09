@@ -62,6 +62,7 @@ enum class ValidationError {
     INTAKE_TYPE_NOT_FOUND,
     TAKEN_AT_REQUIRED,
     SODIUM_FACTOR_NOT_POSITIVE,
+    PLANNED_END_NOT_AFTER_START,
 }
 
 fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

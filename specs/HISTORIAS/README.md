@@ -136,3 +136,9 @@ Recorrido mínimo: plantillas, crear y empezar el ayuno, reloj, anotar medicione
 Registro completo durante el ayuno: síntomas, líquidos y sal (con totales y sodio), productos con sus tomas, notas; metas, lista previa y avisos de la plantilla; reglas por síntoma de alarma, por ingesta bajo la meta (evaluadas también al llegar cada hora programada) y botón «algo no va bien». 136 pruebas en verde; lint sin errores.
 
 **Entregadas en la tanda 2a:** H-002, H-010, H-011, H-012, H-013, H-014, H-021, H-022, H-023; y pasan a entregadas H-019 (evaluación a la hora programada) y H-028 («algo no va bien»). La tabla de pendientes de arriba refleja el estado actual.
+
+## Cambios aprobados durante la construcción
+
+| Fecha | Historia | Cambio | Origen |
+|---|---|---|---|
+| 2026-10-08 | H-004 | El objetivo se calcula entre el inicio y el fin previstos (antes se tecleaba); nuevo criterio de fin posterior al inicio. Sin cambios de modelo: `fast.target_hours` se sigue guardando | Petición del humano |

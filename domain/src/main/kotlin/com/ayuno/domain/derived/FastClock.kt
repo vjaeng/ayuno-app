@@ -47,6 +47,9 @@ object FastClock {
         return Duration.between(start, time).toHours()
     }
 
+    /** H-004: objetivo en horas entre el inicio y el fin previstos (redondeado al minuto). */
+    fun targetHoursBetween(start: LocalDateTime, end: LocalDateTime): Double = Duration.between(start, end).toMinutes() / 60.0
+
     fun toInstant(fast: Fast, time: LocalDateTime): Instant = time.toInstant(ZoneOffset.of(fast.tzOffset))
 
     private fun hoursToMinutes(hours: Double): Long = Math.round(hours * 60)

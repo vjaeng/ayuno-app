@@ -1,13 +1,15 @@
 ## H-004: Crear un ayuno desde una plantilla con dos datos
 
 **Como** persona que ayuna,
-**quiero** crear un ayuno eligiendo una plantilla e indicando solo la fecha y hora de la última comida y la hora prevista de inicio del reloj, que cada hito guarde por separado su hora planificada y su hora real, y poder añadirle notas generales,
+**quiero** crear un ayuno eligiendo una plantilla e indicando la fecha y hora de la última comida y las horas previstas de inicio y de fin del ayuno, que cada hito guarde por separado su hora planificada y su hora real, y poder añadirle notas generales,
 **para** planificar un ayuno en segundos y saber después cuánto me desvié del plan.
 
 **Prioridad:** alta · **Estimación:** M
 
 ### Criterios de Aceptación
-- [ ] Con plantilla, última comida e inicio del reloj previstos, la app calcula fin previsto, fechas de las etapas y recordatorios.
+- [ ] El objetivo en horas se calcula solo, como la diferencia entre el inicio y el fin previstos; con plantilla, el fin se propone a partir de su duración objetivo y se puede cambiar.
+- [ ] Si el fin previsto no es posterior al inicio, no se puede crear el ayuno.
+- [ ] Con la plantilla, la app calcula las fechas de las etapas y los recordatorios.
 - [ ] También puedo crear un ayuno desde cero, sin plantilla.
 - [ ] El ayuno guarda una copia del plan de la plantilla: cambios posteriores a la plantilla no lo alteran.
 - [ ] Un ayuno recién creado queda como planificado, no en curso.
@@ -27,7 +29,7 @@ Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exp
 | hora real de la última comida | `fast.last_meal_actual` |  | ✓ |  |  |
 | hora real de inicio del reloj | `fast.clock_start_actual` |  | ✓ |  |  |
 | hora real de fin | `fast.end_actual` |  | ✓ |  |  |
-| duración objetivo (para el fin previsto) | `fast.target_hours` | ✓ | ✓ |  |  |
+| objetivo calculado entre inicio y fin previstos | `fast.target_hours` | ✓ | ✓ |  |  |
 | hitos copiados | `fast.milestone_hours` | ✓ |  |  |  |
 | ayuno recién creado queda planificado | `fast.status` | ✓ |  |  |  |
 | notas generales del ayuno | `fast.notes` | ✓ | ✓ | ✓ |  |

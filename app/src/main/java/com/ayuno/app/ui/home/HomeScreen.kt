@@ -132,7 +132,8 @@ private fun IdleContent(state: HomeUiState.Idle, viewModel: HomeViewModel, actio
         Text(stringResource(R.string.home_last_meal_planned, Formats.dateTime(fast.lastMealPlanned)), style = MaterialTheme.typography.bodyLarge)
         fast.lastMealActual?.let { Text(stringResource(R.string.home_last_meal_actual, Formats.dateTime(it)), style = MaterialTheme.typography.bodyLarge) }
         Text(stringResource(R.string.home_clock_planned, Formats.dateTime(fast.clockStartPlanned)), style = MaterialTheme.typography.bodyLarge)
-        Text(stringResource(R.string.home_target, Formats.number(fast.targetHours)), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.home_planned_end, Formats.dateTime(com.ayuno.domain.derived.FastClock.plannedEnd(fast))), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.home_target, Formats.number(fast.targetHours, 2)), style = MaterialTheme.typography.bodyLarge)
         if (state.checklist.isNotEmpty()) Checklist(fast.id, state.checklist, viewModel)
         LastMealButton(fast, viewModel)
         PrimaryButton(stringResource(R.string.home_start_now), onClick = { viewModel.startFast(fast.id) })

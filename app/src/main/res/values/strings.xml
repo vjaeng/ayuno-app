@@ -74,7 +74,6 @@
     <string name="create_title">Nuevo ayuno</string>
     <string name="create_which_template">¿Desde qué plantilla?</string>
     <string name="create_from_scratch">Empezar desde cero</string>
-    <string name="create_planned_end">Fin previsto: %1$s</string>
     <string name="create_stage_range">%1$s: de %2$s a %3$s</string>
     <string name="create_action">Crear ayuno</string>
 
@@ -371,4 +370,7 @@
     <string name="error_rule_manual_duplicated">Solo puede haber una regla para el botón «algo no va bien».</string>
     <string name="error_taken_at">Indica la hora de la toma.</string>
     <string name="error_sodium_factor">El factor de sodio debe ser mayor que cero.</string>
+    <string name="field_end_planned">Fin previsto</string>
+    <string name="create_target_computed">Objetivo: %1$s horas</string>
+    <string name="error_planned_end">El fin previsto debe ser posterior al inicio del reloj.</string>
 </resources>

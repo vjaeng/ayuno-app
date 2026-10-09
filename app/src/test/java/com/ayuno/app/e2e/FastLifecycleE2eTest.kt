@@ -27,9 +27,10 @@ class FastLifecycleE2eTest {
         seedTemplate()
         compose.tap("Nuevo ayuno")
         compose.tap("Ayuno de 57 horas · 57 h")
-        compose.assertShown("Fin previsto:", substring = true)
+        compose.assertShown("Objetivo: 57 horas") // calculado: jueves 22:00 + 57 h propuesto por la plantilla
         compose.tap("Crear ayuno")
         compose.assertShown("Próximo ayuno")
+        compose.assertShown("Fin previsto: domingo 25 de octubre, 07:00", substring = true)
         compose.assertShown("Empieza el ayuno ahora")
         compose.eventually { assertEquals(1, runBlocking { app.container.fasts.all() }.size) }
         val fast = runBlocking { app.container.fasts.all().single() }

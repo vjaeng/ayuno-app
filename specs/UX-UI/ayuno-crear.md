@@ -38,7 +38,9 @@
 │  [jueves 22 oct]  [18:00]        │
 │ Inicio previsto del reloj        │
 │  [jueves 22 oct]  [22:00]        │
-│ Objetivo (horas)   [ 57 ]        │  ← editable; precargado
+│ Fin previsto                     │
+│  [domingo 25 oct]  [07:00]       │  ← propuesto: inicio + objetivo
+│ Objetivo: 57 horas (calculado)   │
 │ Notas del ayuno                  │
 │  [_____________________]         │
 │──────────────────────────────────│
@@ -58,7 +60,8 @@
 |---|---|---|
 | Última comida (fecha y hora) | `fast.last_meal_planned` | escritura (obligatorio) |
 | Inicio previsto del reloj | `fast.clock_start_planned` | escritura (obligatorio; ≥ última comida) |
-| Objetivo | `fast.target_hours` | escritura (copiado de `template.target_hours`) |
+| Fin previsto (fecha y hora) | fin previsto | escritura (propuesto: inicio + `template.target_hours`; debe ser posterior al inicio) |
+| Objetivo (calculado) | `fast.target_hours` | escritura derivada: horas entre inicio y fin previstos |
 | Notas del ayuno | `fast.notes` | escritura (opcional) |
 | Fin previsto | fin previsto | derivado |
 | Resumen de etapas | `stage.kind`, `stage.duration_value`, `stage.duration_unit` + fechas de etapas | lectura / derivado |

@@ -46,13 +46,19 @@ class CreateFast(
         val clockStartPlanned: LocalDateTime,
         val targetHours: Double,
         val notes: String?,
-    )
+    ) {
+        companion object {
+            /** H-004: el objetivo se calcula entre el inicio y el fin previstos. */
+            fun withPlannedEnd(templateId: String?, lastMeal: LocalDateTime, start: LocalDateTime, end: LocalDateTime, notes: String?) =
+                Input(templateId, lastMeal, start, com.ayuno.domain.derived.FastClock.targetHoursBetween(start, end), notes)
+        }
+    }
 
     suspend operator fun invoke(input: Input): Outcome<FastWithPlan> {
         val source = input.templateId?.let { templates.get(it) ?: return invalid(ValidationError.TEMPLATE_NOT_FOUND) }
         val errors = buildList {
             if (input.clockStartPlanned.isBefore(input.lastMealPlanned)) add(ValidationError.CLOCK_START_BEFORE_LAST_MEAL)
-            if (input.targetHours <= 0) add(ValidationError.TARGET_HOURS_NOT_POSITIVE)
+            if (input.targetHours <= 0) add(ValidationError.PLANNED_END_NOT_AFTER_START)
         }
         if (errors.isNotEmpty()) return Outcome.Invalid(errors)
         val fast = Fast(

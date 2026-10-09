@@ -99,6 +99,16 @@ class TemplateAndFastUseCasesTest {
     }
 
     @Test
+    fun `H-004 el objetivo se calcula entre el inicio y el fin previstos`() = runTest {
+        val w = TestWorld()
+        val input = CreateFast.Input.withPlannedEnd(null, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), LocalDateTime.of(2026, 10, 25, 7, 30), null)
+        assertEquals(57.5, input.targetHours)
+        assertEquals(57.5, (w.createFast(input) as Outcome.Ok).value.fast.targetHours)
+        val backwards = CreateFast.Input.withPlannedEnd(null, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), LocalDateTime.of(2026, 10, 22, 22, 0), null)
+        assertEquals(listOf(ValidationError.PLANNED_END_NOT_AFTER_START), (w.createFast(backwards) as Outcome.Invalid).errors)
+    }
+
+    @Test
     fun `H-004 notas generales del ayuno editables`() = runTest {
         val w = TestWorld()
         val fast = w.plannedFast().fast
