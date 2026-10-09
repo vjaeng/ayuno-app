@@ -152,6 +152,12 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 | Reloj visible en < 1 s en arranque en frío | H-006 |
 | Prueba manual de 3 días de recordatorios | H-016 |
 
+**Verificaciones manuales registradas:**
+
+| Fecha | Dispositivo | Qué se verificó | Resultado |
+|---|---|---|---|
+| 2026-10-08 | Teléfono de la persona, Android 16 (APK `ayuno-0.1.0-debug`) | La app abre (base cifrada con SQLCipher y clave en Keystore) y permite registrar un ayuno | Correcto. Sin verificar aún: alarmas con la app cerrada, reinicio real, 3 días, `FLAG_SECURE`, arranque < 1 s |
+
 **Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017 y H-042.
 
 ## 5. Excepciones registradas
