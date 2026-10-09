@@ -46,3 +46,41 @@ data class BloodPressureReading(
         BpComponent.PULSE -> pulse
     }
 }
+
+/** `symptom` (H-010). */
+data class Symptom(
+    override val id: String,
+    override val fastId: String,
+    val symptomTypeCode: String,
+    override val takenAt: LocalDateTime,
+    val severity: Int,
+    val note: String?,
+) : RecordEntry
+
+/** `intake` (H-012). */
+data class Intake(
+    override val id: String,
+    override val fastId: String,
+    val intakeTypeCode: String,
+    override val takenAt: LocalDateTime,
+    val amount: Double,
+    val unit: String,
+    val note: String?,
+) : RecordEntry
+
+/** `product_log` (H-015). */
+data class ProductLog(
+    val id: String,
+    val fastId: String,
+    val productCode: String,
+    val scheduledAt: LocalDateTime?,
+    val status: ProductLogStatus,
+    val takenAt: LocalDateTime?,
+    val plannedAmount: Double?,
+    val amount: Double?,
+    val unit: String?,
+    val reason: String?,
+)
+
+/** `note` (H-035). */
+data class Note(val id: String, val fastId: String, val notedAt: LocalDateTime, val text: String)

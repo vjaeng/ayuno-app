@@ -1,0 +1,9 @@
+[
+  { "code": "water", "name": "Agua", "unit": "mL", "breaks_fast": false, "sodium_factor": null },
+  { "code": "infusion", "name": "Infusión", "unit": "mL", "breaks_fast": false, "sodium_factor": null },
+  { "code": "salt", "name": "Sal", "unit": "g", "breaks_fast": false, "sodium_factor": 0.393 },
+  { "code": "potassium", "name": "Potasio", "unit": "mg", "breaks_fast": false, "sodium_factor": null },
+  { "code": "magnesium", "name": "Magnesio", "unit": "mg", "breaks_fast": false, "sodium_factor": null },
+  { "code": "broth", "name": "Caldo", "unit": "mL", "breaks_fast": true, "sodium_factor": null },
+  { "code": "food", "name": "Comida", "unit": "porción", "breaks_fast": true, "sodium_factor": null }
+]

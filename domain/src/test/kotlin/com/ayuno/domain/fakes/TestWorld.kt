@@ -56,6 +56,16 @@ class TestWorld {
     val recordMeasurement = RecordMeasurement(catalog, fasts, records, alerts, DirectTransactions, clock)
     val recordBloodPressure = RecordBloodPressure(catalog, fasts, records, alerts, DirectTransactions, clock)
     val decideAlert = DecideAlert(alerts)
+    val saveSymptomType = com.ayuno.domain.usecase.SaveSymptomType(catalog)
+    val saveIntakeType = com.ayuno.domain.usecase.SaveIntakeType(catalog)
+    val saveProduct = com.ayuno.domain.usecase.SaveProduct(catalog)
+    val recordSymptom = com.ayuno.domain.usecase.RecordSymptom(catalog, fasts, records, alerts, DirectTransactions, clock)
+    val recordIntake = com.ayuno.domain.usecase.RecordIntake(catalog, fasts, records, alerts, DirectTransactions, clock)
+    val recordProductLog = com.ayuno.domain.usecase.RecordProductLog(catalog, fasts, records, DirectTransactions)
+    val recordNote = com.ayuno.domain.usecase.RecordNote(fasts, records)
+    val triggerManualAlert = com.ayuno.domain.usecase.TriggerManualAlert(fasts, alerts, DirectTransactions, clock)
+    val evaluateRules = com.ayuno.domain.usecase.EvaluateRules(catalog, fasts, records, alerts, DirectTransactions, clock)
+    val setChecklistItem = com.ayuno.domain.usecase.SetChecklistItem(fasts)
 
     fun glucoseBelow(threshold: Double, sustained: Int? = null, action: RuleAction = RuleAction.OFFER_END) = Rule(
         id = Ids.newId(), name = "Glucosa baja", active = true, conditionKind = RuleConditionKind.METRIC_BELOW,

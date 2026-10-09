@@ -49,16 +49,21 @@ class SaveMetricType(private val catalog: CatalogRepository) {
         return Outcome.Ok(saved)
     }
 
-    private fun uniqueCode(name: String, taken: Set<String>): String {
-        val base = Normalizer.normalize(name.lowercase(), Normalizer.Form.NFD)
-            .replace(Regex("\\p{M}+"), "")
-            .replace(Regex("[^a-z0-9]+"), "_")
-            .trim('_')
-            .ifEmpty { "medicion" }
-        if (base !in taken) return base
-        return generateSequence(2) { it + 1 }.map { "${base}_$it" }.first { it !in taken }
-    }
 }
+
+/** Código de catálogo a partir de un nombre: minúsculas, sin tildes, `_`; único (estructuras de control). */
+internal fun uniqueCode(name: String, taken: Set<String>): String {
+    val base = codeFrom(name).ifEmpty { "item" }
+    if (base !in taken) return base
+    return generateSequence(2) { it + 1 }.map { "${base}_$it" }.first { it !in taken }
+}
+
+internal fun codeFrom(text: String): String = Normalizer.normalize(text.lowercase(), Normalizer.Form.NFD)
+    .replace(Regex("\\p{M}+"), "")
+    .replace(Regex("[^a-z0-9]+"), "_")
+    .trim('_')
+
+internal val CODE_PATTERN = Regex("[a-z0-9_]+")
 
 /** H-007: activar o desactivar un tipo; desactivar no borra lo ya anotado. */
 class SetMetricTypeActive(private val catalog: CatalogRepository) {

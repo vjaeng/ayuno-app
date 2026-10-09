@@ -30,3 +30,35 @@ data class BloodPressureRanges(
     val diastolic: ClosedFloatingPointRange<Double>,
     val pulse: ClosedFloatingPointRange<Double>,
 )
+
+/** `symptom_type` (H-010). */
+data class SymptomType(
+    val code: String,
+    val name: String,
+    val groupName: String?,
+    val isAlarm: Boolean,
+    val active: Boolean,
+)
+
+/** `intake_type` (H-011). */
+data class IntakeType(
+    val code: String,
+    val name: String,
+    val unit: String,
+    val breaksFast: Boolean,
+    val sodiumFactor: Double?,
+)
+
+data class ProductSchedule(val id: String, val timeOfDay: java.time.LocalTime, val amount: Double)
+
+/** `product` con sus `product_schedule` (H-013). */
+data class Product(
+    val code: String,
+    val name: String,
+    val kind: ProductKind,
+    val defaultAmount: Double,
+    val unit: String,
+    val avoid: Boolean,
+    val active: Boolean,
+    val schedules: List<ProductSchedule>,
+)

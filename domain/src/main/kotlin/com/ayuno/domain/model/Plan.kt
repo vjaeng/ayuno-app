@@ -36,11 +36,36 @@ data class PlanMetric(
     val schedules: List<MetricSchedule>,
 )
 
-/** Plan completo de una plantilla o de un ayuno. Lo que aún no tiene historia construida no aparece aquí. */
+/** `intake_goal` (H-002). */
+data class IntakeGoal(val id: String, val intakeTypeCode: String, val dailyAmount: Double, val unit: String)
+
+/** `checklist_item` (H-002): solo informa, nunca bloquea empezar. */
+data class ChecklistItem(val id: String, val text: String, val isChecked: Boolean)
+
+/** `stage_notice` (H-002): aviso fijo visible solo durante sus etapas. */
+data class StageNotice(val id: String, val text: String, val stageKinds: List<StageKind>)
+
+/** `plan_product` (H-014): estado del producto durante el ayuno. */
+data class PlanProduct(
+    val id: String,
+    val productCode: String,
+    val duringFast: DuringFast,
+    val optionalEnabled: Boolean,
+    val reason: String?,
+) {
+    /** Solo se recuerdan los que siguen y los opcionales activados (H-014). */
+    val isReminded: Boolean get() = duringFast == DuringFast.CONTINUES || (duringFast == DuringFast.OPTIONAL && optionalEnabled)
+}
+
+/** Plan completo de una plantilla o de un ayuno. */
 data class Plan(
     val stages: List<Stage>,
     val metrics: List<PlanMetric>,
     val rules: List<Rule>,
+    val goals: List<IntakeGoal> = emptyList(),
+    val checklist: List<ChecklistItem> = emptyList(),
+    val notices: List<StageNotice> = emptyList(),
+    val products: List<PlanProduct> = emptyList(),
 ) {
     fun usesStage(kind: StageKind): Boolean = kind == StageKind.FAST || stages.any { it.kind == kind }
 

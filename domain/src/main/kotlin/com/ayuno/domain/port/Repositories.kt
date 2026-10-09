@@ -8,6 +8,14 @@ import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
+import com.ayuno.domain.model.Intake
+import com.ayuno.domain.model.IntakeType
+import com.ayuno.domain.model.Note
+import com.ayuno.domain.model.Plan
+import com.ayuno.domain.model.Product
+import com.ayuno.domain.model.ProductLog
+import com.ayuno.domain.model.Symptom
+import com.ayuno.domain.model.SymptomType
 import com.ayuno.domain.model.Template
 import com.ayuno.domain.model.TemplateWithPlan
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +26,21 @@ interface CatalogRepository {
     suspend fun metricType(code: String): MetricType?
     suspend fun saveMetricType(type: MetricType)
     suspend fun bloodPressureRanges(): BloodPressureRanges
+
+    fun observeSymptomTypes(): Flow<List<SymptomType>>
+    suspend fun symptomTypes(): List<SymptomType>
+    suspend fun saveSymptomType(type: SymptomType)
+
+    fun observeIntakeTypes(): Flow<List<IntakeType>>
+    suspend fun intakeTypes(): List<IntakeType>
+    suspend fun saveIntakeType(type: IntakeType)
+
+    fun observeProducts(): Flow<List<Product>>
+    suspend fun products(): List<Product>
+    suspend fun product(code: String): Product?
+
+    /** Guarda el producto y sus horarios; los horarios que ya no están se borran en blando. */
+    suspend fun saveProduct(product: Product)
 }
 
 interface TemplateRepository {
@@ -34,6 +57,9 @@ interface FastRepository {
     suspend fun get(id: String): FastWithPlan?
     suspend fun insert(fast: FastWithPlan)
     suspend fun update(fast: Fast)
+
+    /** Actualiza el plan copiado del ayuno (lista previa marcada, regla manual creada al vuelo). */
+    suspend fun updatePlan(fastId: String, plan: Plan)
 }
 
 interface RecordRepository {
@@ -43,6 +69,21 @@ interface RecordRepository {
     suspend fun bloodPressure(fastId: String): List<BloodPressureReading>
     suspend fun insertMeasurement(measurement: Measurement)
     suspend fun insertBloodPressure(reading: BloodPressureReading)
+
+    fun observeSymptoms(fastId: String): Flow<List<Symptom>>
+    suspend fun symptoms(fastId: String): List<Symptom>
+    suspend fun insertSymptom(symptom: Symptom)
+
+    fun observeIntakes(fastId: String): Flow<List<Intake>>
+    suspend fun intakes(fastId: String): List<Intake>
+    suspend fun insertIntake(intake: Intake)
+
+    fun observeProductLogs(fastId: String): Flow<List<ProductLog>>
+    suspend fun productLogs(fastId: String): List<ProductLog>
+    suspend fun insertProductLog(log: ProductLog)
+
+    fun observeNotes(fastId: String): Flow<List<Note>>
+    suspend fun insertNote(note: Note)
 }
 
 interface AlertRepository {

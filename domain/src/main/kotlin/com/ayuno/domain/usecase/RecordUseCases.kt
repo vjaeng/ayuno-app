@@ -32,20 +32,27 @@ sealed interface RecordResult<out T> {
  * transacción que guarda la entrada (ADR-006).
  */
 internal class AlertRecorder(
+    private val catalog: CatalogRepository,
     private val records: RecordRepository,
     private val alerts: AlertRepository,
     private val clock: Clock,
 ) {
     suspend fun evaluate(source: FastWithPlan): List<Alert> {
         val fastId = source.fast.id
+        val now = LocalTimes.now(clock)
         val context = RuleContext(
             rules = source.plan.rules,
             measurements = records.measurements(fastId),
             bloodPressure = records.bloodPressure(fastId),
             alerts = alerts.alerts(fastId),
             stageWindows = StageWindows.of(source.fast, source.plan),
+            symptoms = records.symptoms(fastId),
+            symptomTypes = catalog.symptomTypes(),
+            intakes = records.intakes(fastId),
+            intakeTypes = catalog.intakeTypes(),
+            goals = source.plan.goals,
+            now = now,
         )
-        val now = LocalTimes.now(clock)
         return RuleEngine.evaluate(context).map { hit ->
             Alert(Ids.newId(), fastId, hit.rule.id, now, hit.triggerEntryIds, userChoice = null, choiceReason = null)
                 .also { alerts.insert(it) }
@@ -62,7 +69,7 @@ class RecordMeasurement(
     private val transactions: TransactionRunner,
     clock: Clock,
 ) {
-    private val recorder = AlertRecorder(records, alerts, clock)
+    private val recorder = AlertRecorder(catalog, records, alerts, clock)
 
     data class Input(
         val fastId: String,
@@ -133,7 +140,7 @@ class RecordBloodPressure(
     private val transactions: TransactionRunner,
     clock: Clock,
 ) {
-    private val recorder = AlertRecorder(records, alerts, clock)
+    private val recorder = AlertRecorder(catalog, records, alerts, clock)
 
     data class Input(
         val fastId: String,

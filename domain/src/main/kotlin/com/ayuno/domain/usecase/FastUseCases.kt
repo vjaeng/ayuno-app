@@ -27,6 +27,10 @@ internal fun Plan.copyWithNewIds(): Plan = Plan(
     stages = stages.map { it.copy(id = Ids.newId()) },
     metrics = metrics.map { m -> m.copy(id = Ids.newId(), schedules = m.schedules.map { it.copy(id = Ids.newId()) }) },
     rules = rules.map { it.copy(id = Ids.newId()) },
+    goals = goals.map { it.copy(id = Ids.newId()) },
+    checklist = checklist.map { it.copy(id = Ids.newId()) },
+    notices = notices.map { it.copy(id = Ids.newId()) },
+    products = products.map { it.copy(id = Ids.newId()) },
 )
 
 /** H-004: crear un ayuno desde una plantilla (o desde cero) con la última comida y el inicio previsto. */

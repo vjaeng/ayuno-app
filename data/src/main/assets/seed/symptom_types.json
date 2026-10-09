@@ -1,0 +1,8 @@
+[
+  { "code": "hunger", "name": "Hambre", "group_name": "Esperables", "is_alarm": false },
+  { "code": "headache", "name": "Dolor de cabeza", "group_name": "Esperables", "is_alarm": false },
+  { "code": "dizziness", "name": "Mareo", "group_name": "Esperables", "is_alarm": false },
+  { "code": "cold", "name": "Frío", "group_name": "Esperables", "is_alarm": false },
+  { "code": "nausea", "name": "Náusea", "group_name": "Esperables", "is_alarm": false },
+  { "code": "insomnia", "name": "Insomnio", "group_name": "Esperables", "is_alarm": false }
+]

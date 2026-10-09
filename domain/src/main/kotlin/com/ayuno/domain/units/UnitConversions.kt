@@ -19,6 +19,10 @@ object UnitConversions {
         from == "cm" && to == "in" -> value / CM_PER_IN
         from == "°F" && to == "°C" -> (value - 32.0) * 5.0 / 9.0
         from == "°C" && to == "°F" -> value * 9.0 / 5.0 + 32.0
+        from == "mg" && to == "g" -> value / 1000.0
+        from == "g" && to == "mg" -> value * 1000.0
+        from == "L" && to == "mL" -> value * 1000.0
+        from == "mL" && to == "L" -> value / 1000.0
         else -> throw IllegalArgumentException("Sin conversión de $from a $to")
     }
 

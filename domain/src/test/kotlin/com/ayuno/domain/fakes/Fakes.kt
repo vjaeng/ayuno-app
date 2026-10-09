@@ -8,6 +8,14 @@ import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
+import com.ayuno.domain.model.Intake
+import com.ayuno.domain.model.IntakeType
+import com.ayuno.domain.model.Note
+import com.ayuno.domain.model.Plan
+import com.ayuno.domain.model.Product
+import com.ayuno.domain.model.ProductLog
+import com.ayuno.domain.model.Symptom
+import com.ayuno.domain.model.SymptomType
 import com.ayuno.domain.model.Template
 import com.ayuno.domain.model.TemplateWithPlan
 import com.ayuno.domain.port.AlertRepository
@@ -38,6 +46,11 @@ object SeedCatalog {
     val bloodPressure = MetricType("blood_pressure", "Presión arterial", "mmHg", null, "mmHg", true, null, null, true)
     val hunger = MetricType("hunger", "Hambre", "0-10", null, "0-10", true, 0.0, 10.0, true)
     val all = listOf(glucose, weight, bloodPressure, hunger)
+    val headache = SymptomType("headache", "Dolor de cabeza", "Esperables", false, true)
+    val blurredVision = SymptomType("blurred_vision", "Visión borrosa", "Alarma", true, true)
+    val water = IntakeType("water", "Agua", "mL", false, null)
+    val salt = IntakeType("salt", "Sal", "g", false, 0.393)
+    val broth = IntakeType("broth", "Caldo", "mL", true, null)
     val bpRanges = BloodPressureRanges(50.0..250.0, 30.0..150.0, 30.0..220.0)
 }
 
@@ -50,6 +63,22 @@ class FakeCatalog(types: List<MetricType> = SeedCatalog.all) : CatalogRepository
         types.value = types.value.filterNot { it.code == type.code } + type
     }
     override suspend fun bloodPressureRanges() = SeedCatalog.bpRanges
+
+    val symptomTypes = MutableStateFlow(listOf(SeedCatalog.headache, SeedCatalog.blurredVision))
+    override fun observeSymptomTypes(): Flow<List<SymptomType>> = symptomTypes
+    override suspend fun symptomTypes() = symptomTypes.value
+    override suspend fun saveSymptomType(type: SymptomType) { symptomTypes.value = symptomTypes.value.filterNot { it.code == type.code } + type }
+
+    val intakeTypes = MutableStateFlow(listOf(SeedCatalog.water, SeedCatalog.salt, SeedCatalog.broth))
+    override fun observeIntakeTypes(): Flow<List<IntakeType>> = intakeTypes
+    override suspend fun intakeTypes() = intakeTypes.value
+    override suspend fun saveIntakeType(type: IntakeType) { intakeTypes.value = intakeTypes.value.filterNot { it.code == type.code } + type }
+
+    val products = MutableStateFlow<List<Product>>(emptyList())
+    override fun observeProducts(): Flow<List<Product>> = products
+    override suspend fun products() = products.value
+    override suspend fun product(code: String) = products.value.firstOrNull { it.code == code }
+    override suspend fun saveProduct(product: Product) { products.value = products.value.filterNot { it.code == product.code } + product }
 }
 
 class FakeTemplates : TemplateRepository {
@@ -69,6 +98,10 @@ class FakeFasts : FastRepository {
         val current = items.value.getValue(fast.id)
         items.value = items.value + (fast.id to current.copy(fast = fast))
     }
+    override suspend fun updatePlan(fastId: String, plan: Plan) {
+        val current = items.value.getValue(fastId)
+        items.value = items.value + (fastId to current.copy(plan = plan))
+    }
 }
 
 class FakeRecords : RecordRepository {
@@ -80,6 +113,25 @@ class FakeRecords : RecordRepository {
     override suspend fun bloodPressure(fastId: String) = readings.value.filter { it.fastId == fastId }
     override suspend fun insertMeasurement(measurement: Measurement) { measurements.value = measurements.value + measurement }
     override suspend fun insertBloodPressure(reading: BloodPressureReading) { readings.value = readings.value + reading }
+
+    val symptoms = MutableStateFlow<List<Symptom>>(emptyList())
+    override fun observeSymptoms(fastId: String) = symptoms.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun symptoms(fastId: String) = symptoms.value.filter { it.fastId == fastId }
+    override suspend fun insertSymptom(symptom: Symptom) { symptoms.value = symptoms.value + symptom }
+
+    val intakes = MutableStateFlow<List<Intake>>(emptyList())
+    override fun observeIntakes(fastId: String) = intakes.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun intakes(fastId: String) = intakes.value.filter { it.fastId == fastId }
+    override suspend fun insertIntake(intake: Intake) { intakes.value = intakes.value + intake }
+
+    val productLogs = MutableStateFlow<List<ProductLog>>(emptyList())
+    override fun observeProductLogs(fastId: String) = productLogs.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun productLogs(fastId: String) = productLogs.value.filter { it.fastId == fastId }
+    override suspend fun insertProductLog(log: ProductLog) { productLogs.value = productLogs.value + log }
+
+    val notes = MutableStateFlow<List<Note>>(emptyList())
+    override fun observeNotes(fastId: String) = notes.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun insertNote(note: Note) { notes.value = notes.value + note }
 }
 
 class FakeAlerts : AlertRepository {

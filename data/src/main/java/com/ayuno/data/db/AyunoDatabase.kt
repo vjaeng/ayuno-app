@@ -25,6 +25,18 @@ import java.time.Clock
         BloodPressureReadingEntity::class,
         AlertEntity::class,
         EditLogEntity::class,
+        SymptomTypeEntity::class,
+        SymptomEntity::class,
+        IntakeTypeEntity::class,
+        IntakeEntity::class,
+        IntakeGoalEntity::class,
+        ChecklistItemEntity::class,
+        StageNoticeEntity::class,
+        ProductEntity::class,
+        ProductScheduleEntity::class,
+        PlanProductEntity::class,
+        ProductLogEntity::class,
+        NoteEntity::class,
     ],
     version = 1,
     exportSchema = true,
@@ -37,6 +49,9 @@ abstract class AyunoDatabase : RoomDatabase() {
     abstract fun recordDao(): RecordDao
     abstract fun alertDao(): AlertDao
     abstract fun auditDao(): AuditDao
+    abstract fun catalog2Dao(): Catalog2Dao
+    abstract fun plan2Dao(): Plan2Dao
+    abstract fun record2Dao(): Record2Dao
 
     companion object {
         /** Configuración común a la base real y a la de pruebas: integridad y datos iniciales. */
@@ -47,7 +62,7 @@ abstract class AyunoDatabase : RoomDatabase() {
     private class CreateCallback(private val context: Context, private val clock: Clock) : Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             // Propietario de plan: exactamente uno de template_id / fast_id (D-03). Room no declara CHECK.
-            listOf("stage", "plan_metric", "rule").forEach { table ->
+            listOf("stage", "plan_metric", "rule", "intake_goal", "checklist_item", "stage_notice", "plan_product").forEach { table ->
                 listOf("INSERT", "UPDATE").forEach { op ->
                     db.execSQL(
                         """

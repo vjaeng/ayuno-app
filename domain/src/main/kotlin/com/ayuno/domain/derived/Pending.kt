@@ -4,53 +4,76 @@ import com.ayuno.domain.model.BloodPressureReading
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
+import com.ayuno.domain.model.Product
+import com.ayuno.domain.model.ProductLog
+import com.ayuno.domain.model.ProductLogStatus
+import com.ayuno.domain.model.StageKind
 import java.time.LocalDateTime
 
 enum class PendingState { DONE, PENDING, LATE, NOT_DONE }
 
-data class PendingItem(val metricTypeCode: String, val scheduledAt: LocalDateTime)
+enum class PendingKind { METRIC, PRODUCT }
+
+/** Algo que toca hacer a una hora: una medición o una toma de producto. */
+data class PendingItem(val kind: PendingKind, val code: String, val scheduledAt: LocalDateTime, val amount: Double? = null)
 
 data class PendingStatus(val item: PendingItem, val state: PendingState)
 
+/** Registros con los que se decide si un pendiente está hecho. */
+data class PendingRecords(
+    val measurements: List<Measurement> = emptyList(),
+    val readings: List<BloodPressureReading> = emptyList(),
+    val productLogs: List<ProductLog> = emptyList(),
+)
+
 /**
- * Pendientes de medición (derivado): horarios del plan del ayuno dentro de la ventana de su etapa.
- * Solo mediciones activas en el plan y en el catálogo (H-001: una desactivada no genera recordatorios).
+ * Pendientes (derivado): horarios de medición del plan dentro de la ventana de su etapa (H-001) y tomas de los
+ * productos que siguen u opcionales activados durante la etapa de ayuno (H-014). Lo desactivado no genera nada.
  */
 object Pending {
     const val LATE_AFTER_MINUTES = 15L
 
-    fun items(source: FastWithPlan, activeTypes: Set<String>, from: LocalDateTime, to: LocalDateTime): List<PendingItem> {
+    fun items(
+        source: FastWithPlan,
+        activeTypes: Set<String>,
+        products: List<Product>,
+        from: LocalDateTime,
+        to: LocalDateTime,
+    ): List<PendingItem> {
         val windows = StageWindows.of(source.fast, source.plan)
         val result = mutableListOf<PendingItem>()
-        for (metric in source.plan.metrics) {
-            if (metric.metricTypeCode !in activeTypes) continue
-            for (schedule in metric.schedules) {
-                var day = from.toLocalDate()
-                while (!day.isAfter(to.toLocalDate())) {
-                    val at = day.atTime(schedule.timeOfDay)
-                    if (!at.isBefore(from) && !at.isAfter(to) && StageWindows.stageAt(windows, at) == schedule.stageKind) {
-                        result += PendingItem(metric.metricTypeCode, at)
-                    }
-                    day = day.plusDays(1)
-                }
+        fun eachDay(time: java.time.LocalTime, stage: StageKind, make: (LocalDateTime) -> PendingItem) {
+            var day = from.toLocalDate()
+            while (!day.isAfter(to.toLocalDate())) {
+                val at = day.atTime(time)
+                if (!at.isBefore(from) && !at.isAfter(to) && StageWindows.stageAt(windows, at) == stage) result += make(at)
+                day = day.plusDays(1)
             }
         }
-        return result.distinct().sortedWith(compareBy({ it.scheduledAt }, { it.metricTypeCode }))
+        for (metric in source.plan.metrics) {
+            if (metric.metricTypeCode !in activeTypes) continue
+            metric.schedules.forEach { s -> eachDay(s.timeOfDay, s.stageKind) { PendingItem(PendingKind.METRIC, metric.metricTypeCode, it) } }
+        }
+        val byCode = products.filter { it.active }.associateBy { it.code }
+        for (planned in source.plan.products.filter { it.isReminded }) {
+            val product = byCode[planned.productCode] ?: continue
+            product.schedules.forEach { s -> eachDay(s.timeOfDay, StageKind.FAST) { PendingItem(PendingKind.PRODUCT, product.code, it, s.amount) } }
+        }
+        return result.distinct().sortedWith(compareBy({ it.scheduledAt }, { it.kind }, { it.code }))
     }
 
-    fun status(
-        item: PendingItem,
-        now: LocalDateTime,
-        measurements: List<Measurement>,
-        readings: List<BloodPressureReading>,
-    ): PendingStatus {
-        val answers: List<String?> = if (item.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE) {
-            readings.filter { it.scheduledFor == item.scheduledAt }.map { it.notDoneReason }
-        } else {
-            measurements.filter { it.metricTypeCode == item.metricTypeCode && it.scheduledFor == item.scheduledAt }.map { it.notDoneReason }
+    fun status(item: PendingItem, now: LocalDateTime, records: PendingRecords): PendingStatus {
+        // Cada respuesta es «hecho» (true) o «no se hizo» (false).
+        val answers: List<Boolean> = when {
+            item.kind == PendingKind.PRODUCT ->
+                records.productLogs.filter { it.productCode == item.code && it.scheduledAt == item.scheduledAt }.map { it.status != ProductLogStatus.NOT_TAKEN }
+            item.code == MetricType.BLOOD_PRESSURE_CODE ->
+                records.readings.filter { it.scheduledFor == item.scheduledAt }.map { it.notDoneReason == null }
+            else ->
+                records.measurements.filter { it.metricTypeCode == item.code && it.scheduledFor == item.scheduledAt }.map { it.notDoneReason == null }
         }
         val state = when {
-            answers.any { it == null } -> PendingState.DONE
+            answers.any { it } -> PendingState.DONE
             answers.isNotEmpty() -> PendingState.NOT_DONE
             now.isAfter(item.scheduledAt.plusMinutes(LATE_AFTER_MINUTES)) -> PendingState.LATE
             else -> PendingState.PENDING

@@ -28,6 +28,23 @@ object CatalogSeed {
     )
 
     @Serializable
+    private data class SeedSymptomType(
+        val code: String,
+        val name: String,
+        @SerialName("group_name") val groupName: String?,
+        @SerialName("is_alarm") val isAlarm: Boolean,
+    )
+
+    @Serializable
+    private data class SeedIntakeType(
+        val code: String,
+        val name: String,
+        val unit: String,
+        @SerialName("breaks_fast") val breaksFast: Boolean,
+        @SerialName("sodium_factor") val sodiumFactor: Double?,
+    )
+
+    @Serializable
     private data class Range(val min: Double, val max: Double)
 
     @Serializable
@@ -53,6 +70,22 @@ object CatalogSeed {
                     put("created_at", now)
                 },
             )
+        }
+        insertCatalogs(db, context, now)
+    }
+
+    private fun insertCatalogs(db: SupportSQLiteDatabase, context: Context, now: String) {
+        json.decodeFromString<List<SeedSymptomType>>(read(context, "seed/symptom_types.json")).forEach { t ->
+            db.insert("symptom_type", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
+                put("code", t.code); put("name", t.name); put("group_name", t.groupName); put("is_alarm", t.isAlarm)
+                put("active", true); put("created_at", now)
+            })
+        }
+        json.decodeFromString<List<SeedIntakeType>>(read(context, "seed/intake_types.json")).forEach { t ->
+            db.insert("intake_type", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
+                put("code", t.code); put("name", t.name); put("unit", t.unit); put("breaks_fast", t.breaksFast)
+                put("sodium_factor", t.sodiumFactor); put("created_at", now)
+            })
         }
     }
 

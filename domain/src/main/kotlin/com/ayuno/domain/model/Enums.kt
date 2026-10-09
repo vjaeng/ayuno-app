@@ -40,3 +40,9 @@ enum class RuleAction(override val code: String) : Coded { NONE("none"), SCHEDUL
 enum class UserChoice(override val code: String) : Coded { END_FAST("end_fast"), CONTINUE("continue") }
 
 enum class EditAction(override val code: String) : Coded { EDIT("edit"), DELETE("delete"), RESTORE("restore") }
+
+enum class ProductKind(override val code: String) : Coded { SUPPLEMENT("supplement"), MEDICATION("medication") }
+
+enum class DuringFast(override val code: String) : Coded { CONTINUES("continues"), STOPS("stops"), OPTIONAL("optional") }
+
+enum class ProductLogStatus(override val code: String) : Coded { TAKEN("taken"), NOT_TAKEN("not_taken"), DOSE_CHANGED("dose_changed") }
