@@ -100,7 +100,7 @@ Para cada historia (o cambio de una evolución):
 
 1. **Leer** la historia, su matriz CRUD y el flujo de `specs/UX-UI/`; usar exactamente los nombres canónicos de la matriz.
 2. **Modelo de dominio:** si falta un campo, parar: el cambio va primero al modelo y al Tejido (no se inventan campos).
-3. **Persistencia (`:data/db/`):** entidad Room y DAO; si cambia el esquema, **migración** con prueba de migración; actualizar `schema/fasting-log-*.schema.json` y su versión si el campo viaja en el archivo (ADR-007).
+3. **Persistencia (`:data/db/`):** entidad Room y DAO; si cambia el esquema, **subir la versión de `AyunoDatabase`, escribir la migración en `Migrations` (SQL tomado del `N.json` exportado) con su prueba en `MigrationTest`, y añadir el identificador de la versión publicada a `ReleasedSchemasTest`**; actualizar `schema/fasting-log-*.schema.json` y su versión si el campo viaja en el archivo (ADR-007).
 4. **Puerto y repositorio:** método en la interfaz de `:domain/port/` e implementación en `:data/repository/`; mapeo explícito entidad ↔ modelo.
 5. **Caso de uso (`:domain/usecase/<área>/`):** una clase por operación; escrituras multi-entidad dentro de `TransactionRunner`; si toca entradas de registro, evaluar reglas en la misma transacción (ADR-006); si cambia el plan o los horarios, avisar al `ReminderScheduler`.
 6. **ViewModel y pantalla (`:app/ui/<flujo>/`):** `UiState` con los cuatro estados no felices; textos en `strings.xml`; componentes y tokens de `specs/GUIA-ESTILO.md`; semántica de accesibilidad en cada control.
@@ -135,7 +135,6 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 
 | Deuda | Razón | Plan |
 |---|---|---|
-| Esquema de base en versión 1 sin migraciones mientras crece historia a historia | Aún no hay instalación real con datos | Desde la primera instalación en el teléfono, todo cambio de esquema lleva migración probada (ADR-003) |
 | Sin icono de la app | No lo pide ninguna historia | Añadir antes de la primera instalación |
 | `USE_EXACT_ALARM` incompatible con publicar en Google Play | La distribución es por APK (ADR-005) | Revisar ADR-005 si se decide publicar en Play |
 | Columnas JSON no consultables por SQL | Listas pequeñas (ADR-003) | Normalizar si aparece una consulta que lo necesite |
@@ -161,6 +160,7 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-08 | Construcción: kotlinx-serialization 1.7.3 en `:data` (datos precargados; formato de intercambio, ADR-007) | ADR-008 |
 | 2026-10-08 | Tanda 2a: «algo no va bien» sin regla manual crea en el plan del ayuno una regla manual con el texto neutro de la app, en la misma transacción que la alerta (decisión de UX aceptada + H-027: toda alerta queda registrada) | ADR-006 |
 | 2026-10-08 | Tanda 2a: las reglas se evalúan en cada alarma (pendientes y horas de comprobación de reglas de ingesta) además de al guardar (H-019, H-022) | ADR-005, ADR-006 |
+| 2026-10-08 | Incidente: la tanda 2a cambió el esquema sin subir la versión y la app se cerraba al abrir en el teléfono. Se añade la versión 2 con migración 1→2 probada y un candado de esquemas publicados (`ReleasedSchemasTest`); se cierra la deuda «versión 1 sin migraciones» | ADR-003 |
 | 2026-10-08 | Tanda 2a: en el editor de productos, la dosis de cada horario es la dosis habitual; el modelo admite dosis distintas por horario (editable en una evolución si hace falta) | — |
 
 ## 7. Versiones y dependencias

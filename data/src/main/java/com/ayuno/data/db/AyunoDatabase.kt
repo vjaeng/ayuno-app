@@ -8,8 +8,8 @@ import com.ayuno.data.seed.CatalogSeed
 import java.time.Clock
 
 /**
- * Base de datos de la app (ADR-003). Hasta la primera entrega se mantiene en la versión 1 y el esquema
- * crece historia a historia; a partir de la primera instalación real, todo cambio lleva migración probada.
+ * Base de datos de la app (ADR-003). Desde la primera instalación real (versión 1, tanda 1) todo cambio de
+ * esquema sube la versión y lleva una migración probada en [Migrations]; nunca migración destructiva.
  */
 @Database(
     entities = [
@@ -38,7 +38,7 @@ import java.time.Clock
         ProductLogEntity::class,
         NoteEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AyunoDatabase : RoomDatabase() {
@@ -57,22 +57,29 @@ abstract class AyunoDatabase : RoomDatabase() {
         /** Configuración común a la base real y a la de pruebas: integridad y datos iniciales. */
         fun <T : RoomDatabase> RoomDatabase.Builder<T>.ayunoSetup(context: Context, clock: Clock): RoomDatabase.Builder<T> =
             addCallback(CreateCallback(context.applicationContext, clock))
-    }
+                .addMigrations(*Migrations.all(context.applicationContext, clock))
 
-    private class CreateCallback(private val context: Context, private val clock: Clock) : Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            // Propietario de plan: exactamente uno de template_id / fast_id (D-03). Room no declara CHECK.
-            listOf("stage", "plan_metric", "rule", "intake_goal", "checklist_item", "stage_notice", "plan_product").forEach { table ->
+        private val PLAN_TABLES = listOf("stage", "plan_metric", "rule", "intake_goal", "checklist_item", "stage_notice", "plan_product")
+
+        /** Propietario de plan: exactamente uno de template_id / fast_id (D-03). Room no declara CHECK. */
+        internal fun createOwnerTriggers(db: SupportSQLiteDatabase, tables: List<String>) {
+            tables.forEach { table ->
                 listOf("INSERT", "UPDATE").forEach { op ->
                     db.execSQL(
                         """
-                        CREATE TRIGGER ${table}_owner_xor_${op.lowercase()} BEFORE $op ON $table
+                        CREATE TRIGGER IF NOT EXISTS ${table}_owner_xor_${op.lowercase()} BEFORE $op ON $table
                         WHEN (NEW.template_id IS NULL) = (NEW.fast_id IS NULL)
                         BEGIN SELECT RAISE(ABORT, '$table: exactamente un propietario'); END
                         """.trimIndent(),
                     )
                 }
             }
+        }
+    }
+
+    private class CreateCallback(private val context: Context, private val clock: Clock) : Callback() {
+        override fun onCreate(db: SupportSQLiteDatabase) {
+            createOwnerTriggers(db, PLAN_TABLES)
             CatalogSeed.insertInto(db, context, clock)
         }
     }

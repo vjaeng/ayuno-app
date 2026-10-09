@@ -1,0 +1,2081 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "990883c8c7ecb51462bd7224d57d1ce7",
+    "entities": [
+      {
+        "tableName": "settings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `quiet_start` TEXT, `quiet_end` TEXT, `export_person_enabled` INTEGER NOT NULL, `app_lock_enabled` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quietStart",
+            "columnName": "quiet_start",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "quietEnd",
+            "columnName": "quiet_end",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "exportPersonEnabled",
+            "columnName": "export_person_enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appLockEnabled",
+            "columnName": "app_lock_enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "metric_type",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`code` TEXT NOT NULL, `name` TEXT NOT NULL, `unit` TEXT NOT NULL, `alt_unit` TEXT, `entry_unit` TEXT NOT NULL, `is_numeric` INTEGER NOT NULL, `min_valid` REAL, `max_valid` REAL, `active` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`code`))",
+        "fields": [
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altUnit",
+            "columnName": "alt_unit",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "entryUnit",
+            "columnName": "entry_unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isNumeric",
+            "columnName": "is_numeric",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minValid",
+            "columnName": "min_valid",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "maxValid",
+            "columnName": "max_valid",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "code"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "template",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `target_hours` REAL NOT NULL, `milestone_hours` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetHours",
+            "columnName": "target_hours",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "milestoneHours",
+            "columnName": "milestone_hours",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "stage",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `kind` TEXT NOT NULL, `duration_value` REAL, `duration_unit` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationValue",
+            "columnName": "duration_value",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "durationUnit",
+            "columnName": "duration_unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_stage_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stage_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_stage_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stage_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "plan_metric",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `metric_type_code` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metricTypeCode",
+            "columnName": "metric_type_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_plan_metric_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_plan_metric_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_plan_metric_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_plan_metric_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "metric_schedule",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plan_metric_id` TEXT NOT NULL, `stage_kind` TEXT NOT NULL, `time_of_day` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "planMetricId",
+            "columnName": "plan_metric_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stageKind",
+            "columnName": "stage_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeOfDay",
+            "columnName": "time_of_day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_metric_schedule_plan_metric_id",
+            "unique": false,
+            "columnNames": [
+              "plan_metric_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_metric_schedule_plan_metric_id` ON `${TABLE_NAME}` (`plan_metric_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "rule",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `name` TEXT NOT NULL, `active` INTEGER NOT NULL, `condition_kind` TEXT NOT NULL, `metric_type_code` TEXT, `bp_component` TEXT, `threshold` REAL, `sustained_minutes` INTEGER, `symptom_type_code` TEXT, `intake_type_code` TEXT, `check_time` TEXT, `filter_stage_kinds` TEXT NOT NULL, `filter_on_waking` INTEGER NOT NULL, `filter_position` TEXT, `level` TEXT NOT NULL, `message` TEXT NOT NULL, `action` TEXT NOT NULL, `action_minutes` INTEGER, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "conditionKind",
+            "columnName": "condition_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metricTypeCode",
+            "columnName": "metric_type_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bpComponent",
+            "columnName": "bp_component",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "threshold",
+            "columnName": "threshold",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sustainedMinutes",
+            "columnName": "sustained_minutes",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "symptomTypeCode",
+            "columnName": "symptom_type_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "intakeTypeCode",
+            "columnName": "intake_type_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "checkTime",
+            "columnName": "check_time",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "filterStageKinds",
+            "columnName": "filter_stage_kinds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filterOnWaking",
+            "columnName": "filter_on_waking",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filterPosition",
+            "columnName": "filter_position",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actionMinutes",
+            "columnName": "action_minutes",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_rule_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rule_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_rule_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rule_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "fast",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `status` TEXT NOT NULL, `target_hours` REAL NOT NULL, `milestone_hours` TEXT NOT NULL, `last_meal_planned` TEXT NOT NULL, `last_meal_actual` TEXT, `clock_start_planned` TEXT NOT NULL, `clock_start_actual` TEXT, `end_actual` TEXT, `end_reason` TEXT, `end_reason_detail` TEXT, `end_rule_id` TEXT, `tz_offset` TEXT NOT NULL, `notes` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetHours",
+            "columnName": "target_hours",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "milestoneHours",
+            "columnName": "milestone_hours",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastMealPlanned",
+            "columnName": "last_meal_planned",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastMealActual",
+            "columnName": "last_meal_actual",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "clockStartPlanned",
+            "columnName": "clock_start_planned",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clockStartActual",
+            "columnName": "clock_start_actual",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endActual",
+            "columnName": "end_actual",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endReason",
+            "columnName": "end_reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endReasonDetail",
+            "columnName": "end_reason_detail",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endRuleId",
+            "columnName": "end_rule_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tzOffset",
+            "columnName": "tz_offset",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_fast_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fast_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "measurement",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `metric_type_code` TEXT NOT NULL, `taken_at` TEXT NOT NULL, `scheduled_for` TEXT, `value_num` REAL, `value_text` TEXT, `value_entered` REAL, `unit_entered` TEXT, `source` TEXT, `trend` TEXT, `on_waking` INTEGER NOT NULL, `not_done_reason` TEXT, `note` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metricTypeCode",
+            "columnName": "metric_type_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "takenAt",
+            "columnName": "taken_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduledFor",
+            "columnName": "scheduled_for",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "valueNum",
+            "columnName": "value_num",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "valueText",
+            "columnName": "value_text",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "valueEntered",
+            "columnName": "value_entered",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "unitEntered",
+            "columnName": "unit_entered",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "trend",
+            "columnName": "trend",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "onWaking",
+            "columnName": "on_waking",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notDoneReason",
+            "columnName": "not_done_reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_measurement_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_measurement_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "blood_pressure_reading",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `taken_at` TEXT NOT NULL, `scheduled_for` TEXT, `systolic` INTEGER, `diastolic` INTEGER, `pulse` INTEGER, `position` TEXT NOT NULL, `on_waking` INTEGER NOT NULL, `paired_reading_id` TEXT, `not_done_reason` TEXT, `note` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "takenAt",
+            "columnName": "taken_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduledFor",
+            "columnName": "scheduled_for",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "systolic",
+            "columnName": "systolic",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "diastolic",
+            "columnName": "diastolic",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pulse",
+            "columnName": "pulse",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "onWaking",
+            "columnName": "on_waking",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pairedReadingId",
+            "columnName": "paired_reading_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "notDoneReason",
+            "columnName": "not_done_reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_blood_pressure_reading_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_blood_pressure_reading_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "alert",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `rule_id` TEXT NOT NULL, `fired_at` TEXT NOT NULL, `trigger_entry_ids` TEXT NOT NULL, `user_choice` TEXT, `choice_reason` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ruleId",
+            "columnName": "rule_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firedAt",
+            "columnName": "fired_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "triggerEntryIds",
+            "columnName": "trigger_entry_ids",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userChoice",
+            "columnName": "user_choice",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "choiceReason",
+            "columnName": "choice_reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_alert_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_alert_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "edit_log",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `entity_name` TEXT NOT NULL, `row_id` TEXT NOT NULL, `action` TEXT NOT NULL, `edited_at` TEXT NOT NULL, `field` TEXT, `old_value` TEXT, `new_value` TEXT, `reason` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entityName",
+            "columnName": "entity_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rowId",
+            "columnName": "row_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "editedAt",
+            "columnName": "edited_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "field",
+            "columnName": "field",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "oldValue",
+            "columnName": "old_value",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "newValue",
+            "columnName": "new_value",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_edit_log_row_id",
+            "unique": false,
+            "columnNames": [
+              "row_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_edit_log_row_id` ON `${TABLE_NAME}` (`row_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "symptom_type",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`code` TEXT NOT NULL, `name` TEXT NOT NULL, `group_name` TEXT, `is_alarm` INTEGER NOT NULL, `active` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`code`))",
+        "fields": [
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupName",
+            "columnName": "group_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isAlarm",
+            "columnName": "is_alarm",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "code"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "symptom",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `symptom_type_code` TEXT NOT NULL, `noted_at` TEXT NOT NULL, `severity` INTEGER NOT NULL, `note` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "symptomTypeCode",
+            "columnName": "symptom_type_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notedAt",
+            "columnName": "noted_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "severity",
+            "columnName": "severity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_symptom_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_symptom_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "intake_type",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`code` TEXT NOT NULL, `name` TEXT NOT NULL, `unit` TEXT NOT NULL, `breaks_fast` INTEGER NOT NULL, `sodium_factor` REAL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`code`))",
+        "fields": [
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "breaksFast",
+            "columnName": "breaks_fast",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sodiumFactor",
+            "columnName": "sodium_factor",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "code"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "intake",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `intake_type_code` TEXT NOT NULL, `taken_at` TEXT NOT NULL, `amount` REAL NOT NULL, `unit` TEXT NOT NULL, `note` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intakeTypeCode",
+            "columnName": "intake_type_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "takenAt",
+            "columnName": "taken_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_intake_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_intake_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "intake_goal",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `intake_type_code` TEXT NOT NULL, `daily_amount` REAL NOT NULL, `unit` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "intakeTypeCode",
+            "columnName": "intake_type_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailyAmount",
+            "columnName": "daily_amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_intake_goal_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_intake_goal_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_intake_goal_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_intake_goal_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "checklist_item",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `text` TEXT NOT NULL, `is_checked` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isChecked",
+            "columnName": "is_checked",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_checklist_item_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_checklist_item_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_checklist_item_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_checklist_item_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "stage_notice",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `text` TEXT NOT NULL, `stage_kinds` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stageKinds",
+            "columnName": "stage_kinds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_stage_notice_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stage_notice_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_stage_notice_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stage_notice_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "product",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`code` TEXT NOT NULL, `name` TEXT NOT NULL, `kind` TEXT NOT NULL, `default_amount` REAL NOT NULL, `unit` TEXT NOT NULL, `avoid` INTEGER NOT NULL, `active` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`code`))",
+        "fields": [
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "defaultAmount",
+            "columnName": "default_amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avoid",
+            "columnName": "avoid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "code"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "product_schedule",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `product_code` TEXT NOT NULL, `time_of_day` TEXT NOT NULL, `amount` REAL NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productCode",
+            "columnName": "product_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeOfDay",
+            "columnName": "time_of_day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_product_schedule_product_code",
+            "unique": false,
+            "columnNames": [
+              "product_code"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_product_schedule_product_code` ON `${TABLE_NAME}` (`product_code`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "plan_product",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `product_code` TEXT NOT NULL, `during_fast` TEXT NOT NULL, `optional_enabled` INTEGER NOT NULL, `reason` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "templateId",
+            "columnName": "template_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "productCode",
+            "columnName": "product_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duringFast",
+            "columnName": "during_fast",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "optionalEnabled",
+            "columnName": "optional_enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_plan_product_template_id",
+            "unique": false,
+            "columnNames": [
+              "template_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_plan_product_template_id` ON `${TABLE_NAME}` (`template_id`)"
+          },
+          {
+            "name": "index_plan_product_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_plan_product_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "product_log",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `product_code` TEXT NOT NULL, `scheduled_at` TEXT, `status` TEXT NOT NULL, `taken_at` TEXT, `planned_amount` REAL, `amount` REAL, `unit` TEXT, `reason` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productCode",
+            "columnName": "product_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduledAt",
+            "columnName": "scheduled_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "takenAt",
+            "columnName": "taken_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "plannedAmount",
+            "columnName": "planned_amount",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_product_log_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_product_log_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "note",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `noted_at` TEXT NOT NULL, `text` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fastId",
+            "columnName": "fast_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notedAt",
+            "columnName": "noted_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deleted_at",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_note_fast_id",
+            "unique": false,
+            "columnNames": [
+              "fast_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_note_fast_id` ON `${TABLE_NAME}` (`fast_id`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '990883c8c7ecb51462bd7224d57d1ce7')"
+    ]
+  }
+}

@@ -74,7 +74,8 @@ object CatalogSeed {
         insertCatalogs(db, context, now)
     }
 
-    private fun insertCatalogs(db: SupportSQLiteDatabase, context: Context, now: String) {
+    /** Síntomas y tipos de ingesta de ejemplo (H-010, H-011); también los usa la migración 1→2. */
+    fun insertCatalogs(db: SupportSQLiteDatabase, context: Context, now: String) {
         json.decodeFromString<List<SeedSymptomType>>(read(context, "seed/symptom_types.json")).forEach { t ->
             db.insert("symptom_type", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
                 put("code", t.code); put("name", t.name); put("group_name", t.groupName); put("is_alarm", t.isAlarm)

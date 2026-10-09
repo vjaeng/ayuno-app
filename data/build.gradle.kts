@@ -21,6 +21,9 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    // Los esquemas exportados sirven a las pruebas de migración (MigrationTestHelper).
+    sourceSets["test"].assets.srcDir("$projectDir/schemas")
 }
 
 kotlin {
