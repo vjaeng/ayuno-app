@@ -1,6 +1,5 @@
 package com.ayuno.data.db
 
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.test.runTest
@@ -10,6 +9,7 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.Clock
 
 @RunWith(AndroidJUnit4::class)
 class RoomTransactionRunnerTest {
@@ -19,9 +19,7 @@ class RoomTransactionRunnerTest {
 
     @Before
     fun setUp() {
-        database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), AyunoDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        database = AyunoDatabaseFactory.createInMemoryForTests(ApplicationProvider.getApplicationContext(), Clock.systemDefaultZone())
         runner = RoomTransactionRunner(database)
     }
 

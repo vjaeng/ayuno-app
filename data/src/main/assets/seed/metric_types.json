@@ -1,0 +1,12 @@
+[
+  { "code": "glucose", "name": "Glucosa", "unit": "mg/dL", "alt_unit": "mmol/L", "entry_unit": "mg/dL", "numeric": true, "min_valid": 20, "max_valid": 600 },
+  { "code": "ketones", "name": "Cetonas", "unit": "mmol/L", "alt_unit": null, "entry_unit": "mmol/L", "numeric": true, "min_valid": 0, "max_valid": 10 },
+  { "code": "blood_pressure", "name": "Presión arterial", "unit": "mmHg", "alt_unit": null, "entry_unit": "mmHg", "numeric": true, "min_valid": null, "max_valid": null },
+  { "code": "weight", "name": "Peso", "unit": "kg", "alt_unit": "lb", "entry_unit": "kg", "numeric": true, "min_valid": 20, "max_valid": 300 },
+  { "code": "waist", "name": "Cintura", "unit": "cm", "alt_unit": "in", "entry_unit": "cm", "numeric": true, "min_valid": 40, "max_valid": 200 },
+  { "code": "temperature", "name": "Temperatura", "unit": "°C", "alt_unit": "°F", "entry_unit": "°C", "numeric": true, "min_valid": 30, "max_valid": 43 },
+  { "code": "hunger", "name": "Hambre", "unit": "de 0 a 10", "alt_unit": null, "entry_unit": "de 0 a 10", "numeric": true, "min_valid": 0, "max_valid": 10 },
+  { "code": "energy", "name": "Energía", "unit": "de 0 a 10", "alt_unit": null, "entry_unit": "de 0 a 10", "numeric": true, "min_valid": 0, "max_valid": 10 },
+  { "code": "mood", "name": "Ánimo", "unit": "de 0 a 10", "alt_unit": null, "entry_unit": "de 0 a 10", "numeric": true, "min_valid": 0, "max_valid": 10 },
+  { "code": "mental_clarity", "name": "Claridad mental", "unit": "de 0 a 10", "alt_unit": null, "entry_unit": "de 0 a 10", "numeric": true, "min_valid": 0, "max_valid": 10 }
+]

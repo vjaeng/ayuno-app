@@ -1,0 +1,1 @@
+{ "systolic": { "min": 50, "max": 250 }, "diastolic": { "min": 30, "max": 150 }, "pulse": { "min": 30, "max": 220 } }
