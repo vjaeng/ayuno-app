@@ -40,6 +40,9 @@ kotlin {
     jvmToolchain(17)
 }
 
+// Nombre del APK: ayuno-<versión>-<tipo>.apk (p. ej. ayuno-0.1.0-debug.apk).
+base.archivesName = "ayuno-${android.defaultConfig.versionName}"
+
 dependencies {
     implementation(project(":domain"))
     implementation(project(":data"))
