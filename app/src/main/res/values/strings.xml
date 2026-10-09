@@ -1,9 +1,265 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Textos de la interfaz (ADR-008): español, frases completas, sin siglas (GUIA-ESTILO §5). -->
 <resources>
     <string name="app_name">Ayuno</string>
+
+    <!-- Navegación -->
     <string name="tab_home">Inicio</string>
     <string name="tab_today">Hoy</string>
     <string name="tab_history">Historial</string>
     <string name="tab_more">Más</string>
     <string name="section_pending">Esta sección se irá completando con las próximas historias.</string>
+
+    <!-- Acciones -->
+    <string name="action_accept">Aceptar</string>
+    <string name="action_allow">Permitir</string>
+    <string name="action_back">Volver</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_edit">Cambiar</string>
+    <string name="action_next">Siguiente</string>
+    <string name="action_not_now">Ahora no</string>
+    <string name="action_open_settings">Abrir ajustes</string>
+    <string name="action_remove">Quitar</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_none">Ninguna</string>
+    <string name="action_offer_end">Ofrecer terminar el ayuno</string>
+
+    <!-- Unidades -->
+    <string name="unit_hours">horas</string>
+    <string name="unit_days">días</string>
+    <string name="unit_minutes">minutos</string>
+    <string name="unit_per_minute">por minuto</string>
+
+    <!-- Etapas -->
+    <string name="stage_preparation">Preparación</string>
+    <string name="stage_fast">Ayuno</string>
+    <string name="stage_refeed">Vuelta a comer</string>
+    <string name="stage_post">Etapa posterior</string>
+
+    <!-- Avisos persistentes -->
+    <string name="banner_notifications_off">Las notificaciones están desactivadas: no podremos recordarte las mediciones.</string>
+    <string name="banner_exact_alarms_off">El teléfono no permite alarmas exactas: los recordatorios podrían llegar tarde.</string>
+
+    <!-- Inicio -->
+    <string name="home_empty">Crea tu primer ayuno: elige una plantilla y la hora de tu última comida.</string>
+    <string name="home_new_fast">Nuevo ayuno</string>
+    <string name="home_next_fast">Próximo ayuno</string>
+    <string name="home_last_fast">Último ayuno</string>
+    <string name="home_last_meal_planned">Última comida prevista: %1$s</string>
+    <string name="home_last_meal_actual">Última comida real: %1$s</string>
+    <string name="home_last_meal_planned_vs_actual">Última comida: prevista %1$s · real %2$s</string>
+    <string name="home_clock_planned">Inicio previsto del reloj: %1$s</string>
+    <string name="home_planned_vs_actual">Inicio del reloj: previsto %1$s · real %2$s</string>
+    <string name="home_target">Objetivo: %1$s horas</string>
+    <string name="home_start_now">Empieza el ayuno ahora</string>
+    <string name="home_register_last_meal">Registrar la última comida</string>
+    <string name="home_correct_last_meal">Corregir la hora de la última comida</string>
+    <string name="home_last_meal_title">Hora real de la última comida</string>
+    <string name="home_correct_start">Corregir la hora de inicio</string>
+    <string name="home_remaining">Faltan %1$s</string>
+    <string name="home_planned_end">Fin previsto: %1$s</string>
+    <string name="home_clock_description">%1$s y %2$s de ayuno</string>
+    <string name="home_next_pending">Próximo pendiente</string>
+    <string name="home_last_measurement">Última medición</string>
+    <string name="home_last_measurement_value">%1$s: %2$s %3$s · %4$s</string>
+    <string name="home_notes">Notas: %1$s</string>
+    <string name="home_record">Anotar</string>
+    <string name="pending_at">A las %1$s</string>
+    <string name="pending_late_at">Atrasado: era a las %1$s</string>
+    <string name="milestone_reached">%1$s horas · %2$s · alcanzado</string>
+    <string name="milestone_pending">%1$s horas · %2$s</string>
+
+    <!-- Crear ayuno -->
+    <string name="create_title">Nuevo ayuno</string>
+    <string name="create_which_template">¿Desde qué plantilla?</string>
+    <string name="create_from_scratch">Empezar desde cero</string>
+    <string name="create_planned_end">Fin previsto: %1$s</string>
+    <string name="create_stage_range">%1$s: de %2$s a %3$s</string>
+    <string name="create_action">Crear ayuno</string>
+
+    <!-- Anotar -->
+    <string name="record_title">Anotar</string>
+    <string name="record_empty">Este ayuno no tiene mediciones activas. Actívalas en la plantilla antes de crear el ayuno.</string>
+    <string name="record_equivalent">%1$s %2$s equivalen a %3$s %4$s</string>
+    <string name="record_not_done">No se hizo</string>
+    <string name="record_out_of_range_title">¿Seguro?</string>
+    <string name="record_out_of_range_text">%1$s está fuera de lo habitual (de %2$s a %3$s). Puedes guardarlo tal cual o corregirlo.</string>
+    <string name="bp_out_of_range_text">Algún valor está fuera de lo habitual. Puedes guardarlo tal cual o corregirlo.</string>
+    <string name="record_save_as_is">Guardar tal cual</string>
+    <string name="record_correct">Corregir</string>
+    <string name="bp_title">Presión arterial</string>
+    <string name="bp_now_standing">Ahora de pie</string>
+    <string name="bp_ask_standing">¿Ahora de pie?</string>
+    <string name="bp_record_standing">Anotar de pie</string>
+    <string name="bp_difference_title">Al ponerte de pie</string>
+    <string name="bp_difference_text">Sistólica %1$s · diastólica %2$s · pulso %3$s</string>
+    <string name="position_sitting">Sentado</string>
+    <string name="position_standing">De pie</string>
+    <string name="position_lying">Acostado</string>
+    <string name="source_cgm">Sensor continuo</string>
+    <string name="source_glucometer">Glucómetro</string>
+    <string name="trend_rising_fast">Sube rápido</string>
+    <string name="trend_rising">Sube</string>
+    <string name="trend_steady">Estable</string>
+    <string name="trend_falling">Baja</string>
+    <string name="trend_falling_fast">Baja rápido</string>
+
+    <!-- Campos -->
+    <string name="field_name">Nombre</string>
+    <string name="field_unit">Unidad</string>
+    <string name="field_is_numeric">Es un número</string>
+    <string name="field_min_valid">Valor mínimo habitual</string>
+    <string name="field_max_valid">Valor máximo habitual</string>
+    <string name="field_taken_at">Fecha y hora</string>
+    <string name="field_value">Valor</string>
+    <string name="field_source">Origen</string>
+    <string name="field_trend">Tendencia (opcional)</string>
+    <string name="field_on_waking">Tomada al despertar</string>
+    <string name="field_note">Nota (opcional)</string>
+    <string name="field_reason">Motivo</string>
+    <string name="field_systolic">Sistólica</string>
+    <string name="field_diastolic">Diastólica</string>
+    <string name="field_pulse">Pulso (opcional)</string>
+    <string name="field_last_meal_planned">Última comida</string>
+    <string name="field_last_meal_actual">Hora real de la última comida</string>
+    <string name="field_clock_start_planned">Inicio previsto del reloj</string>
+    <string name="field_clock_start_actual">Hora real de inicio</string>
+    <string name="field_target_hours">Objetivo</string>
+    <string name="field_fast_notes">Notas del ayuno (opcional)</string>
+    <string name="field_milestones">Hitos en horas, separados por comas</string>
+    <string name="field_stage_duration">Duración</string>
+    <string name="field_threshold">Valor</string>
+    <string name="field_sustained_minutes">Durante al menos</string>
+    <string name="field_rule_message">Mensaje que se mostrará tal cual</string>
+    <string name="field_end_actual">Hora de fin</string>
+    <string name="field_end_detail">Escribe el motivo</string>
+
+    <!-- Alertas -->
+    <string name="alert_title">Alerta · %1$s</string>
+    <string name="notice_title">Aviso · %1$s</string>
+    <string name="alert_triggers">Por: %1$s</string>
+    <string name="alert_end_fast">Termino el ayuno</string>
+    <string name="alert_continue">Sigo</string>
+    <string name="alert_continue_reason">Si sigues, escribe por qué</string>
+
+    <!-- Seguridad -->
+    <string name="safety_button">Seguridad</string>
+    <string name="safety_title">Seguridad</string>
+    <string name="safety_active_rules">Tus reglas activas</string>
+    <string name="safety_no_rules">No tienes reglas activas en este ayuno. Puedes añadirlas en la plantilla.</string>
+
+    <!-- Frases de reglas -->
+    <string name="sentence_rule">Si %1$s: %2$s.</string>
+    <string name="sentence_below">%1$s por debajo de %2$s %3$s</string>
+    <string name="sentence_above">%1$s por encima de %2$s %3$s</string>
+    <string name="sentence_sustained">" durante %1$s"</string>
+    <string name="sentence_on_waking">" al despertar"</string>
+    <string name="sentence_level_alert">alerta roja</string>
+    <string name="sentence_level_notice">aviso amarillo</string>
+    <string name="sentence_offer_end">" y ofrecer terminar el ayuno"</string>
+    <string name="sentence_schedule">" y volver a medir en %1$s"</string>
+    <string name="sentence_bp_systolic">presión sistólica</string>
+    <string name="sentence_bp_diastolic">presión diastólica</string>
+    <string name="sentence_bp_pulse">pulso</string>
+    <string name="sentence_standing">" de pie"</string>
+    <string name="sentence_sitting">" sentado"</string>
+    <string name="sentence_lying">" acostado"</string>
+
+    <!-- Terminar -->
+    <string name="end_title">Terminar el ayuno</string>
+    <string name="end_why">¿Por qué terminas?</string>
+    <string name="end_duration">Duración: %1$s</string>
+    <string name="end_reason_goal_met">Objetivo cumplido</string>
+    <string name="end_reason_alert_rule">Regla de alerta</string>
+    <string name="end_reason_personal">Decisión personal</string>
+    <string name="end_reason_other">Otro motivo</string>
+    <string name="end_cannot_resume">Un ayuno terminado no se puede reanudar.</string>
+    <string name="end_result_title">Ayuno terminado</string>
+    <string name="end_result_reason">Motivo: %1$s</string>
+    <string name="end_back_home">Volver al inicio</string>
+
+    <!-- Más, plantillas, catálogo -->
+    <string name="more_templates_hint">Planes reutilizables: etapas, mediciones y reglas</string>
+    <string name="more_metrics_hint">Qué se puede medir y con qué unidades</string>
+    <string name="templates_title">Plantillas</string>
+    <string name="templates_empty">Aún no tienes plantillas.</string>
+    <string name="templates_create">Crear plantilla</string>
+    <string name="templates_target">%1$s horas</string>
+    <string name="template_new">Nueva plantilla</string>
+    <string name="template_edit">Plantilla</string>
+    <string name="template_stages">Etapas</string>
+    <string name="template_metrics">Mediciones y horarios</string>
+    <string name="template_times_in_stage">Horas de recordatorio en %1$s</string>
+    <string name="template_add_time">Añadir hora</string>
+    <string name="template_rules">Reglas de alerta</string>
+    <string name="template_no_rules">Esta plantilla no tiene reglas. La app no trae umbrales: tú decides cuándo avisar.</string>
+    <string name="template_add_rule">Crear regla</string>
+    <string name="rule_title">Regla</string>
+    <string name="rule_if">Si</string>
+    <string name="rule_below">Por debajo de</string>
+    <string name="rule_above">Por encima de</string>
+    <string name="rule_sustained">Solo si se mantiene un tiempo</string>
+    <string name="rule_then">Entonces</string>
+    <string name="rule_preview">Se leerá así</string>
+    <string name="level_notice">Aviso amarillo</string>
+    <string name="level_alert">Alerta roja</string>
+    <string name="catalog_metrics_title">Mediciones</string>
+    <string name="catalog_or_unit">o %1$s</string>
+    <string name="catalog_add_metric">Añadir una medición propia</string>
+    <string name="catalog_new_metric">Nueva medición</string>
+    <string name="catalog_edit_metric">Medición</string>
+    <string name="catalog_unit_fixed">Unidad: %1$s (no se puede cambiar porque puede haber mediciones anotadas)</string>
+
+    <!-- Notificaciones -->
+    <string name="channel_reminders">Recordatorios</string>
+    <string name="channel_reminders_description">Avisos a la hora de cada medición del ayuno</string>
+    <string name="notification_reminder_title">Toca anotar: %1$s</string>
+    <string name="notification_public_title">Tienes un recordatorio del ayuno</string>
+
+    <!-- Errores: qué pasó y qué hacer -->
+    <string name="error_load">No se pudieron leer tus datos. Inténtalo de nuevo.</string>
+    <string name="error_not_found">No se encontró lo que buscabas. Vuelve atrás e inténtalo de nuevo.</string>
+    <string name="error_name_required">Escribe un nombre.</string>
+    <string name="error_name_duplicated">Ya existe uno con ese nombre. Elige otro.</string>
+    <string name="error_unit_required">Escribe la unidad.</string>
+    <string name="error_target_hours">El objetivo debe ser un número de horas mayor que cero.</string>
+    <string name="error_milestones">Los hitos deben ser horas mayores que cero, separadas por comas.</string>
+    <string name="error_stage_duration">Escribe la duración de cada etapa que uses.</string>
+    <string name="error_schedule_stage">Hay horarios en una etapa que la plantilla no usa. Quítalos o activa la etapa.</string>
+    <string name="error_range">El mínimo debe ser menor que el máximo.</string>
+    <string name="error_clock_before_meal">El inicio del reloj no puede ser antes de la última comida.</string>
+    <string name="error_fast_not_planned">Este ayuno ya empezó o terminó.</string>
+    <string name="error_fast_not_in_progress">Este ayuno no está en curso.</string>
+    <string name="error_another_in_progress">Ya hay un ayuno en curso. Termínalo antes de empezar otro.</string>
+    <string name="error_fast_not_started">El ayuno aún no ha empezado.</string>
+    <string name="error_reason_required">Escribe el motivo.</string>
+    <string name="error_end_before_start">La hora de fin no puede ser antes del inicio del ayuno.</string>
+    <string name="error_end_in_future">La hora de fin no puede ser posterior a ahora.</string>
+    <string name="error_end_rule">Elige qué regla de alerta motivó el fin.</string>
+    <string name="error_end_detail">Escribe el motivo del fin.</string>
+    <string name="error_metric_inactive">Esta medición está desactivada en el catálogo.</string>
+    <string name="error_value_required">Escribe el valor o marca «No se hizo».</string>
+    <string name="error_value_and_not_done">Una medición no hecha no lleva valor.</string>
+    <string name="error_unit_not_allowed">Esa unidad no es válida para esta medición.</string>
+    <string name="error_source_required">Elige si la glucosa viene del sensor o del glucómetro.</string>
+    <string name="error_diastolic">La diastólica debe ser menor que la sistólica.</string>
+    <string name="error_paired">La toma de pie debe vincularse a una toma sentado de este ayuno.</string>
+    <string name="error_rule_metric">Elige la medición de la regla.</string>
+    <string name="error_rule_threshold">Escribe el valor de la regla.</string>
+    <string name="error_rule_bp_component">Elige qué valor de la presión se compara.</string>
+    <string name="error_rule_sustained">Los minutos deben ser mayores que cero.</string>
+    <string name="error_rule_message">Escribe el mensaje que verás cuando se cumpla.</string>
+    <string name="error_rule_unsupported">Este tipo de regla aún no está disponible.</string>
+    <string name="error_alert_decided">Esta alerta ya tiene una decisión.</string>
+
+    <!-- Plurales -->
+    <plurals name="hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">%d minuto</item>
+        <item quantity="other">%d minutos</item>
+    </plurals>
 </resources>

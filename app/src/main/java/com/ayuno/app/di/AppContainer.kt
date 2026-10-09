@@ -1,22 +1,69 @@
 package com.ayuno.app.di
 
 import android.content.Context
+import com.ayuno.app.reminders.ReminderScheduler
 import com.ayuno.data.db.AyunoDatabase
 import com.ayuno.data.db.AyunoDatabaseFactory
 import com.ayuno.data.db.RoomTransactionRunner
+import com.ayuno.data.repository.RoomAlertRepository
+import com.ayuno.data.repository.RoomAuditRepository
+import com.ayuno.data.repository.RoomCatalogRepository
+import com.ayuno.data.repository.RoomFastRepository
+import com.ayuno.data.repository.RoomRecordRepository
+import com.ayuno.data.repository.RoomTemplateRepository
+import com.ayuno.domain.port.AlertRepository
+import com.ayuno.domain.port.CatalogRepository
+import com.ayuno.domain.port.FastRepository
+import com.ayuno.domain.port.RecordRepository
+import com.ayuno.domain.port.TemplateRepository
 import com.ayuno.domain.port.TransactionRunner
+import com.ayuno.domain.usecase.CorrectClockStart
+import com.ayuno.domain.usecase.CreateFast
+import com.ayuno.domain.usecase.DecideAlert
+import com.ayuno.domain.usecase.EndFast
+import com.ayuno.domain.usecase.RecordBloodPressure
+import com.ayuno.domain.usecase.RecordMeasurement
+import com.ayuno.domain.usecase.RegisterLastMeal
+import com.ayuno.domain.usecase.SaveMetricType
+import com.ayuno.domain.usecase.SaveTemplate
+import com.ayuno.domain.usecase.SetMetricTypeActive
+import com.ayuno.domain.usecase.StartFast
 import java.time.Clock
 
 /**
  * Raíz de composición (ADR-009): único lugar de `:app` que conoce `:data`.
- * Todo se crea de forma perezosa: abrir la app no abre la base hasta que una pantalla la necesita.
+ * La base se abre de forma perezosa; las pruebas inyectan una base en memoria y un reloj controlado.
  */
-class AppContainer(context: Context) {
+class AppContainer(
+    context: Context,
+    val clock: Clock = Clock.systemDefaultZone(),
+    databaseProvider: ((Context, Clock) -> AyunoDatabase)? = null,
+) {
     private val appContext = context.applicationContext
 
-    val clock: Clock = Clock.systemDefaultZone()
+    val database: AyunoDatabase by lazy {
+        (databaseProvider ?: AyunoDatabaseFactory::create)(appContext, clock)
+    }
 
-    val database: AyunoDatabase by lazy { AyunoDatabaseFactory.create(appContext) }
+    val transactions: TransactionRunner by lazy { RoomTransactionRunner(database) }
+    val catalog: CatalogRepository by lazy { RoomCatalogRepository(database, appContext, clock) }
+    val templates: TemplateRepository by lazy { RoomTemplateRepository(database, clock) }
+    val fasts: FastRepository by lazy { RoomFastRepository(database, clock) }
+    val records: RecordRepository by lazy { RoomRecordRepository(database, clock) }
+    val alerts: AlertRepository by lazy { RoomAlertRepository(database, clock) }
+    private val audit by lazy { RoomAuditRepository(database, clock) }
 
-    val transactionRunner: TransactionRunner by lazy { RoomTransactionRunner(database) }
+    val saveMetricType by lazy { SaveMetricType(catalog) }
+    val setMetricTypeActive by lazy { SetMetricTypeActive(catalog) }
+    val saveTemplate by lazy { SaveTemplate(templates) }
+    val createFast by lazy { CreateFast(templates, fasts, transactions, clock) }
+    val startFast by lazy { StartFast(fasts, transactions, clock) }
+    val registerLastMeal by lazy { RegisterLastMeal(fasts, audit, transactions, clock) }
+    val correctClockStart by lazy { CorrectClockStart(fasts, audit, transactions, clock) }
+    val endFast by lazy { EndFast(fasts, transactions, clock) }
+    val recordMeasurement by lazy { RecordMeasurement(catalog, fasts, records, alerts, transactions, clock) }
+    val recordBloodPressure by lazy { RecordBloodPressure(catalog, fasts, records, alerts, transactions, clock) }
+    val decideAlert by lazy { DecideAlert(alerts) }
+
+    val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, clock) }
 }

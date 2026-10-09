@@ -100,7 +100,8 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 **Decisión.**
 - Cada recordatorio se programa con `AlarmManager.setAlarmClock()`, el tipo de alarma que Android no difiere en reposo profundo.
 - Permiso `USE_EXACT_ALARM` (Android 13+), concedido al instalar; `SCHEDULE_EXACT_ALARM` para Android 12; `POST_NOTIFICATIONS` pedido al crear el primer ayuno.
-- Un `ReminderScheduler` recalcula los próximos pendientes (derivados de horarios, productos, vuelta a comer y reglas) y mantiene programadas las alarmas de las próximas 48 horas; se reejecuta al guardar cualquier cambio de plan, al arrancar la app y ante `BOOT_COMPLETED`, `TIME_SET`, `TIMEZONE_CHANGED` y `MY_PACKAGE_REPLACED`.
+- Un `ReminderScheduler` recalcula los pendientes de las próximas 48 horas (derivados de horarios, productos, vuelta a comer y reglas) y mantiene programada **la siguiente** alarma; al sonar, notifica lo que vence y programa la siguiente. Se reejecuta al guardar cualquier cambio de plan o registro, al arrancar la app y ante `BOOT_COMPLETED`, `TIME_SET`, `TIMEZONE_CHANGED`, `MY_PACKAGE_REPLACED` y el cambio de permiso de alarmas exactas.
+- *Enmienda de construcción (2026-10-08):* se programa solo la siguiente alarma en lugar de todas las de 48 h. Una sola alarma con un `PendingIntent` fijo no necesita guardar ni cancelar listas de alarmas, y reprogramar es idempotente. Riesgo: si la cadena se rompe, se recupera en el siguiente arranque, reinicio o cambio de hora.
 - El silencio nocturno se aplica al programar: los pendientes que caen en él no se programan, salvo los de reglas.
 - Notificaciones con acciones directas (anotar, posponer 10/30, no se hizo); canal de alta importancia para recordatorios y otro para alertas.
 

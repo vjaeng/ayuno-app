@@ -154,6 +154,11 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-08 | Datos precargados en assets, textos en recursos | ADR-008 |
 | 2026-10-08 | Inyección manual | ADR-009 |
 | 2026-10-08 | Seguridad: cifrado, bloqueo, exportación, sin red, copia cifrada, importación | ADR-SEG-001 a 006 |
+| 2026-10-08 | Construcción: solo la siguiente alarma programada (enmienda de ADR-005) | ADR-005 |
+| 2026-10-08 | Construcción: integridad de propietario de plan con triggers SQLite creados en `onCreate` (Room no declara CHECK) | ADR-003 |
+| 2026-10-08 | Construcción: `RuleValidator` solo acepta condiciones y acciones ya construidas; el motor ya soporta los filtros de H-024 | ADR-006 |
+| 2026-10-08 | Construcción: el origen de la glucosa viene preseleccionado en «Sensor continuo» (wireframe de UX) para cumplir los 3 toques de H-008 | — |
+| 2026-10-08 | Construcción: kotlinx-serialization 1.7.3 en `:data` (datos precargados; formato de intercambio, ADR-007) | ADR-008 |
 
 ## 7. Versiones y dependencias
 
@@ -178,6 +183,7 @@ Se eligieron las versiones ya presentes en la caché local del equipo de desarro
 | Room (runtime, ktx, compiler por KSP) | 2.6.1 | Persistencia (ADR-003) |
 | AndroidX SQLite | 2.4.0 | Requerido por SQLCipher |
 | SQLCipher for Android | 4.6.1 | Cifrado en reposo (ADR-SEG-001) |
+| kotlinx-serialization-json | 1.7.3 | Lectura de datos precargados y formato de intercambio (ADR-007, ADR-008) |
 | kotlinx-coroutines | 1.9.0 | Asincronía |
 
 **Solo pruebas:** JUnit 5.11.3 (`:domain`), JUnit 4.13.2, Robolectric 4.14.1, AndroidX Test, Room testing, Compose UI Test.
