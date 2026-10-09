@@ -70,6 +70,7 @@ data class HomeActions(
     val onNewFast: () -> Unit,
     val onRecord: (fastId: String) -> Unit,
     val onRecordMetric: (fastId: String, metricCode: String, scheduledFor: LocalDateTime) -> Unit,
+    val onRecordProduct: (fastId: String, scheduledFor: LocalDateTime) -> Unit,
     val onSafety: () -> Unit,
     val onEndFast: (fastId: String) -> Unit,
     val onAlert: (alertId: String) -> Unit,
@@ -132,6 +133,7 @@ private fun IdleContent(state: HomeUiState.Idle, viewModel: HomeViewModel, actio
         fast.lastMealActual?.let { Text(stringResource(R.string.home_last_meal_actual, Formats.dateTime(it)), style = MaterialTheme.typography.bodyLarge) }
         Text(stringResource(R.string.home_clock_planned, Formats.dateTime(fast.clockStartPlanned)), style = MaterialTheme.typography.bodyLarge)
         Text(stringResource(R.string.home_target, Formats.number(fast.targetHours)), style = MaterialTheme.typography.bodyLarge)
+        if (state.checklist.isNotEmpty()) Checklist(fast.id, state.checklist, viewModel)
         LastMealButton(fast, viewModel)
         PrimaryButton(stringResource(R.string.home_start_now), onClick = { viewModel.startFast(fast.id) })
     }
@@ -198,15 +200,23 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
         }
     }
     if (showDetail) ClockDetail(state.fast, viewModel, actions)
+    state.notices.forEach { InfoBanner(it) }
     Milestones(state.milestones)
 
     state.next?.let { next ->
         SectionTitle(stringResource(R.string.home_next_pending))
         com.ayuno.app.ui.components.ListRow(
-            title = next.metricName,
+            title = next.label,
             supporting = stringResource(if (next.late) R.string.pending_late_at else R.string.pending_at, Formats.dateTime(next.at)),
-            onClick = { actions.onRecordMetric(state.fast.id, next.metricCode, next.at) },
+            onClick = {
+                if (next.kind == com.ayuno.domain.derived.PendingKind.PRODUCT) actions.onRecordProduct(state.fast.id, next.at)
+                else actions.onRecordMetric(state.fast.id, next.code, next.at)
+            },
         )
+    }
+    if (state.totals.isNotEmpty()) {
+        SectionTitle(stringResource(R.string.home_today_totals))
+        state.totals.forEach { Text(totalText(it), style = MaterialTheme.typography.bodyLarge) }
     }
     state.last?.let { last ->
         SectionTitle(stringResource(R.string.home_last_measurement))
@@ -267,6 +277,28 @@ private fun Milestones(milestones: List<Milestone>) {
                 Text(label, style = MaterialTheme.typography.bodyLarge)
             }
         }
+    }
+}
+
+/** «Sal: llevas 5 de 4 g · sodio 1,97 g», sin colores de juicio (H-012). */
+@Composable
+fun totalText(total: com.ayuno.domain.derived.DailyTotal): String {
+    val type = total.intakeType
+    val goal = total.goal
+    val reached = com.ayuno.domain.derived.DailyTotals.amountForGoal(total)
+    val main = if (goal != null && reached != null) {
+        stringResource(R.string.total_with_goal, type.name, Formats.number(reached, 2), Formats.number(goal.dailyAmount, 2), goal.unit)
+    } else {
+        stringResource(R.string.total_without_goal, type.name, Formats.number(total.amount, 2), type.unit)
+    }
+    return total.sodium?.let { main + stringResource(R.string.total_sodium, Formats.number(it, 2)) } ?: main
+}
+
+@Composable
+private fun Checklist(fastId: String, items: List<com.ayuno.domain.model.ChecklistItem>, viewModel: HomeViewModel) {
+    SectionTitle(stringResource(R.string.home_checklist, items.count { it.isChecked }, items.size))
+    items.forEach { item ->
+        com.ayuno.app.ui.components.CheckRow(item.text, item.isChecked) { viewModel.setChecklistItem(fastId, item.id, it) }
     }
 }
 

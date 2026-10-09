@@ -35,6 +35,17 @@ import androidx.navigation.navArgument
 import com.ayuno.app.R
 import com.ayuno.app.ui.catalog.MetricCatalogScreen
 import com.ayuno.app.ui.catalog.MetricTypeEditorScreen
+import com.ayuno.app.ui.catalog.CatalogsScreen
+import com.ayuno.app.ui.catalog.IntakeCatalogScreen
+import com.ayuno.app.ui.catalog.IntakeEditorScreen
+import com.ayuno.app.ui.catalog.ProductCatalogScreen
+import com.ayuno.app.ui.catalog.ProductEditorScreen
+import com.ayuno.app.ui.catalog.SymptomCatalogScreen
+import com.ayuno.app.ui.catalog.SymptomEditorScreen
+import com.ayuno.app.ui.record.IntakeFormScreen
+import com.ayuno.app.ui.record.NoteFormScreen
+import com.ayuno.app.ui.record.ProductFormScreen
+import com.ayuno.app.ui.record.SymptomFormScreen
 import com.ayuno.app.ui.fast.CreateFastScreen
 import com.ayuno.app.ui.fast.EndFastScreen
 import com.ayuno.app.ui.home.HomeActions
@@ -61,15 +72,30 @@ enum class TopLevelDestination(val route: String, @StringRes val label: Int, val
     MORE("more", R.string.tab_more, Icons.Filled.Menu),
 }
 
-/** Formulario a abrir desde una notificación de recordatorio. */
-data class RecordRequest(val fastId: String, val metricCode: String, val scheduledFor: LocalDateTime)
+/** Pantalla a abrir desde una notificación. */
+sealed interface DeepLink {
+    data class Record(val fastId: String, val metricCode: String, val scheduledFor: LocalDateTime) : DeepLink
+    data class Product(val fastId: String, val scheduledFor: LocalDateTime) : DeepLink
+    data class OpenAlert(val alertId: String) : DeepLink
+}
 
 private object Routes {
     const val NEW_FAST = "fast/new"
     const val RECORD = "record/{fastId}"
     const val MEASURE = "measure/{fastId}/{metric}?scheduledFor={scheduledFor}"
     const val ALERT = "alert/{alertId}"
-    const val END = "end/{fastId}?ruleId={ruleId}"
+    const val END = "end/{fastId}?ruleId={ruleId}&endAt={endAt}"
+    const val SYMPTOM = "symptom/{fastId}"
+    const val INTAKE = "intake/{fastId}"
+    const val PRODUCT = "product/{fastId}?scheduledFor={scheduledFor}"
+    const val NOTE = "note/{fastId}"
+    const val CATALOGS = "catalogs"
+    const val SYMPTOMS = "catalog/symptoms"
+    const val SYMPTOM_EDIT = "catalog/symptom?code={code}"
+    const val INTAKES = "catalog/intakes"
+    const val INTAKE_EDIT = "catalog/intake?code={code}"
+    const val PRODUCTS = "catalog/products"
+    const val PRODUCT_EDIT = "catalog/product?code={code}"
     const val SAFETY = "safety"
     const val TEMPLATES = "templates"
     const val TEMPLATE = "template?id={id}"
@@ -80,7 +106,11 @@ private object Routes {
     fun measure(fastId: String, metric: String, scheduledFor: LocalDateTime?) =
         "measure/$fastId/$metric" + (scheduledFor?.let { "?scheduledFor=" + Uri.encode(LocalTimes.format(it)) } ?: "")
     fun alert(id: String) = "alert/$id"
-    fun end(fastId: String, ruleId: String? = null) = "end/$fastId" + (ruleId?.let { "?ruleId=$it" } ?: "")
+    fun end(fastId: String, ruleId: String? = null, endAt: LocalDateTime? = null) = "end/$fastId?" +
+        listOfNotNull(ruleId?.let { "ruleId=$it" }, endAt?.let { "endAt=" + Uri.encode(LocalTimes.format(it)) }).joinToString("&")
+    fun product(fastId: String, scheduledFor: LocalDateTime?) =
+        "product/$fastId" + (scheduledFor?.let { "?scheduledFor=" + Uri.encode(LocalTimes.format(it)) } ?: "")
+    fun catalogEdit(base: String, code: String?) = base + (code?.let { "?code=$it" } ?: "")
     fun template(id: String?) = "template" + (id?.let { "?id=$it" } ?: "")
     fun metric(code: String?) = "catalog/metric" + (code?.let { "?code=$it" } ?: "")
 }
@@ -88,18 +118,22 @@ private object Routes {
 private fun optional(name: String) = navArgument(name) { type = NavType.StringType; nullable = true; defaultValue = null }
 
 @Composable
-fun AyunoApp(recordRequest: RecordRequest? = null, onRecordRequestHandled: () -> Unit = {}) {
+fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val showTabs = TopLevelDestination.entries.any { tab -> currentDestination?.hierarchy?.any { it.route == tab.route } == true }
 
-    LaunchedEffect(recordRequest) {
-        recordRequest?.let {
-            navController.navigate(Routes.measure(it.fastId, it.metricCode, it.scheduledFor))
-            onRecordRequestHandled()
+    LaunchedEffect(deepLink) {
+        when (val link = deepLink) {
+            is DeepLink.Record -> navController.navigate(Routes.measure(link.fastId, link.metricCode, link.scheduledFor))
+            is DeepLink.Product -> navController.navigate(Routes.product(link.fastId, link.scheduledFor))
+            is DeepLink.OpenAlert -> navController.navigate(Routes.alert(link.alertId))
+            null -> return@LaunchedEffect
         }
+        onDeepLinkHandled()
     }
+    val backHome: () -> Unit = { navController.popBackStack(TopLevelDestination.HOME.route, inclusive = false) }
 
     val afterSaving: (List<Alert>) -> Unit = { alerts ->
         if (alerts.isNotEmpty()) {
@@ -132,6 +166,7 @@ fun AyunoApp(recordRequest: RecordRequest? = null, onRecordRequestHandled: () ->
                         onNewFast = { navController.navigate(Routes.NEW_FAST) },
                         onRecord = { navController.navigate(Routes.record(it)) },
                         onRecordMetric = { fastId, metric, at -> navController.navigate(Routes.measure(fastId, metric, at)) },
+                        onRecordProduct = { fastId, at -> navController.navigate(Routes.product(fastId, at)) },
                         onSafety = { navController.navigate(Routes.SAFETY) },
                         onEndFast = { navController.navigate(Routes.end(it)) },
                         onAlert = { navController.navigate(Routes.alert(it)) },
@@ -141,16 +176,22 @@ fun AyunoApp(recordRequest: RecordRequest? = null, onRecordRequestHandled: () ->
             composable(TopLevelDestination.TODAY.route) { PendingSection(stringResource(R.string.tab_today)) }
             composable(TopLevelDestination.HISTORY.route) { PendingSection(stringResource(R.string.tab_history)) }
             composable(TopLevelDestination.MORE.route) {
-                MoreScreen(onTemplates = { navController.navigate(Routes.TEMPLATES) }, onMetricCatalog = { navController.navigate(Routes.METRICS) })
+                MoreScreen(onTemplates = { navController.navigate(Routes.TEMPLATES) }, onCatalogs = { navController.navigate(Routes.CATALOGS) })
             }
             composable(Routes.NEW_FAST) {
                 CreateFastScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
             }
             composable(Routes.RECORD) { entry ->
                 val fastId = entry.arguments?.getString("fastId")!!
-                RecordGridScreen(fastId, onBack = { navController.popBackStack() }) { type ->
-                    navController.navigate(Routes.measure(fastId, type.code, null))
-                }
+                RecordGridScreen(
+                    fastId,
+                    onBack = { navController.popBackStack() },
+                    onSelect = { type -> navController.navigate(Routes.measure(fastId, type.code, null)) },
+                    onSymptom = { navController.navigate("symptom/$fastId") },
+                    onIntake = { navController.navigate("intake/$fastId") },
+                    onProduct = { navController.navigate(Routes.product(fastId, null)) },
+                    onNote = { navController.navigate("note/$fastId") },
+                )
             }
             composable(Routes.MEASURE, arguments = listOf(optional("scheduledFor"))) { entry ->
                 val fastId = entry.arguments?.getString("fastId")!!
@@ -169,16 +210,56 @@ fun AyunoApp(recordRequest: RecordRequest? = null, onRecordRequestHandled: () ->
                     onContinue = { navController.popBackStack(TopLevelDestination.HOME.route, inclusive = false) },
                 )
             }
-            composable(Routes.END, arguments = listOf(optional("ruleId"))) { entry ->
+            composable(Routes.SYMPTOM) { entry ->
+                SymptomFormScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }, onSaved = afterSaving)
+            }
+            composable(Routes.INTAKE) { entry ->
+                val fastId = entry.arguments?.getString("fastId")!!
+                IntakeFormScreen(fastId, onBack = { navController.popBackStack() }) { alerts, endAt ->
+                    if (endAt != null) navController.navigate(Routes.end(fastId, endAt = endAt)) { popUpTo(TopLevelDestination.HOME.route) } else afterSaving(alerts)
+                }
+            }
+            composable(Routes.PRODUCT, arguments = listOf(optional("scheduledFor"))) { entry ->
+                ProductFormScreen(
+                    entry.arguments?.getString("fastId")!!,
+                    entry.arguments?.getString("scheduledFor")?.let { LocalTimes.parse(it) },
+                    onBack = { navController.popBackStack() },
+                    onSaved = backHome,
+                )
+            }
+            composable(Routes.NOTE) { entry ->
+                NoteFormScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }, onSaved = backHome)
+            }
+            composable(Routes.CATALOGS) {
+                CatalogsScreen(
+                    onBack = { navController.popBackStack() },
+                    onMetrics = { navController.navigate(Routes.METRICS) },
+                    onSymptoms = { navController.navigate(Routes.SYMPTOMS) },
+                    onIntakes = { navController.navigate(Routes.INTAKES) },
+                    onProducts = { navController.navigate(Routes.PRODUCTS) },
+                )
+            }
+            composable(Routes.SYMPTOMS) { SymptomCatalogScreen({ navController.popBackStack() }) { navController.navigate(Routes.catalogEdit("catalog/symptom", it)) } }
+            composable(Routes.SYMPTOM_EDIT, arguments = listOf(optional("code"))) { SymptomEditorScreen(it.arguments?.getString("code")) { navController.popBackStack() } }
+            composable(Routes.INTAKES) { IntakeCatalogScreen({ navController.popBackStack() }) { navController.navigate(Routes.catalogEdit("catalog/intake", it)) } }
+            composable(Routes.INTAKE_EDIT, arguments = listOf(optional("code"))) { IntakeEditorScreen(it.arguments?.getString("code")) { navController.popBackStack() } }
+            composable(Routes.PRODUCTS) { ProductCatalogScreen({ navController.popBackStack() }) { navController.navigate(Routes.catalogEdit("catalog/product", it)) } }
+            composable(Routes.PRODUCT_EDIT, arguments = listOf(optional("code"))) { ProductEditorScreen(it.arguments?.getString("code")) { navController.popBackStack() } }
+            composable(Routes.END, arguments = listOf(optional("ruleId"), optional("endAt"))) { entry ->
                 EndFastScreen(
                     fastId = entry.arguments?.getString("fastId")!!,
                     ruleId = entry.arguments?.getString("ruleId"),
+                    endAt = entry.arguments?.getString("endAt")?.let { LocalTimes.parse(it) },
                     onBack = { navController.popBackStack() },
                     onDone = { navController.popBackStack(TopLevelDestination.HOME.route, inclusive = false) },
                 )
             }
             composable(Routes.SAFETY) {
-                SafetyScreen(onBack = { navController.popBackStack() }, onEndFast = { navController.navigate(Routes.end(it)) })
+                SafetyScreen(
+                    onBack = { navController.popBackStack() },
+                    onEndFast = { navController.navigate(Routes.end(it)) },
+                    onAlert = { navController.navigate(Routes.alert(it)) },
+                )
             }
             composable(Routes.TEMPLATES) {
                 TemplateListScreen(onBack = { navController.popBackStack() }, onEdit = { navController.navigate(Routes.template(it)) })

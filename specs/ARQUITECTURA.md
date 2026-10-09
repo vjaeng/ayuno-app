@@ -159,6 +159,9 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-08 | Construcción: `RuleValidator` solo acepta condiciones y acciones ya construidas; el motor ya soporta los filtros de H-024 | ADR-006 |
 | 2026-10-08 | Construcción: el origen de la glucosa viene preseleccionado en «Sensor continuo» (wireframe de UX) para cumplir los 3 toques de H-008 | — |
 | 2026-10-08 | Construcción: kotlinx-serialization 1.7.3 en `:data` (datos precargados; formato de intercambio, ADR-007) | ADR-008 |
+| 2026-10-08 | Tanda 2a: «algo no va bien» sin regla manual crea en el plan del ayuno una regla manual con el texto neutro de la app, en la misma transacción que la alerta (decisión de UX aceptada + H-027: toda alerta queda registrada) | ADR-006 |
+| 2026-10-08 | Tanda 2a: las reglas se evalúan en cada alarma (pendientes y horas de comprobación de reglas de ingesta) además de al guardar (H-019, H-022) | ADR-005, ADR-006 |
+| 2026-10-08 | Tanda 2a: en el editor de productos, la dosis de cada horario es la dosis habitual; el modelo admite dosis distintas por horario (editable en una evolución si hace falta) | — |
 
 ## 7. Versiones y dependencias
 

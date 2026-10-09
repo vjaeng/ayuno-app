@@ -8,8 +8,11 @@ import android.os.Build
 import com.ayuno.app.MainActivity
 import com.ayuno.domain.derived.Pending
 import com.ayuno.domain.derived.PendingItem
+import com.ayuno.domain.derived.PendingRecords
 import com.ayuno.domain.derived.PendingState
+import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.FastWithPlan
+import com.ayuno.domain.model.RuleConditionKind
 import com.ayuno.domain.port.CatalogRepository
 import com.ayuno.domain.port.FastRepository
 import com.ayuno.domain.port.RecordRepository
@@ -21,9 +24,9 @@ import java.time.LocalDateTime
 data class DueReminder(val fastId: String, val item: PendingItem)
 
 /**
- * Programa los recordatorios con alarmas de despertador del sistema (ADR-005). Mantiene programada solo la
- * **siguiente** alarma; al sonar, notifica lo que vence a esa hora y programa la siguiente. Se vuelve a calcular
- * al abrir la app, tras cada cambio de plan o registro, al reiniciar el teléfono y al cambiar la hora o la zona.
+ * Programa los recordatorios con alarmas de despertador del sistema (ADR-005, enmienda: solo la **siguiente**).
+ * Los puntos de alarma son los pendientes (mediciones y tomas) y las horas de comprobación de las reglas de
+ * ingesta (H-022); en cada alarma se notifica lo que vence y se evalúan las reglas del ayuno en curso (H-019).
  */
 class ReminderScheduler(
     private val context: Context,
@@ -34,29 +37,38 @@ class ReminderScheduler(
 ) {
     private val alarms get() = context.getSystemService(AlarmManager::class.java)
 
-    /** Recordatorios pendientes en las próximas [HORIZON_HOURS] horas, en orden. */
+    /** Pendientes sin hacer en las próximas [HORIZON_HOURS] horas, en orden. */
     suspend fun upcoming(from: LocalDateTime = LocalTimes.now(clock)): List<DueReminder> {
         val active = catalog.metricTypes().filter { it.active }.map { it.code }.toSet()
+        val products = catalog.products()
         val to = from.plusHours(HORIZON_HOURS)
         return sources().flatMap { source ->
-            val measurements = records.measurements(source.fast.id)
-            val readings = records.bloodPressure(source.fast.id)
-            Pending.items(source, active, from, to)
-                .filter { Pending.status(it, from, measurements, readings).state == PendingState.PENDING }
+            val pending = PendingRecords(
+                records.measurements(source.fast.id), records.bloodPressure(source.fast.id), records.productLogs(source.fast.id),
+            )
+            Pending.items(source, active, products, from, to)
+                .filter { Pending.status(it, from, pending).state == PendingState.PENDING }
                 .map { DueReminder(source.fast.id, it) }
         }.sortedBy { it.item.scheduledAt }
     }
 
+    /** Horas de comprobación de reglas de ingesta del ayuno en curso. */
+    private suspend fun ruleCheckPoints(from: LocalDateTime): List<LocalDateTime> {
+        val current = fasts.all().firstOrNull { it.status == FastStatus.IN_PROGRESS } ?: return emptyList()
+        val rules = fasts.get(current.id)?.plan?.rules.orEmpty().filter { it.active && it.conditionKind == RuleConditionKind.INTAKE_BELOW_GOAL }
+        return rules.mapNotNull { it.checkTime }.flatMap { t -> listOf(from.toLocalDate().atTime(t), from.toLocalDate().plusDays(1).atTime(t)) }
+            .filter { it.isAfter(from) }
+    }
+
     suspend fun reschedule() {
-        val now = LocalTimes.now(clock)
-        val next = upcoming(now.plusSeconds(1)).firstOrNull()
+        val from = LocalTimes.now(clock).plusSeconds(1)
+        val next = (upcoming(from).map { it.item.scheduledAt } + ruleCheckPoints(from)).minOrNull()
         if (next == null) {
             alarms.cancel(operation(null))
             return
         }
-        val at = next.item.scheduledAt
-        val triggerMillis = at.atZone(clock.zone).toInstant().toEpochMilli()
-        val operation = operation(at)
+        val triggerMillis = next.atZone(clock.zone).toInstant().toEpochMilli()
+        val operation = operation(next)
         if (canScheduleExact()) {
             val show = PendingIntent.getActivity(context, SHOW_REQUEST, Intent(context, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
             alarms.setAlarmClock(AlarmManager.AlarmClockInfo(triggerMillis, show), operation)
@@ -66,7 +78,7 @@ class ReminderScheduler(
         }
     }
 
-    /** Lo que vence exactamente a [at] y sigue sin anotarse. */
+    /** Lo que vence exactamente a [at] y sigue sin hacerse. */
     suspend fun dueAt(at: LocalDateTime): List<DueReminder> = upcoming(at).filter { it.item.scheduledAt == at }
 
     fun canScheduleExact(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarms.canScheduleExactAlarms()

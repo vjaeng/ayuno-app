@@ -57,7 +57,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-data class AlertDetails(val alert: Alert, val rule: Rule, val triggers: List<String>, val types: List<MetricType>)
+data class AlertDetails(
+    val alert: Alert,
+    val rule: Rule,
+    val triggers: List<String>,
+    val types: List<MetricType>,
+    val symptomTypes: List<com.ayuno.domain.model.SymptomType>,
+    val intakeTypes: List<com.ayuno.domain.model.IntakeType>,
+)
 
 class AlertViewModel(private val container: AppContainer, private val alertId: String) : ViewModel() {
     private val _details = MutableStateFlow<AlertDetails?>(null)
@@ -74,11 +81,17 @@ class AlertViewModel(private val container: AppContainer, private val alertId: S
             val names = types.associate { it.code to it.name }
             val measurements = container.records.measurements(alert.fastId).associateBy { it.id }
             val readings = container.records.bloodPressure(alert.fastId).associateBy { it.id }
+            val symptomTypes = container.catalog.symptomTypes()
+            val intakeTypes = container.catalog.intakeTypes()
+            val symptoms = container.records.symptoms(alert.fastId).associateBy { it.id }
+            val intakes = container.records.intakes(alert.fastId).associateBy { it.id }
             val triggers = alert.triggerEntryIds.mapNotNull { id ->
                 measurements[id]?.let { "${names[it.metricTypeCode]} ${it.valueEntered?.let(Formats::number) ?: ""} ${it.unitEntered.orEmpty()} · ${Formats.time(it.takenAt)}" }
                     ?: readings[id]?.let { "${names[MetricType.BLOOD_PRESSURE_CODE]} ${it.systolic}/${it.diastolic} · ${Formats.time(it.takenAt)}" }
+                    ?: symptoms[id]?.let { s -> "${symptomTypes.firstOrNull { it.code == s.symptomTypeCode }?.name} ${s.severity}/10 · ${Formats.time(s.takenAt)}" }
+                    ?: intakes[id]?.let { i -> "${intakeTypes.firstOrNull { it.code == i.intakeTypeCode }?.name} ${Formats.number(i.amount)} ${i.unit} · ${Formats.time(i.takenAt)}" }
             }
-            _details.value = AlertDetails(alert, rule, triggers, types)
+            _details.value = AlertDetails(alert, rule, triggers, types, symptomTypes, intakeTypes)
         }
     }
 
@@ -123,7 +136,7 @@ fun AlertScreen(alertId: String, onEndFast: (fastId: String, ruleId: String) -> 
                 style = MaterialTheme.typography.titleLarge,
             )
             Text(d.rule.message, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive })
-            Text(RuleSentences.describe(context, d.rule, d.types), style = MaterialTheme.typography.bodyLarge)
+            Text(RuleSentences.describe(context, d.rule, d.types, d.symptomTypes, d.intakeTypes), style = MaterialTheme.typography.bodyLarge)
             if (d.triggers.isNotEmpty()) Text(stringResource(R.string.alert_triggers, d.triggers.joinToString(" · ")), style = MaterialTheme.typography.bodyLarge)
 
             val endButton: @Composable () -> Unit = {

@@ -13,7 +13,13 @@ import com.ayuno.domain.model.RuleLevel
 
 /** Una regla como frase completa en lenguaje llano (H-028): la misma en Seguridad y en la vista previa del editor. */
 object RuleSentences {
-    fun describe(context: Context, rule: Rule, types: List<MetricType>): String {
+    fun describe(
+        context: Context,
+        rule: Rule,
+        types: List<MetricType>,
+        symptoms: List<com.ayuno.domain.model.SymptomType> = emptyList(),
+        intakes: List<com.ayuno.domain.model.IntakeType> = emptyList(),
+    ): String {
         val type = types.firstOrNull { it.code == rule.metricTypeCode }
         val subject = when {
             type?.isBloodPressure == true -> context.getString(
@@ -36,7 +42,15 @@ object RuleSentences {
         val condition = when (rule.conditionKind) {
             RuleConditionKind.METRIC_BELOW -> context.getString(R.string.sentence_below, subject, threshold, unit)
             RuleConditionKind.METRIC_ABOVE -> context.getString(R.string.sentence_above, subject, threshold, unit)
-            else -> rule.name
+            RuleConditionKind.ALARM_SYMPTOM -> symptoms.firstOrNull { it.code == rule.symptomTypeCode }
+                ?.let { context.getString(R.string.sentence_symptom, it.name.lowercase()) }
+                ?: context.getString(R.string.sentence_any_alarm_symptom)
+            RuleConditionKind.INTAKE_BELOW_GOAL -> context.getString(
+                R.string.sentence_intake,
+                rule.checkTime?.let { com.ayuno.app.ui.format.Formats.time(it) }.orEmpty(),
+                intakes.firstOrNull { it.code == rule.intakeTypeCode }?.name?.lowercase() ?: rule.intakeTypeCode.orEmpty(),
+            )
+            RuleConditionKind.MANUAL -> context.getString(R.string.sentence_manual)
         }.trim()
         val sustained = rule.sustainedMinutes?.let { context.getString(R.string.sentence_sustained, context.resources.getQuantityString(R.plurals.minutes, it, it)) }.orEmpty()
         val waking = if (rule.filterOnWaking) context.getString(R.string.sentence_on_waking) else ""

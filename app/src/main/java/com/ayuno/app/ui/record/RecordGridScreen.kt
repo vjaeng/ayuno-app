@@ -47,15 +47,33 @@ class RecordGridViewModel(container: AppContainer, fastId: String) : ViewModel()
 /** H-008: rejilla de botones grandes con las mediciones activas. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecordGridScreen(fastId: String, onBack: () -> Unit, onSelect: (MetricType) -> Unit) {
+fun RecordGridScreen(
+    fastId: String,
+    onBack: () -> Unit,
+    onSelect: (MetricType) -> Unit,
+    onSymptom: () -> Unit,
+    onIntake: () -> Unit,
+    onProduct: () -> Unit,
+    onNote: () -> Unit,
+) {
     val viewModel: RecordGridViewModel = viewModel(factory = containerFactory { RecordGridViewModel(it, fastId) })
     val metrics by viewModel.metrics.collectAsStateWithLifecycle()
     ScreenScaffold(stringResource(R.string.record_title), onBack) {
         when (val list = metrics) {
             null -> LoadingState()
-            emptyList<MetricType>() -> EmptyState(stringResource(R.string.record_empty))
-            else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceM), verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
-                list.forEach { type -> Tile(type.name) { onSelect(type) } }
+            else -> {
+                // Mediciones y otros registros en bloques separados (Miller, UX-UI registro-anotar).
+                if (list.isEmpty()) EmptyState(stringResource(R.string.record_empty))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceM), verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
+                    list.forEach { type -> Tile(type.name) { onSelect(type) } }
+                }
+                com.ayuno.app.ui.components.SectionTitle(stringResource(R.string.record_other))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceM), verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
+                    Tile(stringResource(R.string.record_symptom), onSymptom)
+                    Tile(stringResource(R.string.record_intake), onIntake)
+                    Tile(stringResource(R.string.record_product), onProduct)
+                    Tile(stringResource(R.string.record_note), onNote)
+                }
             }
         }
     }

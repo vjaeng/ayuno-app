@@ -147,4 +147,7 @@ fun stageName(kind: StageKind): String = stringResource(
     },
 )
 
+@Composable
+fun stageNameText(kind: StageKind): String = stageName(kind)
+
 private const val FROM_SCRATCH = "__scratch__"

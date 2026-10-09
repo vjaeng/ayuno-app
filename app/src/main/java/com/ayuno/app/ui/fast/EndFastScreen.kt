@@ -66,13 +66,14 @@ class EndFastViewModel(private val container: AppContainer, fastId: String) : Vi
 
 /** H-030: terminar con hora real y motivo obligatorio; el resultado se muestra sin juicio. */
 @Composable
-fun EndFastScreen(fastId: String, ruleId: String?, onBack: () -> Unit, onDone: () -> Unit) {
+fun EndFastScreen(fastId: String, ruleId: String?, endAt: LocalDateTime? = null, onBack: () -> Unit, onDone: () -> Unit) {
     val viewModel: EndFastViewModel = viewModel(key = fastId, factory = containerFactory { EndFastViewModel(it, fastId) })
     val source by viewModel.source.collectAsStateWithLifecycle()
     val ended by viewModel.ended.collectAsStateWithLifecycle()
     val errors by viewModel.errors.collectAsStateWithLifecycle()
 
-    var endAt by remember { mutableStateOf(viewModel.now()) }
+    // Desde una ingesta que rompe el ayuno, la hora de fin propuesta es la de esa ingesta (UX fin-terminar).
+    var endAt by remember { mutableStateOf(endAt ?: viewModel.now()) }
     var reason by remember { mutableStateOf(if (ruleId != null) EndReason.ALERT_RULE else null) }
     var selectedRule by remember { mutableStateOf(ruleId) }
     var detail by remember { mutableStateOf("") }

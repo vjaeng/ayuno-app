@@ -74,7 +74,7 @@ class PlanAndCatalogE2eTest {
 
     @Test
     fun `H007 desactivar un tipo del catalogo y anadir una medicion propia`() {
-        compose.tap("Más"); compose.tap("Mediciones")
+        compose.tap("Más"); compose.tap("Catálogos"); compose.tap("Mediciones")
         compose.assertShown("Presión arterial")
         compose.onAllNodes(androidx.compose.ui.test.isToggleable())[1].performClick()
         compose.waitForIdle()

@@ -181,7 +181,6 @@
 
     <!-- Más, plantillas, catálogo -->
     <string name="more_templates_hint">Planes reutilizables: etapas, mediciones y reglas</string>
-    <string name="more_metrics_hint">Qué se puede medir y con qué unidades</string>
     <string name="templates_title">Plantillas</string>
     <string name="templates_empty">Aún no tienes plantillas.</string>
     <string name="templates_create">Crear plantilla</string>
@@ -262,4 +261,114 @@
         <item quantity="one">%d minuto</item>
         <item quantity="other">%d minutos</item>
     </plurals>
+    <!-- Tanda 2a -->
+    <string name="catalogs_title">Catálogos</string>
+    <string name="more_catalogs_hint">Mediciones, síntomas, líquidos y productos</string>
+    <string name="catalog_symptoms_title">Síntomas</string>
+    <string name="catalog_intakes_title">Líquidos y electrolitos</string>
+    <string name="catalog_products_title">Suplementos y medicamentos</string>
+    <string name="catalog_symptom">Síntoma</string>
+    <string name="catalog_intake">Líquido o electrolito</string>
+    <string name="catalog_product">Producto</string>
+    <string name="catalog_add_symptom">Añadir un síntoma</string>
+    <string name="catalog_add_intake">Añadir un tipo</string>
+    <string name="catalog_add_product">Añadir un producto</string>
+    <string name="channel_alerts">Avisos y alertas</string>
+    <string name="channel_alerts_description">Cuando se cumple una de tus reglas</string>
+    <string name="notification_alert_title">Alerta del ayuno</string>
+    <string name="notification_notice_title">Aviso del ayuno</string>
+    <string name="notification_product_title">Toca tomar: %1$s</string>
+    <string name="notification_public_alert">Tienes un aviso del ayuno</string>
+
+    <string name="record_other">Otros registros</string>
+    <string name="record_symptom">Síntoma</string>
+    <string name="record_intake">Líquido</string>
+    <string name="record_product">Producto</string>
+    <string name="record_note">Nota</string>
+    <string name="symptom_empty">No hay síntomas activos en el catálogo. Actívalos en Más → Catálogos.</string>
+    <string name="symptom_alarm_group">De alarma</string>
+    <string name="symptom_other_group">Otros</string>
+    <string name="symptom_intensity">Intensidad: %1$d de 10</string>
+    <string name="intake_sodium">Sodio: %1$s g</string>
+    <string name="intake_breaks_fast">Rompe el ayuno</string>
+    <string name="intake_breaks_title">Anotaste %1$s. ¿Estás terminando el ayuno?</string>
+    <string name="intake_breaks_yes">Sí, terminar</string>
+    <string name="intake_breaks_no">No, sigo</string>
+    <string name="product_empty">No hay productos en tu lista. Añádelos en Más → Catálogos.</string>
+    <string name="product_pending_at">Toca a las %1$s · %2$s %3$s</string>
+    <string name="product_stops">Sale durante el ayuno</string>
+    <string name="product_stops_hint">Este producto no se toma durante el ayuno.</string>
+    <string name="product_avoid">A evitar</string>
+    <string name="product_avoid_title">Producto a evitar</string>
+    <string name="product_avoid_text">Marcaste %1$s como a evitar. Puedes anotarlo igual.</string>
+    <string name="product_record_anyway">Anotar igual</string>
+    <string name="product_planned">Dosis prevista: %1$s %2$s</string>
+    <string name="product_taken">Tomado</string>
+    <string name="product_not_taken">No tomado</string>
+    <string name="product_other_dose">Otra dosis</string>
+    <string name="product_schedules">Horarios</string>
+    <string name="product_code_hint">Código interno para el archivo exportado: minúsculas, números y guiones bajos. Si lo dejas vacío, se genera del nombre. No se puede cambiar después.</string>
+    <string name="product_code_fixed">Código: %1$s (no se puede cambiar)</string>
+    <string name="kind_supplement">Suplemento</string>
+    <string name="kind_medication">Medicamento</string>
+
+    <string name="field_amount">Cantidad</string>
+    <string name="field_note_text">Texto</string>
+    <string name="field_group">Grupo (opcional)</string>
+    <string name="field_is_alarm">De alarma</string>
+    <string name="field_is_alarm_hint">Se distingue al anotarlo y puede disparar una regla</string>
+    <string name="field_sodium_factor">Gramos de sodio por gramo (opcional)</string>
+    <string name="field_code">Código (opcional)</string>
+    <string name="field_dose">Dosis habitual</string>
+    <string name="field_daily_goal">Meta diaria</string>
+    <string name="field_checklist_item">Nuevo elemento de la lista</string>
+    <string name="field_notice_text">Texto del aviso</string>
+    <string name="field_reason_optional">Motivo (opcional)</string>
+    <string name="field_check_time">A la hora</string>
+
+    <string name="home_today_totals">Hoy</string>
+    <string name="home_checklist">Lista previa: marcados %1$d de %2$d</string>
+    <string name="total_with_goal">%1$s: llevas %2$s de %3$s %4$s</string>
+    <string name="total_without_goal">%1$s: %2$s %3$s</string>
+    <string name="total_sodium">" · sodio %1$s g"</string>
+
+    <string name="template_products">Productos durante el ayuno</string>
+    <string name="template_no_products">No hay productos en tu lista. Añádelos en Más → Catálogos.</string>
+    <string name="template_optional_enabled">Recordarlo</string>
+    <string name="template_goals">Líquidos y metas</string>
+    <string name="template_checklist">Lista previa</string>
+    <string name="template_add_item">Añadir a la lista</string>
+    <string name="template_notices">Avisos fijos</string>
+    <string name="template_add_notice">Añadir aviso</string>
+    <string name="during_not_included">No incluido</string>
+    <string name="during_continues">Sigue</string>
+    <string name="during_stops">Sale</string>
+    <string name="during_optional">Opcional</string>
+
+    <string name="rule_kind_metric">Una medición</string>
+    <string name="rule_kind_symptom">Un síntoma de alarma</string>
+    <string name="rule_kind_intake">El total del día bajo la meta</string>
+    <string name="rule_kind_manual">El botón «algo no va bien»</string>
+    <string name="rule_any_alarm_symptom">Cualquier síntoma de alarma</string>
+    <string name="rule_intake_needs_goal">La meta del día se define en la plantilla, en «Líquidos y metas».</string>
+    <string name="rule_manual_hint">Se cumple cuando tocas «algo no va bien» en Seguridad.</string>
+    <string name="sentence_symptom">marcas %1$s</string>
+    <string name="sentence_any_alarm_symptom">marcas un síntoma de alarma</string>
+    <string name="sentence_intake">a las %1$s llevas menos %2$s que tu meta</string>
+    <string name="sentence_manual">tocas «algo no va bien»</string>
+    <string name="safety_something_wrong">Algo no va bien</string>
+    <string name="safety_something_wrong_default">Detente y valora si terminar el ayuno.</string>
+
+    <string name="error_severity">La intensidad va de 0 a 10.</string>
+    <string name="error_amount">Escribe una cantidad mayor que cero.</string>
+    <string name="error_code_invalid">El código solo admite minúsculas, números y guiones bajos.</string>
+    <string name="error_code_duplicated">Ya existe un producto con ese código.</string>
+    <string name="error_goal">Las metas deben ser mayores que cero.</string>
+    <string name="error_notice_stages">Elige en qué etapas se muestra cada aviso.</string>
+    <string name="error_text_required">Escribe el texto.</string>
+    <string name="error_rule_intake">Elige el líquido o electrolito de la regla.</string>
+    <string name="error_rule_check_time">Elige la hora a la que se comprueba.</string>
+    <string name="error_rule_manual_duplicated">Solo puede haber una regla para el botón «algo no va bien».</string>
+    <string name="error_taken_at">Indica la hora de la toma.</string>
+    <string name="error_sodium_factor">El factor de sodio debe ser mayor que cero.</string>
 </resources>

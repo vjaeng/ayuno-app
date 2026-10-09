@@ -25,20 +25,37 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-data class SafetyState(val fastId: String?, val rules: List<Rule>, val types: List<MetricType>)
+data class SafetyState(
+    val fastId: String?,
+    val rules: List<Rule>,
+    val types: List<MetricType>,
+    val symptoms: List<com.ayuno.domain.model.SymptomType> = emptyList(),
+    val intakes: List<com.ayuno.domain.model.IntakeType> = emptyList(),
+)
 
-class SafetyViewModel(container: AppContainer) : ViewModel() {
-    val state: StateFlow<SafetyState?> = combine(container.fasts.observeFasts(), container.catalog.observeMetricTypes()) { fasts, types ->
+class SafetyViewModel(private val container: AppContainer) : ViewModel() {
+    val state: StateFlow<SafetyState?> = combine(
+        container.fasts.observeFasts(),
+        container.catalog.observeMetricTypes(),
+        container.catalog.observeSymptomTypes(),
+        container.catalog.observeIntakeTypes(),
+    ) { fasts, types, symptoms, intakes ->
         val current = fasts.firstOrNull { it.status == FastStatus.IN_PROGRESS }
         val rules = current?.let { container.fasts.get(it.id)?.plan?.rules }.orEmpty().filter { it.active }
-        SafetyState(current?.id, rules, types)
+        SafetyState(current?.id, rules, types, symptoms, intakes)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** H-023: dispara la regla manual (o la crea con el texto neutro de la app) y abre la alerta. */
+    fun somethingWrong(fastId: String, name: String, message: String, onAlert: (String) -> Unit) = viewModelScope.launch {
+        (container.triggerManualAlert(fastId, name, message) as? com.ayuno.domain.usecase.Outcome.Ok)?.let { onAlert(it.value.id) }
+    }
 }
 
 /** H-028: reglas activas en lenguaje llano, siempre a un toque, y terminar el ayuno desde aquí. */
 @Composable
-fun SafetyScreen(onBack: () -> Unit, onEndFast: (fastId: String) -> Unit, viewModel: SafetyViewModel = viewModel(factory = containerFactory { SafetyViewModel(it) })) {
+fun SafetyScreen(onBack: () -> Unit, onEndFast: (fastId: String) -> Unit, onAlert: (alertId: String) -> Unit, viewModel: SafetyViewModel = viewModel(factory = containerFactory { SafetyViewModel(it) })) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     ScreenScaffold(stringResource(R.string.safety_title), onBack) {
@@ -47,8 +64,13 @@ fun SafetyScreen(onBack: () -> Unit, onEndFast: (fastId: String) -> Unit, viewMo
         if (s.rules.isEmpty()) {
             EmptyState(stringResource(R.string.safety_no_rules))
         } else {
-            s.rules.forEach { Text("• " + RuleSentences.describe(context, it, s.types), style = MaterialTheme.typography.bodyLarge) }
+            s.rules.forEach { Text("• " + RuleSentences.describe(context, it, s.types, s.symptoms, s.intakes), style = MaterialTheme.typography.bodyLarge) }
         }
-        s.fastId?.let { id -> PrimaryButton(stringResource(R.string.end_title), onClick = { onEndFast(id) }) }
+        s.fastId?.let { id ->
+            val name = stringResource(R.string.safety_something_wrong)
+            val message = stringResource(R.string.safety_something_wrong_default)
+            com.ayuno.app.ui.components.SecondaryButton(name, onClick = { viewModel.somethingWrong(id, name, message, onAlert) })
+            PrimaryButton(stringResource(R.string.end_title), onClick = { onEndFast(id) })
+        }
     }
 }

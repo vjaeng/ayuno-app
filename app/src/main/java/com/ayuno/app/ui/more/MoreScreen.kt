@@ -7,9 +7,9 @@ import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.ScreenScaffold
 
 @Composable
-fun MoreScreen(onTemplates: () -> Unit, onMetricCatalog: () -> Unit) {
+fun MoreScreen(onTemplates: () -> Unit, onCatalogs: () -> Unit) {
     ScreenScaffold(stringResource(R.string.tab_more), onBack = null) {
         ListRow(stringResource(R.string.templates_title), stringResource(R.string.more_templates_hint), onTemplates)
-        ListRow(stringResource(R.string.catalog_metrics_title), stringResource(R.string.more_metrics_hint), onMetricCatalog)
+        ListRow(stringResource(R.string.catalogs_title), stringResource(R.string.more_catalogs_hint), onCatalogs)
     }
 }

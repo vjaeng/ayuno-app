@@ -6,7 +6,8 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 |---|---|---|---|
 | Crear ayuno desde plantilla | [crear-ayuno.md](crear-ayuno.md) | H-004 | construida |
 | Empezar el ayuno | [empezar-ayuno.md](empezar-ayuno.md) | H-005 | construida |
-| Guardar una entrada y evaluar reglas | [guardar-entrada.md](guardar-entrada.md) | H-008, H-009, H-019, H-020, H-027 | construida |
+| Guardar una entrada y evaluar reglas | [guardar-entrada.md](guardar-entrada.md) | H-008, H-009, H-010, H-012, H-019–H-022, H-027 | construida |
+| «Algo no va bien» | [algo-no-va-bien.md](algo-no-va-bien.md) | H-023, H-027 | construida |
 | Corregir una hora del ayuno con bitácora | [corregir-hora.md](corregir-hora.md) | H-005 | construida |
 | Terminar el ayuno | [terminar-ayuno.md](terminar-ayuno.md) | H-030 | construida (sin vuelta a comer: H-031) |
 

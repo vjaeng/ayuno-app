@@ -5,7 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.ayuno.app.di.AppContainer
 import com.ayuno.app.ui.format.Formats
 import com.ayuno.domain.id.Ids
+import com.ayuno.domain.model.ChecklistItem
+import com.ayuno.domain.model.DuringFast
 import com.ayuno.domain.model.DurationUnit
+import com.ayuno.domain.model.IntakeGoal
+import com.ayuno.domain.model.IntakeType
+import com.ayuno.domain.model.PlanProduct
+import com.ayuno.domain.model.Product
+import com.ayuno.domain.model.StageNotice
+import com.ayuno.domain.model.SymptomType
 import com.ayuno.domain.model.MetricSchedule
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Plan
@@ -37,6 +45,11 @@ data class TemplateDraft(
     val stageIds: Map<StageKind, String> = emptyMap(),
     val metrics: Map<String, PlanMetric> = emptyMap(),
     val rules: List<Rule> = emptyList(),
+    /** Meta por tipo de ingesta: id, cantidad tecleada y unidad. */
+    val goals: Map<String, Triple<String, String, String>> = emptyMap(),
+    val checklist: List<ChecklistItem> = emptyList(),
+    val notices: List<StageNotice> = emptyList(),
+    val products: Map<String, PlanProduct> = emptyMap(),
 ) {
     fun usesStage(kind: StageKind) = kind == StageKind.FAST || stageDurations.containsKey(kind)
 }
@@ -49,6 +62,12 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
     val errors: StateFlow<List<ValidationError>> = _errors.asStateFlow()
 
     val metricTypes: StateFlow<List<MetricType>> = container.catalog.observeMetricTypes()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val symptomTypes: StateFlow<List<SymptomType>> = container.catalog.observeSymptomTypes()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val intakeTypes: StateFlow<List<IntakeType>> = container.catalog.observeIntakeTypes()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val products: StateFlow<List<Product>> = container.catalog.observeProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
@@ -67,6 +86,10 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         stageIds = t.plan.stages.associate { it.kind to it.id },
         metrics = t.plan.metrics.associateBy { it.metricTypeCode },
         rules = t.plan.rules,
+        goals = t.plan.goals.associate { it.intakeTypeCode to Triple(it.id, Formats.number(it.dailyAmount, 2), it.unit) },
+        checklist = t.plan.checklist,
+        notices = t.plan.notices,
+        products = t.plan.products.associateBy { it.productCode },
     )
 
     fun edit(change: (TemplateDraft) -> TemplateDraft) = _draft.update { it?.let(change) }
@@ -97,6 +120,22 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         return errors
     }
 
+    fun setGoal(intakeCode: String, amount: String?, unit: String) = edit { d ->
+        d.copy(goals = if (amount == null) d.goals - intakeCode else d.goals + (intakeCode to Triple(d.goals[intakeCode]?.first ?: Ids.newId(), amount, unit)))
+    }
+
+    fun addChecklistItem(text: String) = edit { d -> if (text.isBlank()) d else d.copy(checklist = d.checklist + ChecklistItem(Ids.newId(), text.trim(), false)) }
+    fun removeChecklistItem(id: String) = edit { d -> d.copy(checklist = d.checklist.filterNot { it.id == id }) }
+
+    fun addNotice(text: String, stages: List<StageKind>) = edit { d -> d.copy(notices = d.notices + StageNotice(Ids.newId(), text.trim(), stages)) }
+    fun removeNotice(id: String) = edit { d -> d.copy(notices = d.notices.filterNot { it.id == id }) }
+
+    fun setProduct(code: String, duringFast: DuringFast?, optionalEnabled: Boolean = false, reason: String? = null) = edit { d ->
+        if (duringFast == null) return@edit d.copy(products = d.products - code)
+        val current = d.products[code]
+        d.copy(products = d.products + (code to PlanProduct(current?.id ?: Ids.newId(), code, duringFast, optionalEnabled, reason ?: current?.reason)))
+    }
+
     fun setRuleActive(ruleId: String, active: Boolean) = edit { d -> d.copy(rules = d.rules.map { if (it.id == ruleId) it.copy(active = active) else it }) }
 
     fun save(onDone: () -> Unit) {
@@ -112,7 +151,15 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         }
         val template = TemplateWithPlan(
             Template(d.id, d.name, Formats.parseNumber(d.targetHours) ?: 0.0, milestones),
-            Plan(stages = stages, metrics = d.metrics.values.toList(), rules = d.rules),
+            Plan(
+                stages = stages,
+                metrics = d.metrics.values.toList(),
+                rules = d.rules,
+                goals = d.goals.map { (code, g) -> IntakeGoal(g.first, code, Formats.parseNumber(g.second) ?: 0.0, g.third) },
+                checklist = d.checklist,
+                notices = d.notices,
+                products = d.products.values.toList(),
+            ),
         )
         viewModelScope.launch {
             when (val result = container.saveTemplate(template)) {

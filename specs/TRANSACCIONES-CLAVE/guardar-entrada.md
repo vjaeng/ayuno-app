@@ -1,7 +1,7 @@
 # TRX: Guardar una entrada y evaluar reglas
 
-**Historias:** H-008, H-009, H-019, H-020, H-027 · **Disparador:** «Guardar» en un formulario de Anotar
-**Entidades tocadas:** `measurement` o `blood_pressure_reading` (C), `alert` (C, una por regla cumplida)
+**Historias:** H-008, H-009, H-010, H-012, H-019, H-020, H-021, H-022, H-027 · **Disparador:** «Guardar» en un formulario de Anotar
+**Entidades tocadas:** `measurement`, `blood_pressure_reading`, `symptom` o `intake` (C), `alert` (C, una por regla cumplida)
 
 ## Secuencia
 ```mermaid

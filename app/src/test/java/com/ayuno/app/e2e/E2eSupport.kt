@@ -40,7 +40,11 @@ class TapCounter { var taps = 0 }
 
 /** Espera a que aparezca un texto: Room entrega sus resultados desde sus propios hilos. */
 fun Rule4.waitForText(text: String, substring: Boolean = false) {
-    waitUntil(5_000) { onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty() }
+    try {
+        waitUntil(5_000) { onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty() }
+    } catch (e: Throwable) {
+        throw AssertionError("No apareció el texto «$text»", e)
+    }
 }
 
 /** Reintenta una comprobación sobre la base hasta 5 s (las escrituras de los ViewModels son asíncronas). */

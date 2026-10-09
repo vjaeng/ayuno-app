@@ -4,23 +4,20 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.ayuno.app.AyunoApplication
+import com.ayuno.app.ui.format.Formats
+import com.ayuno.domain.derived.PendingKind
+import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.time.LocalTimes
 import kotlinx.coroutines.launch
 
-/** Suena la alarma: notifica lo que vence y programa la siguiente. */
+/** Suena la alarma: notifica lo que vence, evalúa las reglas del ayuno en curso y programa la siguiente. */
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext as AyunoApplication
         val pending = goAsync()
         app.appScope.launch {
             try {
-                intent.getStringExtra(EXTRA_SCHEDULED_AT)?.let { LocalTimes.parse(it) }?.let { at ->
-                    val names = app.container.catalog.metricTypes().associate { it.code to it.name }
-                    app.container.reminders.dueAt(at).forEach { due ->
-                        ReminderNotifier.notify(context, due, names[due.item.metricTypeCode] ?: due.item.metricTypeCode)
-                    }
-                }
-                app.container.reminders.reschedule()
+                handle(app, intent.getStringExtra(EXTRA_SCHEDULED_AT)?.let { LocalTimes.parse(it) })
             } finally {
                 pending.finish()
             }
@@ -30,6 +27,30 @@ class ReminderReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION = "com.ayuno.app.REMINDER"
         const val EXTRA_SCHEDULED_AT = "scheduled_at"
+
+        suspend fun handle(app: AyunoApplication, at: java.time.LocalDateTime?) {
+            val c = app.container
+            if (at != null) {
+                val metricNames = c.catalog.metricTypes().associate { it.code to it.name }
+                val products = c.catalog.products().associateBy { it.code }
+                c.reminders.dueAt(at).forEach { due ->
+                    val label = when (due.item.kind) {
+                        PendingKind.METRIC -> metricNames[due.item.code] ?: due.item.code
+                        PendingKind.PRODUCT -> products[due.item.code]?.let { p ->
+                            "${p.name} · ${Formats.number(due.item.amount ?: p.defaultAmount)} ${p.unit}"
+                        } ?: due.item.code
+                    }
+                    ReminderNotifier.notifyReminder(app, due, label)
+                }
+            }
+            c.fasts.all().firstOrNull { it.status == FastStatus.IN_PROGRESS }?.let { fast ->
+                val rules = c.fasts.get(fast.id)?.plan?.rules.orEmpty().associateBy { it.id }
+                c.evaluateRules(fast.id).forEach { alert ->
+                    rules[alert.ruleId]?.let { ReminderNotifier.notifyAlert(app, alert, it.level, it.message) }
+                }
+            }
+            c.reminders.reschedule()
+        }
     }
 }
 

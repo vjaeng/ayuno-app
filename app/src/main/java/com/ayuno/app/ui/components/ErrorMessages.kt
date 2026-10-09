@@ -44,4 +44,19 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.RULE_ACTION_UNSUPPORTED -> R.string.error_rule_unsupported
     ValidationError.ALERT_NOT_FOUND -> R.string.error_not_found
     ValidationError.ALERT_ALREADY_DECIDED -> R.string.error_alert_decided
+    ValidationError.SEVERITY_OUT_OF_RANGE -> R.string.error_severity
+    ValidationError.AMOUNT_NOT_POSITIVE -> R.string.error_amount
+    ValidationError.CODE_INVALID -> R.string.error_code_invalid
+    ValidationError.CODE_DUPLICATED -> R.string.error_code_duplicated
+    ValidationError.GOAL_NOT_POSITIVE -> R.string.error_goal
+    ValidationError.NOTICE_STAGES_REQUIRED -> R.string.error_notice_stages
+    ValidationError.TEXT_REQUIRED -> R.string.error_text_required
+    ValidationError.RULE_INTAKE_REQUIRED -> R.string.error_rule_intake
+    ValidationError.RULE_CHECK_TIME_REQUIRED -> R.string.error_rule_check_time
+    ValidationError.RULE_MANUAL_DUPLICATED -> R.string.error_rule_manual_duplicated
+    ValidationError.PRODUCT_NOT_FOUND -> R.string.error_not_found
+    ValidationError.SYMPTOM_NOT_FOUND -> R.string.error_not_found
+    ValidationError.INTAKE_TYPE_NOT_FOUND -> R.string.error_not_found
+    ValidationError.TAKEN_AT_REQUIRED -> R.string.error_taken_at
+    ValidationError.SODIUM_FACTOR_NOT_POSITIVE -> R.string.error_sodium_factor
 }

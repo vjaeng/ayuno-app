@@ -35,11 +35,14 @@ import com.ayuno.app.ui.components.TimePickerDialog
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.fast.stageName
+import com.ayuno.app.ui.fast.stageNameText
 import com.ayuno.app.ui.format.Formats
 import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.model.Rule
 import com.ayuno.domain.model.RuleLevel
 import com.ayuno.domain.model.StageKind
+import com.ayuno.domain.model.DuringFast
+import com.ayuno.app.ui.components.OptionSelector
 import java.time.LocalTime
 
 /** H-001: editor de plantilla — nombre, objetivo, hitos, etapas, mediciones con horarios y reglas. */
@@ -50,12 +53,15 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val errors by viewModel.errors.collectAsStateWithLifecycle()
     val types by viewModel.metricTypes.collectAsStateWithLifecycle()
+    val symptomTypes by viewModel.symptomTypes.collectAsStateWithLifecycle()
+    val intakeTypes by viewModel.intakeTypes.collectAsStateWithLifecycle()
+    val products by viewModel.products.collectAsStateWithLifecycle()
     var editingRule by remember { mutableStateOf<Rule?>(null) }
     var addingTime by remember { mutableStateOf<Pair<String, StageKind>?>(null) }
 
     editingRule?.let { rule ->
         BackHandler { editingRule = null }
-        RuleEditor(rule, types, onCancel = { editingRule = null }, onSave = { viewModel.putRule(it).also { e -> if (e.isEmpty()) editingRule = null } })
+        RuleEditor(rule, types, symptomTypes, intakeTypes, onCancel = { editingRule = null }, onSave = { viewModel.putRule(it).also { e -> if (e.isEmpty()) editingRule = null } })
         return
     }
 
@@ -101,6 +107,62 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
                 }
             }
         }
+
+        SectionTitle(stringResource(R.string.template_products))
+        if (products.none { it.active }) Text(stringResource(R.string.template_no_products), style = MaterialTheme.typography.bodyLarge)
+        products.filter { it.active }.forEach { product ->
+            val planned = d.products[product.code]
+            Text(product.name, style = MaterialTheme.typography.titleMedium)
+            OptionSelector(
+                listOf<Pair<DuringFast?, String>>(
+                    null to stringResource(R.string.during_not_included),
+                    DuringFast.CONTINUES to stringResource(R.string.during_continues),
+                    DuringFast.STOPS to stringResource(R.string.during_stops),
+                    DuringFast.OPTIONAL to stringResource(R.string.during_optional),
+                ),
+                planned?.duringFast,
+                { viewModel.setProduct(product.code, it, planned?.optionalEnabled ?: false) },
+            )
+            if (planned?.duringFast == DuringFast.OPTIONAL) {
+                SwitchRow(stringResource(R.string.template_optional_enabled), planned.optionalEnabled, { viewModel.setProduct(product.code, DuringFast.OPTIONAL, it) })
+            }
+            if (planned != null) {
+                AyunoTextField(stringResource(R.string.field_reason_optional), planned.reason.orEmpty(), { viewModel.setProduct(product.code, planned.duringFast, planned.optionalEnabled, it) })
+            }
+        }
+
+        SectionTitle(stringResource(R.string.template_goals))
+        intakeTypes.forEach { type ->
+            val goal = d.goals[type.code]
+            CheckRow(type.name, goal != null) { on -> viewModel.setGoal(type.code, if (on) goal?.second ?: "" else null, type.unit) }
+            if (goal != null) {
+                AyunoTextField(stringResource(R.string.field_daily_goal), goal.second, { viewModel.setGoal(type.code, it, type.unit) }, numeric = true, suffix = type.unit)
+            }
+        }
+
+        SectionTitle(stringResource(R.string.template_checklist))
+        d.checklist.forEach { item ->
+            ListRow(item.text, null, onClick = {}) {
+                TextButton(onClick = { viewModel.removeChecklistItem(item.id) }) { Text(stringResource(R.string.action_remove)) }
+            }
+        }
+        var newItem by remember { mutableStateOf("") }
+        AyunoTextField(stringResource(R.string.field_checklist_item), newItem, { newItem = it })
+        TextButton(onClick = { viewModel.addChecklistItem(newItem); newItem = "" }) { Text(stringResource(R.string.template_add_item)) }
+
+        SectionTitle(stringResource(R.string.template_notices))
+        d.notices.forEach { notice ->
+            ListRow(notice.text, notice.stageKinds.map { stageNameText(it) }.joinToString(", "), onClick = {}) {
+                TextButton(onClick = { viewModel.removeNotice(notice.id) }) { Text(stringResource(R.string.action_remove)) }
+            }
+        }
+        var noticeText by remember { mutableStateOf("") }
+        var noticeStages by remember { mutableStateOf(setOf(StageKind.FAST)) }
+        AyunoTextField(stringResource(R.string.field_notice_text), noticeText, { noticeText = it }, singleLine = false)
+        StageKind.entries.filter { d.usesStage(it) }.forEach { stage ->
+            CheckRow(stageName(stage), stage in noticeStages) { on -> noticeStages = if (on) noticeStages + stage else noticeStages - stage }
+        }
+        TextButton(onClick = { viewModel.addNotice(noticeText, noticeStages.toList()); noticeText = "" }) { Text(stringResource(R.string.template_add_notice)) }
 
         SectionTitle(stringResource(R.string.template_rules))
         if (d.rules.isEmpty()) Text(stringResource(R.string.template_no_rules), style = MaterialTheme.typography.bodyLarge)

@@ -3,10 +3,17 @@ package com.ayuno.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ayuno.app.di.AppContainer
+import com.ayuno.app.ui.format.Formats
+import com.ayuno.domain.derived.DailyTotal
+import com.ayuno.domain.derived.DailyTotals
 import com.ayuno.domain.derived.FastClock
 import com.ayuno.domain.derived.Milestone
 import com.ayuno.domain.derived.Pending
+import com.ayuno.domain.derived.PendingKind
+import com.ayuno.domain.derived.PendingRecords
 import com.ayuno.domain.derived.PendingState
+import com.ayuno.domain.derived.StageWindows
+import com.ayuno.domain.model.ChecklistItem
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.MetricType
@@ -15,6 +22,7 @@ import com.ayuno.domain.usecase.Outcome
 import com.ayuno.domain.usecase.ValidationError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,20 +32,21 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 
-data class NextPending(val metricName: String, val metricCode: String, val at: LocalDateTime, val late: Boolean)
+data class NextPending(val kind: PendingKind, val label: String, val code: String, val at: LocalDateTime, val late: Boolean)
 data class LastMeasurement(val metricName: String, val value: String, val unit: String, val at: LocalDateTime)
 
 sealed interface HomeUiState {
     data object Loading : HomeUiState
     data object Error : HomeUiState
 
-    /** Sin ayuno en curso: el próximo planificado y el último terminado (si existen). */
-    data class Idle(val planned: Fast?, val lastFinished: Fast?) : HomeUiState
+    /** Sin ayuno en curso: el próximo planificado (con su lista previa) y el último terminado. */
+    data class Idle(val planned: Fast?, val checklist: List<ChecklistItem>, val lastFinished: Fast?) : HomeUiState
 
     data class InProgress(
         val fast: Fast,
@@ -47,6 +56,8 @@ sealed interface HomeUiState {
         val milestones: List<Milestone>,
         val next: NextPending?,
         val last: LastMeasurement?,
+        val totals: List<DailyTotal>,
+        val notices: List<String>,
         val undecidedAlertId: String?,
     ) : HomeUiState
 }
@@ -59,46 +70,64 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
     private val _errors = MutableStateFlow<List<ValidationError>>(emptyList())
     val errors: StateFlow<List<ValidationError>> = _errors.asStateFlow()
 
-    val state: StateFlow<HomeUiState> = container.fasts.observeFasts()
+    /** La lista previa vive en otra tabla: se fuerza el recálculo tras cada acción. */
+    private val refresh = MutableStateFlow(0)
+
+    val state: StateFlow<HomeUiState> = combine(container.fasts.observeFasts(), refresh) { fasts, _ -> fasts }
         .flatMapLatest { fasts ->
             val current = fasts.firstOrNull { it.status == FastStatus.IN_PROGRESS }
             if (current == null) {
                 val planned = fasts.filter { it.status == FastStatus.PLANNED }.minByOrNull { it.clockStartPlanned }
                 val last = fasts.filter { it.status == FastStatus.FINISHED }.maxByOrNull { it.endActual ?: it.clockStartPlanned }
-                flow<HomeUiState> { emit(HomeUiState.Idle(planned, last)) }
+                flow<HomeUiState> {
+                    val checklist = planned?.let { container.fasts.get(it.id)?.plan?.checklist }.orEmpty()
+                    emit(HomeUiState.Idle(planned, checklist, last))
+                }
             } else {
-                combine(
-                    container.records.observeMeasurements(current.id),
-                    container.records.observeBloodPressure(current.id),
-                    container.alerts.observeAlerts(current.id),
-                    container.catalog.observeMetricTypes(),
+                // Cualquier cambio en el registro del ayuno o el paso del tiempo recalcula el estado.
+                val changes: List<Flow<Unit>> = listOf(
                     ticker,
-                ) { measurements, readings, alerts, types, _ -> inProgress(current, measurements, readings, alerts, types) as HomeUiState }
+                    container.records.observeMeasurements(current.id).map { },
+                    container.records.observeBloodPressure(current.id).map { },
+                    container.records.observeIntakes(current.id).map { },
+                    container.records.observeProductLogs(current.id).map { },
+                    container.alerts.observeAlerts(current.id).map { },
+                    container.catalog.observeMetricTypes().map { },
+                )
+                merge(*changes.toTypedArray()).map { inProgress(current.id) }
             }
         }
         .catch { emit(HomeUiState.Error) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState.Loading)
 
-    private suspend fun inProgress(
-        fast: Fast,
-        measurements: List<com.ayuno.domain.model.Measurement>,
-        readings: List<com.ayuno.domain.model.BloodPressureReading>,
-        alerts: List<com.ayuno.domain.model.Alert>,
-        types: List<MetricType>,
-    ): HomeUiState.InProgress {
-        val nowInstant = container.clock.instant()
-        val now = LocalTimes.now(container.clock)
-        val source = container.fasts.get(fast.id)!!
+    private suspend fun inProgress(fastId: String): HomeUiState {
+        val c = container
+        val nowInstant = c.clock.instant()
+        val now = LocalTimes.now(c.clock)
+        val source = c.fasts.get(fastId) ?: return HomeUiState.Error
+        val fast = source.fast
+        val types = c.catalog.metricTypes()
+        val products = c.catalog.products()
+        val measurements = c.records.measurements(fastId)
+        val readings = c.records.bloodPressure(fastId)
+        val records = PendingRecords(measurements, readings, c.records.productLogs(fastId))
         val names = types.associate { it.code to it.name }
         val active = types.filter { it.active }.map { it.code }.toSet()
-        val next = Pending.items(source, active, now.minusHours(2), now.plusHours(48))
-            .map { Pending.status(it, now, measurements, readings) }
+        val next = Pending.items(source, active, products, now.minusHours(2), now.plusHours(48))
+            .map { Pending.status(it, now, records) }
             .firstOrNull { it.state == PendingState.PENDING || it.state == PendingState.LATE }
-            ?.let { NextPending(names[it.item.metricTypeCode] ?: it.item.metricTypeCode, it.item.metricTypeCode, it.item.scheduledAt, it.state == PendingState.LATE) }
+            ?.let { s ->
+                val label = when (s.item.kind) {
+                    PendingKind.METRIC -> names[s.item.code] ?: s.item.code
+                    PendingKind.PRODUCT -> products.firstOrNull { it.code == s.item.code }?.let { "${it.name} · ${Formats.number(s.item.amount ?: it.defaultAmount)} ${it.unit}" } ?: s.item.code
+                }
+                NextPending(s.item.kind, label, s.item.code, s.item.scheduledAt, s.state == PendingState.LATE)
+            }
         val lastMeasurement = measurements.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
-            ?.let { m -> LastMeasurement(names[m.metricTypeCode] ?: m.metricTypeCode, m.valueEntered?.let { com.ayuno.app.ui.format.Formats.number(it, 2) } ?: m.valueText.orEmpty(), m.unitEntered.orEmpty(), m.takenAt) }
+            ?.let { m -> LastMeasurement(names[m.metricTypeCode] ?: m.metricTypeCode, m.valueEntered?.let { Formats.number(it, 2) } ?: m.valueText.orEmpty(), m.unitEntered.orEmpty(), m.takenAt) }
         val lastReading = readings.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
             ?.let { r -> LastMeasurement(names[MetricType.BLOOD_PRESSURE_CODE] ?: "", "${r.systolic}/${r.diastolic}", "mmHg", r.takenAt) }
+        val stage = StageWindows.stageAt(StageWindows.of(fast, source.plan), now)
         return HomeUiState.InProgress(
             fast = fast,
             elapsed = FastClock.elapsed(fast, nowInstant) ?: Duration.ZERO,
@@ -107,7 +136,9 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
             milestones = FastClock.milestones(fast, nowInstant),
             next = next,
             last = listOfNotNull(lastMeasurement, lastReading).maxByOrNull { it.at },
-            undecidedAlertId = alerts.firstOrNull { it.userChoice == null }?.id,
+            totals = DailyTotals.of(now.toLocalDate(), c.records.intakes(fastId), c.catalog.intakeTypes(), source.plan.goals),
+            notices = source.plan.notices.filter { stage != null && stage in it.stageKinds }.map { it.text },
+            undecidedAlertId = c.alerts.alerts(fastId).firstOrNull { it.userChoice == null }?.id,
         )
     }
 
@@ -120,6 +151,8 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
     fun correctClockStart(fastId: String, at: LocalDateTime, reason: String, onDone: () -> Unit) =
         execute(onDone) { container.correctClockStart(fastId, at, reason) }
 
+    fun setChecklistItem(fastId: String, itemId: String, checked: Boolean) = execute { container.setChecklistItem(fastId, itemId, checked) }
+
     fun clearErrors() { _errors.value = emptyList() }
 
     fun exactAlarmsAllowed(): Boolean = container.reminders.canScheduleExact()
@@ -127,7 +160,7 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
     private fun execute(onOk: () -> Unit = {}, block: suspend () -> Outcome<*>) {
         viewModelScope.launch {
             when (val result = block()) {
-                is Outcome.Ok -> { _errors.value = emptyList(); container.reminders.reschedule(); onOk() }
+                is Outcome.Ok -> { _errors.value = emptyList(); refresh.value++; container.reminders.reschedule(); onOk() }
                 is Outcome.Invalid -> _errors.value = result.errors
             }
         }

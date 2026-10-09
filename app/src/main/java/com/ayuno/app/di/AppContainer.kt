@@ -64,6 +64,18 @@ class AppContainer(
     val recordMeasurement by lazy { RecordMeasurement(catalog, fasts, records, alerts, transactions, clock) }
     val recordBloodPressure by lazy { RecordBloodPressure(catalog, fasts, records, alerts, transactions, clock) }
     val decideAlert by lazy { DecideAlert(alerts) }
+    val saveSymptomType by lazy { com.ayuno.domain.usecase.SaveSymptomType(catalog) }
+    val setSymptomTypeActive by lazy { com.ayuno.domain.usecase.SetSymptomTypeActive(catalog) }
+    val saveIntakeType by lazy { com.ayuno.domain.usecase.SaveIntakeType(catalog) }
+    val saveProduct by lazy { com.ayuno.domain.usecase.SaveProduct(catalog) }
+    val setProductActive by lazy { com.ayuno.domain.usecase.SetProductActive(catalog) }
+    val recordSymptom by lazy { com.ayuno.domain.usecase.RecordSymptom(catalog, fasts, records, alerts, transactions, clock) }
+    val recordIntake by lazy { com.ayuno.domain.usecase.RecordIntake(catalog, fasts, records, alerts, transactions, clock) }
+    val recordProductLog by lazy { com.ayuno.domain.usecase.RecordProductLog(catalog, fasts, records, transactions) }
+    val recordNote by lazy { com.ayuno.domain.usecase.RecordNote(fasts, records) }
+    val triggerManualAlert by lazy { com.ayuno.domain.usecase.TriggerManualAlert(fasts, alerts, transactions, clock) }
+    val evaluateRules by lazy { com.ayuno.domain.usecase.EvaluateRules(catalog, fasts, records, alerts, transactions, clock) }
+    val setChecklistItem by lazy { com.ayuno.domain.usecase.SetChecklistItem(fasts) }
 
     val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, clock) }
 }
