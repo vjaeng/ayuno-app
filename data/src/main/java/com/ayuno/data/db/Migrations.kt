@@ -70,5 +70,14 @@ object Migrations {
         )
     }
 
-    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock), From2To3)
+    /** Versión 3 (tanda 3) → 4 (tanda 4: datos personales para la exportación, H-038). */
+    object From3To4 : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """CREATE TABLE IF NOT EXISTS `person_profile` (`id` INTEGER NOT NULL, `full_name` TEXT, `id_number` TEXT, `birth_date` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+            )
+        }
+    }
+
+    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock), From2To3, From3To4)
 }

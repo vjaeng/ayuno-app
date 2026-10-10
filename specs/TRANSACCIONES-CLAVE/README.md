@@ -10,7 +10,9 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 | «Algo no va bien» | [algo-no-va-bien.md](algo-no-va-bien.md) | H-023, H-027 | construida |
 | Corregir una hora del ayuno con bitácora | [corregir-hora.md](corregir-hora.md) | H-005 | construida |
 | Terminar el ayuno | [terminar-ayuno.md](terminar-ayuno.md) | H-030, H-031 | construida |
+| Exportar | [exportar.md](exportar.md) | H-036, H-037, H-038 | construida |
+| Importar o restaurar | [importar.md](importar.md) | H-039, H-040 | construida |
 
-Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, corregir o borrar entradas (H-034), exportar, importar o restaurar, copia cifrada.
+Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, corregir o borrar entradas (H-034), copia cifrada.
 
 **Efecto externo común — reprogramar recordatorios.** Tras confirmar cualquiera de estas transacciones, la app llama a `ReminderScheduler.reschedule()`. Es idempotente (recalcula la siguiente alarma desde los datos y la reemplaza con el mismo `PendingIntent`); si falla o la app muere antes, la reprogramación ocurre al siguiente arranque, reinicio o cambio de hora (H-016).

@@ -43,3 +43,14 @@ interface RefeedDao {
 
     @Insert suspend fun insertMeal(entity: MealEntity)
 }
+
+@Dao
+interface PersonProfileDao {
+    @Query("SELECT * FROM person_profile WHERE id = 1")
+    suspend fun get(): PersonProfileEntity?
+
+    @Query("SELECT * FROM person_profile WHERE id = 1")
+    fun observe(): Flow<PersonProfileEntity?>
+
+    @Upsert suspend fun upsert(entity: PersonProfileEntity)
+}

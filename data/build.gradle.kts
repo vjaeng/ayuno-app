@@ -20,6 +20,11 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        // El esquema publicado del formato de intercambio (ADR-007) vive en la raíz del repositorio.
+        unitTests.all {
+            it.systemProperty("schemaDir", rootProject.file("schema").path)
+            it.systemProperty("regenerateSchema", project.findProperty("regenerateSchema") ?: "false")
+        }
     }
 
     // Los esquemas exportados sirven a las pruebas de migración (MigrationTestHelper).
@@ -51,4 +56,5 @@ dependencies {
     testImplementation(libs.androidx.test.ext.junit)
     testImplementation(libs.room.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.json.schema.validator)
 }

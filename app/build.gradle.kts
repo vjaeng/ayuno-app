@@ -12,8 +12,8 @@ android {
         applicationId = "com.ayuno"
         minSdk = 29
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
 
     buildTypes {
@@ -29,6 +29,8 @@ android {
 
     buildFeatures {
         compose = true
+        // La versión viaja en la cabecera del archivo exportado (ADR-007).
+        buildConfig = true
     }
 
     testOptions {

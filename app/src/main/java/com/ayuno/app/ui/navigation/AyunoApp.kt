@@ -55,6 +55,9 @@ import com.ayuno.app.ui.record.RecordGridScreen
 import com.ayuno.app.ui.safety.AlertScreen
 import com.ayuno.app.ui.safety.SafetyScreen
 import com.ayuno.app.ui.today.TodayScreen
+import com.ayuno.app.ui.data.DataScreen
+import com.ayuno.app.ui.data.ExportFastScreen
+import com.ayuno.app.ui.data.PersonalDataScreen
 import com.ayuno.app.ui.history.FastDetailScreen
 import com.ayuno.app.ui.history.HistoryScreen
 import com.ayuno.app.ui.refeed.MealFormScreen
@@ -96,6 +99,9 @@ private object Routes {
     const val REFEED = "refeed/{fastId}"
     const val MEAL = "meal/{fastId}"
     const val FAST_DETAIL = "history/{fastId}"
+    const val DATA = "data"
+    const val EXPORT_FAST = "export/{fastId}"
+    const val PERSONAL_DATA = "settings/person"
     const val SYMPTOMS = "catalog/symptoms"
     const val SYMPTOM_EDIT = "catalog/symptom?code={code}"
     const val INTAKES = "catalog/intakes"
@@ -118,6 +124,7 @@ private object Routes {
     fun refeed(fastId: String) = "refeed/$fastId"
     fun meal(fastId: String) = "meal/$fastId"
     fun fastDetail(fastId: String) = "history/$fastId"
+    fun exportFast(fastId: String) = "export/$fastId"
     fun end(fastId: String, ruleId: String? = null, endAt: LocalDateTime? = null) = "end/$fastId?" +
         listOfNotNull(ruleId?.let { "ruleId=$it" }, endAt?.let { "endAt=" + Uri.encode(LocalTimes.format(it)) }).joinToString("&")
     fun product(fastId: String, scheduledFor: LocalDateTime?, code: String? = null, notDone: Boolean = false) =
@@ -201,11 +208,19 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                     }
                 })
             }
-            composable(Routes.SETTINGS) { com.ayuno.app.ui.settings.SettingsScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.SETTINGS) {
+                com.ayuno.app.ui.settings.SettingsScreen(onBack = { navController.popBackStack() }, onPersonalData = { navController.navigate(Routes.PERSONAL_DATA) })
+            }
             composable(TopLevelDestination.HISTORY.route) {
                 HistoryScreen(onOpen = { navController.navigate(Routes.fastDetail(it)) }, onNewFast = { navController.navigate(Routes.NEW_FAST) })
             }
-            composable(Routes.FAST_DETAIL) { entry -> FastDetailScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }) }
+            composable(Routes.FAST_DETAIL) { entry ->
+                val fastId = entry.arguments?.getString("fastId")!!
+                FastDetailScreen(fastId, onBack = { navController.popBackStack() }, onExport = { navController.navigate(Routes.exportFast(fastId)) })
+            }
+            composable(Routes.EXPORT_FAST) { entry -> ExportFastScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }) }
+            composable(Routes.DATA) { DataScreen(onBack = { navController.popBackStack() }, onPersonalData = { navController.navigate(Routes.PERSONAL_DATA) }) }
+            composable(Routes.PERSONAL_DATA) { PersonalDataScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.REFEED) { entry ->
                 val fastId = entry.arguments?.getString("fastId")!!
                 RefeedScreen(fastId, onBack = { navController.popBackStack() }, onMeal = { navController.navigate(Routes.meal(fastId)) })
@@ -218,6 +233,7 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                     onTemplates = { navController.navigate(Routes.TEMPLATES) },
                     onCatalogs = { navController.navigate(Routes.CATALOGS) },
                     onSettings = { navController.navigate(Routes.SETTINGS) },
+                    onData = { navController.navigate(Routes.DATA) },
                 )
             }
             composable(Routes.NEW_FAST) {

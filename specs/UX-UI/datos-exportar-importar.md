@@ -91,6 +91,8 @@ El formato del archivo se especifica en Diseño (ver `specs/CONTRATO-API/README.
 
 ## Decisiones de producto
 
+*Implementación (tanda 4, 2026-10-10):* una sola vía de importación: el resumen cuenta ayunos, plantillas, productos y registros, y se importa todo lo que trae el archivo (un archivo de plantillas y productos es un caso particular). El paso «huella o PIN antes de exportar o importar» llega con el bloqueo (H-042). «Exportar un ayuno» se abre desde el detalle del Historial.
+
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - **Nombre del archivo de un ayuno sin inicio real** (planificado o desde cero sin empezar): H-036 usa la fecha del inicio real. Propuesta: usar la del inicio previsto.
 - **Conflicto al restaurar:** si una entrada del archivo existe con otro contenido (editada en el teléfono después de exportar), ¿gana el archivo o el teléfono? Propuesta: gana la de `updated_at` más reciente y el resumen lo indica.

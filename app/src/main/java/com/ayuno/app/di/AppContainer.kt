@@ -83,5 +83,13 @@ class AppContainer(
     val settings: com.ayuno.domain.port.SettingsRepository by lazy { com.ayuno.data.repository.RoomSettingsRepository(database) }
     val saveQuietHours by lazy { com.ayuno.domain.usecase.SaveQuietHours(settings) }
 
+    val personProfile: com.ayuno.domain.port.PersonProfileRepository by lazy { com.ayuno.data.repository.RoomPersonProfileRepository(database, clock) }
+    val savePersonProfile by lazy { com.ayuno.domain.usecase.SavePersonProfile(personProfile, settings) }
+    private val exchange by lazy { com.ayuno.data.exchange.JsonDataExchange(database) }
+    val exportData by lazy { com.ayuno.domain.usecase.ExportData(fasts, settings, personProfile, exchange, clock, com.ayuno.app.BuildConfig.VERSION_NAME) }
+    val previewImport by lazy { com.ayuno.domain.usecase.PreviewImport(exchange) }
+    val importData by lazy { com.ayuno.domain.usecase.ImportData(exchange) }
+    fun exportTables(json: String): ByteArray = exchange.tables(json)
+
     val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, alerts, refeed, settings, clock) }
 }

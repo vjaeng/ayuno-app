@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
 import com.ayuno.app.ui.components.FieldError
+import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.ScreenScaffold
 import com.ayuno.app.ui.components.SectionTitle
@@ -43,9 +44,9 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     }
 }
 
-/** Ajustes generales: silencio nocturno (H-017). Unidades, contacto y privacidad llegan con sus historias. */
+/** Ajustes generales: silencio nocturno (H-017) y datos personales (H-038). Unidades, contacto y bloqueo llegan con sus historias. */
 @Composable
-fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(factory = containerFactory { SettingsViewModel(it) })) {
+fun SettingsScreen(onBack: () -> Unit, onPersonalData: () -> Unit = {}, viewModel: SettingsViewModel = viewModel(factory = containerFactory { SettingsViewModel(it) })) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val errors by viewModel.errors.collectAsStateWithLifecycle()
     ScreenScaffold(stringResource(R.string.settings_title), onBack) {
@@ -61,5 +62,11 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(
         }
         errors.forEach { FieldError(stringResource(it.message())) }
         Text(stringResource(R.string.settings_quiet_rules), style = MaterialTheme.typography.bodyMedium)
+        SectionTitle(stringResource(R.string.settings_privacy))
+        ListRow(
+            stringResource(R.string.person_title),
+            stringResource(if (s.exportPersonEnabled) R.string.data_person_included else R.string.data_person_not_included),
+            onClick = onPersonalData,
+        )
     }
 }

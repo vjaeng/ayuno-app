@@ -17,6 +17,8 @@ class ReleasedSchemasTest {
     private val released = mapOf(
         1 to "51a4ff4c3231f1dc5b086725bb887340", // tanda 1 — primera instalación real
         2 to "990883c8c7ecb51462bd7224d57d1ce7", // tanda 2a
+        3 to "afeb8a35b0895c78266d8cd105b90c30", // tanda 3 (APK 0.4.0)
+        4 to "2cdc8d628e5c5b9cb27dbaab8f9a4c4d", // tanda 4 (APK 0.5.0)
     )
 
     @Test

@@ -70,4 +70,5 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.REFEED_CHECK_NOT_FOUND -> R.string.error_refeed_check
     ValidationError.TOLERANCE_DETAIL_REQUIRED -> R.string.error_tolerance_detail
     ValidationError.TOLERANCE_REQUIRED -> R.string.error_tolerance_required
+    ValidationError.NOTHING_TO_EXPORT -> R.string.data_nothing_to_export
 }

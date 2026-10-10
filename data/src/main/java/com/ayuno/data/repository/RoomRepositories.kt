@@ -280,6 +280,29 @@ class RoomAuditRepository(private val database: AyunoDatabase, private val clock
     override suspend fun entriesFor(rowId: String): List<EditLogEntry> = database.auditDao().entriesFor(rowId).map { it.toDomain() }
 }
 
+/** Datos personales (registro único, H-038). Sin fila todavía = todo vacío. */
+class RoomPersonProfileRepository(private val database: AyunoDatabase, private val clock: Clock) : com.ayuno.domain.port.PersonProfileRepository {
+    private val dao get() = database.personProfileDao()
+
+    private fun com.ayuno.data.db.PersonProfileEntity?.toDomain() = com.ayuno.domain.model.PersonProfile(
+        fullName = this?.fullName, idNumber = this?.idNumber, birthDate = this?.birthDate?.let { java.time.LocalDate.parse(it) },
+    )
+
+    override fun observe(): Flow<com.ayuno.domain.model.PersonProfile> = dao.observe().map { it.toDomain() }
+    override suspend fun get(): com.ayuno.domain.model.PersonProfile = dao.get().toDomain()
+
+    override suspend fun save(profile: com.ayuno.domain.model.PersonProfile) {
+        val existing = dao.get()
+        val now = clock.stamp()
+        dao.upsert(
+            com.ayuno.data.db.PersonProfileEntity(
+                fullName = profile.fullName, idNumber = profile.idNumber, birthDate = profile.birthDate?.toString(),
+                createdAt = existing?.createdAt ?: now, updatedAt = if (existing != null) now else null, deletedAt = null,
+            ),
+        )
+    }
+}
+
 /** Ajustes (registro único, H-017). Sin fila todavía = ajustes por defecto. */
 class RoomSettingsRepository(private val database: AyunoDatabase) : com.ayuno.domain.port.SettingsRepository {
     private val dao get() = database.settingsDao()

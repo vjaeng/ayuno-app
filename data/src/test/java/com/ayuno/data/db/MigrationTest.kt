@@ -58,6 +58,14 @@ class MigrationTest {
     }
 
     @Test
+    fun `la migracion 3 a 4 produce exactamente el esquema 4 de Room`() {
+        createV1WithAFast()
+        helper.runMigrationsAndValidate(dbName, 2, true, Migrations.From1To2(ApplicationProvider.getApplicationContext(), Clock.systemDefaultZone())).close()
+        helper.runMigrationsAndValidate(dbName, 3, true, Migrations.From2To3).close()
+        helper.runMigrationsAndValidate(dbName, 4, true, Migrations.From3To4)
+    }
+
+    @Test
     fun `la app nueva abre la base de la primera instalacion y conserva el ayuno y sus mediciones`() = runTest {
         createV1WithAFast()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()

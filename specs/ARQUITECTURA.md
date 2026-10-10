@@ -161,6 +161,8 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-08 | Tanda 2a: las reglas se evalúan en cada alarma (pendientes y horas de comprobación de reglas de ingesta) además de al guardar (H-019, H-022) | ADR-005, ADR-006 |
 | 2026-10-08 | Incidente: la tanda 2a cambió el esquema sin subir la versión y la app se cerraba al abrir en el teléfono. Se añade la versión 2 con migración 1→2 probada y un candado de esquemas publicados (`ReleasedSchemasTest`); se cierra la deuda «versión 1 sin migraciones» | ADR-003 |
 | 2026-10-08 | Tanda 2a: en el editor de productos, la dosis de cada horario es la dosis habitual; el modelo admite dosis distintas por horario (editable en una evolución si hace falta) | — |
+| 2026-10-10 | Tanda 4: el formato de intercambio se describe una sola vez (`:data/exchange/ExchangeFormat`: listas, booleanos, listas JSON, enumerados, referencias y propietario por tabla; columnas por `PRAGMA table_info`). Exportar, validar, las tablas CSV y el esquema publicado salen de ella; el esquema se genera en pruebas y una prueba falla si el publicado difiere | ADR-007 |
+| 2026-10-10 | Tanda 4: una sola vía de importación para H-039 y H-040 (importa lo que traiga el archivo; fusión por clave, gana `updated_at` más reciente). El bloque `person` del archivo no se importa (la copia cifrada de H-042 lo restaurará) | ADR-SEG-006 |
 
 ## 7. Versiones y dependencias
 
@@ -188,4 +190,4 @@ Se eligieron las versiones ya presentes en la caché local del equipo de desarro
 | kotlinx-serialization-json | 1.7.3 | Lectura de datos precargados y formato de intercambio (ADR-007, ADR-008) |
 | kotlinx-coroutines | 1.9.0 | Asincronía |
 
-**Solo pruebas:** JUnit 5.11.3 (`:domain`), JUnit 4.13.2, Robolectric 4.14.1, AndroidX Test, Room testing, Compose UI Test.
+**Solo pruebas:** JUnit 5.11.3 (`:domain`), JUnit 4.13.2, Robolectric 4.14.1, AndroidX Test, Room testing, Compose UI Test, networknt json-schema-validator 1.5.6 (valida cada exportación contra el esquema publicado, ADR-007; no viaja en el APK).

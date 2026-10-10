@@ -464,4 +464,41 @@
     <string name="error_refeed_check">No se encontró ese paso. Vuelve a abrir la vuelta a comer.</string>
     <string name="error_tolerance_detail">Escribe qué notaste.</string>
     <string name="error_tolerance_required">Elige cómo te cayó.</string>
+
+    <!-- Tanda 4: exportar e importar (H-036 a H-040) y datos personales (H-038) -->
+    <string name="more_data_hint">Copia de tus datos o restaurar desde un archivo</string>
+    <string name="data_title">Exportar e importar</string>
+    <string name="data_export">Exportar</string>
+    <string name="data_export_all">Exportar todo</string>
+    <string name="data_nothing_to_export">No hay nada que exportar todavía.</string>
+    <string name="data_with_tables">Incluir también tablas (archivo comprimido para hojas de cálculo)</string>
+    <string name="data_person_included">Datos personales: incluidos</string>
+    <string name="data_person_not_included">Datos personales: no incluidos</string>
+    <string name="data_import">Importar</string>
+    <string name="data_import_file">Importar archivo…</string>
+    <string name="data_import_hint">Plantillas, lista de productos o restaurar una copia exportada. No se duplica nada.</string>
+    <string name="export_share_title">Compartir el archivo exportado</string>
+    <string name="export_fast_title">Exportar ayuno</string>
+    <string name="export_file_name">Archivo: %1$s</string>
+    <string name="export_action">Exportar</string>
+    <string name="import_title">Importar %1$s</string>
+    <string name="import_contains">Contiene: %1$d ayunos, %2$d plantillas, %3$d productos y %4$d registros.</string>
+    <string name="import_new">Nuevos: %1$d ayunos, %2$d plantillas, %3$d productos y %4$d registros.</string>
+    <string name="import_existing">Lo que ya estaba se actualiza solo si el archivo es más reciente; nada se duplica.</string>
+    <string name="import_ignored">Campos ignorados (%1$d): %2$s</string>
+    <string name="import_confirm">Importar</string>
+    <string name="import_done">Importado: %1$d nuevos, %2$d actualizados, %3$d se quedaron como estaban en el teléfono.</string>
+    <string name="import_too_large">El archivo es demasiado grande (más de 50 MB). No se modificó nada.</string>
+    <string name="import_not_ours">No es un archivo de la app o está dañado. No se modificó nada.</string>
+    <string name="import_empty">Este archivo no contiene datos de la app.</string>
+    <string name="import_newer">Este archivo es de una versión más nueva de la app (formato %1$s). Actualiza la app para importarlo.</string>
+    <string name="import_invalid_row">El archivo tiene un dato no válido (%1$s, fila %2$d, campo %3$s). No se modificó nada.</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="person_title">Datos personales</string>
+    <string name="person_hint">Solo viajan en el archivo exportado si lo activas, para que quien lo reciba pueda verificar tu identidad.</string>
+    <string name="person_include">Incluir en el archivo exportado</string>
+    <string name="person_full_name">Nombre completo</string>
+    <string name="person_id_number">Documento de identidad</string>
+    <string name="person_birth_date">Fecha de nacimiento (AAAA-MM-DD)</string>
+    <string name="person_birth_date_error">Escribe la fecha como 1980-05-01.</string>
 </resources>

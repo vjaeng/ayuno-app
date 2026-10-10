@@ -148,6 +148,8 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 
 **Alternativas consideradas.** Seguir literalmente la estructura de ejemplo (sin listas para presión, comidas ni pasos): obligaría a desnormalizar entidades del modelo validado. CSV como formato principal: pierde la cabecera y los catálogos (queda como opción de H-037).
 
+**Implementación (tanda 4, 2026-10-10).** Esquema publicado en `schema/fasting-log-1.0.schema.json` con ejemplo y `schema/CHANGELOG.md` (diferencias con la solicitud: listas y campos con nombres canónicos, `person` con los campos de `person_profile`). Ruta del esquema: `schema/` en la raíz del repositorio.
+
 ## ADR-008: Datos precargados y textos fuera del código
 **Fecha:** 2026-10-08 · **Estado:** aceptada
 

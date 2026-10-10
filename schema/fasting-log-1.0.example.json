@@ -1,0 +1,809 @@
+{
+    "schema": "fasting-log",
+    "schema_version": "1.0",
+    "app_version": "0.5.0",
+    "exported_at": "2026-10-25T14:03:11",
+    "tz_offset": "-05:00",
+    "person": {
+        "full_name": null,
+        "id_number": null,
+        "birth_date": null
+    },
+    "catalogs": {
+        "metric_types": [
+            {
+                "code": "glucose",
+                "name": "Glucosa",
+                "unit": "mg/dL",
+                "alt_unit": "mmol/L",
+                "entry_unit": "mg/dL",
+                "is_numeric": true,
+                "min_valid": 20.0,
+                "max_valid": 600.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "ketones",
+                "name": "Cetonas",
+                "unit": "mmol/L",
+                "alt_unit": null,
+                "entry_unit": "mmol/L",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "blood_pressure",
+                "name": "Presión arterial",
+                "unit": "mmHg",
+                "alt_unit": null,
+                "entry_unit": "mmHg",
+                "is_numeric": true,
+                "min_valid": null,
+                "max_valid": null,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "weight",
+                "name": "Peso",
+                "unit": "kg",
+                "alt_unit": "lb",
+                "entry_unit": "kg",
+                "is_numeric": true,
+                "min_valid": 20.0,
+                "max_valid": 300.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "waist",
+                "name": "Cintura",
+                "unit": "cm",
+                "alt_unit": "in",
+                "entry_unit": "cm",
+                "is_numeric": true,
+                "min_valid": 40.0,
+                "max_valid": 200.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "temperature",
+                "name": "Temperatura",
+                "unit": "°C",
+                "alt_unit": "°F",
+                "entry_unit": "°C",
+                "is_numeric": true,
+                "min_valid": 30.0,
+                "max_valid": 43.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "hunger",
+                "name": "Hambre",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "energy",
+                "name": "Energía",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "mood",
+                "name": "Ánimo",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "mental_clarity",
+                "name": "Claridad mental",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "symptom_types": [
+            {
+                "code": "hunger",
+                "name": "Hambre",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "headache",
+                "name": "Dolor de cabeza",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "dizziness",
+                "name": "Mareo",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "cold",
+                "name": "Frío",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "nausea",
+                "name": "Náusea",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "insomnia",
+                "name": "Insomnio",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "intake_types": [
+            {
+                "code": "water",
+                "name": "Agua",
+                "unit": "mL",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "infusion",
+                "name": "Infusión",
+                "unit": "mL",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "salt",
+                "name": "Sal",
+                "unit": "g",
+                "breaks_fast": false,
+                "sodium_factor": 0.393,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "potassium",
+                "name": "Potasio",
+                "unit": "mg",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "magnesium",
+                "name": "Magnesio",
+                "unit": "mg",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "broth",
+                "name": "Caldo",
+                "unit": "mL",
+                "breaks_fast": true,
+                "sodium_factor": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "food",
+                "name": "Comida",
+                "unit": "porción",
+                "breaks_fast": true,
+                "sodium_factor": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "products": [
+            {
+                "code": "magnesio",
+                "name": "Magnesio",
+                "kind": "supplement",
+                "default_amount": 400.0,
+                "unit": "mg",
+                "avoid": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "product_schedules": [
+            {
+                "id": "d36c7ed5-e481-45a7-814f-777dbf7af6a7",
+                "product_code": "magnesio",
+                "time_of_day": "20:00",
+                "amount": 400.0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ]
+    },
+    "templates": [
+        {
+            "id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "name": "Ayuno de 57 horas",
+            "target_hours": 57.0,
+            "milestone_hours": [
+                12.0,
+                24.0
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "fasts": [
+        {
+            "id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "status": "finished",
+            "target_hours": 57.0,
+            "milestone_hours": [
+                12.0,
+                24.0
+            ],
+            "last_meal_planned": "2026-10-22T18:00:00",
+            "last_meal_actual": null,
+            "clock_start_planned": "2026-10-22T22:00:00",
+            "clock_start_actual": "2026-10-22T22:05:00",
+            "end_actual": "2026-10-25T07:03:00",
+            "end_reason": "goal_met",
+            "end_reason_detail": null,
+            "end_rule_id": null,
+            "tz_offset": "-05:00",
+            "notes": "Semana tranquila",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-25T07:03:00",
+            "deleted_at": null
+        }
+    ],
+    "stages": [
+        {
+            "id": "adb73cf6-d0b9-48c5-97a4-83126256efe8",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "kind": "refeed",
+            "duration_value": 6.0,
+            "duration_unit": "hours",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "4180f5fb-c00c-4bee-87f8-e6fa5f5c9868",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "kind": "post",
+            "duration_value": 2.0,
+            "duration_unit": "days",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "da980a45-9968-4438-a545-2d7dd087c81b",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "kind": "refeed",
+            "duration_value": 6.0,
+            "duration_unit": "hours",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        },
+        {
+            "id": "d0df7b67-08cf-4f77-8f3d-d43a2e7504be",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "kind": "post",
+            "duration_value": 2.0,
+            "duration_unit": "days",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "plan_metrics": [
+        {
+            "id": "d570a15a-69e4-4ad4-b4a0-4d8c29931146",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "metric_type_code": "glucose",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "44294542-9326-4b0e-800d-ec07a7a3a174",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "metric_type_code": "glucose",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "metric_schedules": [
+        {
+            "id": "faad4c7c-6394-4f6c-98b8-7e52ee839532",
+            "plan_metric_id": "d570a15a-69e4-4ad4-b4a0-4d8c29931146",
+            "stage_kind": "fast",
+            "time_of_day": "07:00",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "29af2073-963a-4859-8bb2-389313a8a3dd",
+            "plan_metric_id": "44294542-9326-4b0e-800d-ec07a7a3a174",
+            "stage_kind": "fast",
+            "time_of_day": "07:00",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "rules": [
+        {
+            "id": "57b40702-4bce-43a9-a64b-e102ad755f4b",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "name": "Glucosa baja",
+            "active": true,
+            "condition_kind": "metric_below",
+            "metric_type_code": "glucose",
+            "bp_component": null,
+            "threshold": 55.0,
+            "sustained_minutes": 20,
+            "symptom_type_code": null,
+            "intake_type_code": null,
+            "check_time": null,
+            "filter_stage_kinds": [
+                "fast"
+            ],
+            "filter_on_waking": false,
+            "filter_position": null,
+            "level": "alert",
+            "message": "Rompe con caldo tibio con sal.",
+            "action": "offer_end",
+            "action_minutes": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "08e76bb6-8453-4144-9f99-8de76954c8f9",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "name": "Glucosa baja",
+            "active": true,
+            "condition_kind": "metric_below",
+            "metric_type_code": "glucose",
+            "bp_component": null,
+            "threshold": 55.0,
+            "sustained_minutes": 20,
+            "symptom_type_code": null,
+            "intake_type_code": null,
+            "check_time": null,
+            "filter_stage_kinds": [
+                "fast"
+            ],
+            "filter_on_waking": false,
+            "filter_position": null,
+            "level": "alert",
+            "message": "Rompe con caldo tibio con sal.",
+            "action": "offer_end",
+            "action_minutes": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        },
+        {
+            "id": "d87c1edb-6488-4e2f-976c-939360d761fc",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "name": "Algo no va bien",
+            "active": true,
+            "condition_kind": "manual",
+            "metric_type_code": null,
+            "bp_component": null,
+            "threshold": null,
+            "sustained_minutes": null,
+            "symptom_type_code": null,
+            "intake_type_code": null,
+            "check_time": null,
+            "filter_stage_kinds": [],
+            "filter_on_waking": false,
+            "filter_position": null,
+            "level": "alert",
+            "message": "Mensaje",
+            "action": "offer_end",
+            "action_minutes": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "intake_goals": [
+        {
+            "id": "cbfe8a40-46cb-4a37-b0a3-923b499d1acc",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "intake_type_code": "salt",
+            "daily_amount": 4.0,
+            "unit": "g",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "99d680c8-7e25-4bd5-b0dd-ed28b3d11999",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "intake_type_code": "salt",
+            "daily_amount": 4.0,
+            "unit": "g",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "checklist_items": [
+        {
+            "id": "7e2999d5-8a9d-4c25-82f1-0a026f784851",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "text": "Comprar sal",
+            "is_checked": false,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "9f9d8448-3d7f-4798-815b-50064b9fce6e",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "text": "Comprar sal",
+            "is_checked": false,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "stage_notices": [
+        {
+            "id": "55e1ec71-f3df-4bac-8338-80e7ae34de2e",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "text": "No sacarse sangre",
+            "stage_kinds": [
+                "fast",
+                "post"
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "0eceb77a-8606-41c5-a8ba-48a536b621f1",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "text": "No sacarse sangre",
+            "stage_kinds": [
+                "fast",
+                "post"
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "plan_products": [
+        {
+            "id": "f1c1bd4c-cff8-465f-aba0-d3dc4db06921",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "product_code": "magnesio",
+            "during_fast": "continues",
+            "optional_enabled": false,
+            "reason": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "e1607f95-3023-4ebc-93fa-6e69bc8b8f26",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "product_code": "magnesio",
+            "during_fast": "continues",
+            "optional_enabled": false,
+            "reason": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "refeed_steps": [
+        {
+            "id": "b1fd2302-eb77-446e-8685-86d52a82470a",
+            "template_id": "b24e7cbc-acbd-437f-94bb-06a4c8130b80",
+            "fast_id": null,
+            "kind": "timed",
+            "description": "Una taza de caldo",
+            "offset_minutes": 0,
+            "repeat_every_minutes": 60,
+            "repeat_for_minutes": 120,
+            "day_offset": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "426cd11d-8419-4ab4-98fe-e40472bd8c1c",
+            "template_id": null,
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "kind": "timed",
+            "description": "Una taza de caldo",
+            "offset_minutes": 0,
+            "repeat_every_minutes": 60,
+            "repeat_for_minutes": 120,
+            "day_offset": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "measurements": [
+        {
+            "id": "39f1dc93-0fdf-4f0c-893d-5a5fa9fb1e06",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "metric_type_code": "glucose",
+            "taken_at": "2026-10-23T07:02:15",
+            "scheduled_for": "2026-10-23T07:00:00",
+            "value_num": 72.0,
+            "value_text": null,
+            "value_entered": 72.0,
+            "unit_entered": "mg/dL",
+            "source": "cgm",
+            "trend": null,
+            "on_waking": false,
+            "not_done_reason": null,
+            "note": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "blood_pressure_readings": [
+        {
+            "id": "90c24a89-ac02-4f10-a1e4-cb45502eab3e",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "taken_at": "2026-10-23T07:10:00",
+            "scheduled_for": null,
+            "systolic": 118,
+            "diastolic": 76,
+            "pulse": 60,
+            "position": "sitting",
+            "on_waking": false,
+            "paired_reading_id": null,
+            "not_done_reason": null,
+            "note": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "symptoms": [
+        {
+            "id": "7cc4f0b2-8326-42b1-be4c-fa31f1c0af1c",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "symptom_type_code": "headache",
+            "noted_at": "2026-10-23T12:00:00",
+            "severity": 4,
+            "note": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "intakes": [
+        {
+            "id": "5eb44046-5675-4626-86c4-90672724592c",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "intake_type_code": "salt",
+            "taken_at": "2026-10-23T09:00:00",
+            "amount": 2.5,
+            "unit": "g",
+            "note": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "product_logs": [
+        {
+            "id": "270cf2b0-b11d-4179-8a50-41f2e40f9734",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "product_code": "magnesio",
+            "scheduled_at": "2026-10-23T20:00:00",
+            "status": "not_taken",
+            "taken_at": null,
+            "planned_amount": 400.0,
+            "amount": null,
+            "unit": null,
+            "reason": "Diarrea",
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "alerts": [
+        {
+            "id": "626bf560-d99d-41f6-a432-2825d5383a3f",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "rule_id": "d87c1edb-6488-4e2f-976c-939360d761fc",
+            "fired_at": "2026-10-23T07:02:15",
+            "trigger_entry_ids": [],
+            "user_choice": null,
+            "choice_reason": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "notes": [
+        {
+            "id": "53383c71-d4cb-445a-9d87-5a340acfe902",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "noted_at": "2026-10-23T12:10:00",
+            "text": "leve temblor",
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "refeed_checks": [
+        {
+            "id": "5279a712-f365-4a50-a8ca-0ccb44380e06",
+            "refeed_step_id": "426cd11d-8419-4ab4-98fe-e40472bd8c1c",
+            "scheduled_at": "2026-10-25T07:03:00",
+            "done_at": "2026-10-25T07:05:00",
+            "created_at": "2026-10-25T07:03:00",
+            "updated_at": "2026-10-25T07:05:00",
+            "deleted_at": null
+        },
+        {
+            "id": "7f805353-66aa-4d9e-8591-61d4dcf1d7ce",
+            "refeed_step_id": "426cd11d-8419-4ab4-98fe-e40472bd8c1c",
+            "scheduled_at": "2026-10-25T08:03:00",
+            "done_at": null,
+            "created_at": "2026-10-25T07:03:00",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "meals": [
+        {
+            "id": "ee8c336f-eb36-4e13-98ea-1af8a9036f2a",
+            "fast_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "eaten_at": "2026-10-25T09:40:00",
+            "description": "Puré de calabaza",
+            "approx_amount": null,
+            "tolerance": "fine",
+            "tolerance_detail": null,
+            "created_at": "2026-10-25T07:05:00",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "edit_logs": [
+        {
+            "id": "fe196a08-0d74-46e1-a223-93907296fa2d",
+            "entity_name": "fast",
+            "row_id": "b589ddeb-e59b-47c2-b974-1bff20529214",
+            "action": "edit",
+            "edited_at": "2026-10-22T22:15:00",
+            "field": "clock_start_actual",
+            "old_value": "2026-10-22T22:10:00",
+            "new_value": "2026-10-22T22:05:00",
+            "reason": "Lo puse tarde",
+            "created_at": "2026-10-22T22:15:00",
+            "updated_at": null
+        }
+    ]
+}

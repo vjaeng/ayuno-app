@@ -58,20 +58,20 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-024 | Limitar una regla a ciertos momentos o contextos | media | 3 | 7 | U + I | pendiente |
 | H-025 | Elegir el nivel y el mensaje de cada regla | alta | 3 | 2 | U + I + E2E | pendiente |
 | H-026 | Que una regla programe otra medición u ofrezca terminar | alta | 3 | 3 | U + I + E2E | en verde |
-| H-027 | Decidir yo ante cada alerta y que quede constancia | alta | 4 | 7 | U + I + E2E | en verde (parcial) |
+| H-027 | Decidir yo ante cada alerta y que quede constancia | alta | 4 | 7 | U + I + E2E | en verde |
 | H-028 | Tener mis reglas siempre a un toque | alta | 3 | 15 | U + E2E | en verde |
 | H-029 | Llamar a mi contacto de emergencia con un toque | media | 3 | 2 | U + I | pendiente |
 | H-030 | Terminar el ayuno con su hora y motivo | alta | 5 | 7 | U + I + E2E | en verde |
 | H-031 | Definir y seguir mi plan de vuelta a comer | media | 4 | 10 | U + I | en verde |
 | H-032 | Anotar cada comida y cómo me cayó | media | 2 | 5 | U + I | en verde |
-| H-033 | Revisar mis ayunos pasados | media | 4 | 15 | U | en verde (parcial) |
+| H-033 | Revisar mis ayunos pasados | media | 4 | 15 | U | en verde |
 | H-034 | Corregir o borrar una entrada dejando rastro | alta | 4 | 15 | U + I + E2E | pendiente |
 | H-035 | Escribir una nota libre | alta | 3 | 2 | U + I + E2E | en verde |
-| H-036 | Exportar un ayuno o todo a un archivo con formato fijo | alta | 9 | 29 | U + E2E | pendiente |
-| H-037 | Exportar también en tablas | baja | 2 | 2 | U | pendiente |
-| H-038 | Decidir si el archivo lleva mis datos personales | media | 2 | 4 | U + I | pendiente |
-| H-039 | Importar plantillas y mi lista de productos | media | 3 | 3 | U + I | pendiente |
-| H-040 | Restaurar todo desde un archivo exportado | alta | 4 | 3 | U + I + E2E | pendiente |
+| H-036 | Exportar un ayuno o todo a un archivo con formato fijo | alta | 9 | 29 | U + E2E | en verde |
+| H-037 | Exportar también en tablas | baja | 2 | 2 | U | en verde |
+| H-038 | Decidir si el archivo lleva mis datos personales | media | 2 | 4 | U + I | en verde |
+| H-039 | Importar plantillas y mi lista de productos | media | 3 | 3 | U + I | en verde |
+| H-040 | Restaurar todo desde un archivo exportado | alta | 4 | 3 | U + I + E2E | en verde |
 | H-041 | Usar la app entera sin internet ni cuenta | alta | 3 | 7 | U + I + E2E | pendiente |
 | H-042 | Proteger mis datos en el teléfono y en copias | media | 4 | 1 | U + I | pendiente |
 | H-043 | Elegir mis unidades por defecto | media | 2 | 3 | U + I | pendiente |

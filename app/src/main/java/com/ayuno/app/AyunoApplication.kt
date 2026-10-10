@@ -19,6 +19,7 @@ open class AyunoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ReminderNotifier.createChannels(this)
+        appScope.launch { com.ayuno.app.exchange.ExportFiles.clear(this@AyunoApplication) }
         appScope.launch { container.reminders.reschedule() }
     }
 }

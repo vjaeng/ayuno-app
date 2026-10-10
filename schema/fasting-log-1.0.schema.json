@@ -1,0 +1,2134 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "fasting-log 1.0",
+    "description": "Registro de ayunos exportado por la app (ADR-007). null = no anotado; horas locales sin zona; desfase en tz_offset.",
+    "type": "object",
+    "required": [
+        "schema",
+        "schema_version",
+        "app_version",
+        "exported_at",
+        "tz_offset",
+        "person",
+        "catalogs",
+        "templates",
+        "fasts",
+        "stages",
+        "plan_metrics",
+        "metric_schedules",
+        "rules",
+        "intake_goals",
+        "checklist_items",
+        "stage_notices",
+        "plan_products",
+        "refeed_steps",
+        "measurements",
+        "blood_pressure_readings",
+        "symptoms",
+        "intakes",
+        "product_logs",
+        "alerts",
+        "notes",
+        "refeed_checks",
+        "meals",
+        "edit_logs"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "schema": {
+            "const": "fasting-log"
+        },
+        "schema_version": {
+            "const": "1.0"
+        },
+        "app_version": {
+            "type": "string"
+        },
+        "exported_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+        },
+        "tz_offset": {
+            "type": "string",
+            "pattern": "^[+-]\\d{2}:\\d{2}$"
+        },
+        "person": {
+            "type": "object",
+            "required": [
+                "full_name",
+                "id_number",
+                "birth_date"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "full_name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id_number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "birth_date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+            }
+        },
+        "catalogs": {
+            "type": "object",
+            "required": [
+                "metric_types",
+                "symptom_types",
+                "intake_types",
+                "products",
+                "product_schedules"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "metric_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/metric_type"
+                    }
+                },
+                "symptom_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/symptom_type"
+                    }
+                },
+                "intake_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/intake_type"
+                    }
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/product"
+                    }
+                },
+                "product_schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/product_schedule"
+                    }
+                }
+            }
+        },
+        "templates": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/template"
+            }
+        },
+        "fasts": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/fast"
+            }
+        },
+        "stages": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/stage"
+            }
+        },
+        "plan_metrics": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/plan_metric"
+            }
+        },
+        "metric_schedules": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/metric_schedule"
+            }
+        },
+        "rules": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/rule"
+            }
+        },
+        "intake_goals": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/intake_goal"
+            }
+        },
+        "checklist_items": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/checklist_item"
+            }
+        },
+        "stage_notices": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/stage_notice"
+            }
+        },
+        "plan_products": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/plan_product"
+            }
+        },
+        "refeed_steps": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/refeed_step"
+            }
+        },
+        "measurements": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/measurement"
+            }
+        },
+        "blood_pressure_readings": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/blood_pressure_reading"
+            }
+        },
+        "symptoms": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/symptom"
+            }
+        },
+        "intakes": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/intake"
+            }
+        },
+        "product_logs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/product_log"
+            }
+        },
+        "alerts": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/alert"
+            }
+        },
+        "notes": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/note"
+            }
+        },
+        "refeed_checks": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/refeed_check"
+            }
+        },
+        "meals": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/meal"
+            }
+        },
+        "edit_logs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/edit_log"
+            }
+        }
+    },
+    "$defs": {
+        "metric_type": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "unit",
+                "alt_unit",
+                "entry_unit",
+                "is_numeric",
+                "min_valid",
+                "max_valid",
+                "active",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "alt_unit": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "entry_unit": {
+                    "type": "string"
+                },
+                "is_numeric": {
+                    "type": "boolean"
+                },
+                "min_valid": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "max_valid": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "symptom_type": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "group_name",
+                "is_alarm",
+                "active",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "group_name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "is_alarm": {
+                    "type": "boolean"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "intake_type": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "unit",
+                "breaks_fast",
+                "sodium_factor",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "breaks_fast": {
+                    "type": "boolean"
+                },
+                "sodium_factor": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "product": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "kind",
+                "default_amount",
+                "unit",
+                "avoid",
+                "active",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "medication",
+                        "supplement"
+                    ]
+                },
+                "default_amount": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "avoid": {
+                    "type": "boolean"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "product_schedule": {
+            "type": "object",
+            "required": [
+                "id",
+                "product_code",
+                "time_of_day",
+                "amount",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "product_code": {
+                    "type": "string"
+                },
+                "time_of_day": {
+                    "type": "string",
+                    "pattern": "^\\d{2}:\\d{2}$"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "template": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "target_hours",
+                "milestone_hours",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "target_hours": {
+                    "type": "number"
+                },
+                "milestone_hours": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "fast": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "status",
+                "target_hours",
+                "milestone_hours",
+                "last_meal_planned",
+                "last_meal_actual",
+                "clock_start_planned",
+                "clock_start_actual",
+                "end_actual",
+                "end_reason",
+                "end_reason_detail",
+                "end_rule_id",
+                "tz_offset",
+                "notes",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "finished",
+                        "in_progress",
+                        "planned"
+                    ]
+                },
+                "target_hours": {
+                    "type": "number"
+                },
+                "milestone_hours": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "last_meal_planned": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "last_meal_actual": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "clock_start_planned": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "clock_start_actual": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "end_actual": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "end_reason": {
+                    "enum": [
+                        "alert_rule",
+                        "goal_met",
+                        "other",
+                        "personal_decision",
+                        null
+                    ]
+                },
+                "end_reason_detail": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "end_rule_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "tz_offset": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "stage": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "kind",
+                "duration_value",
+                "duration_unit",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "kind": {
+                    "enum": [
+                        "fast",
+                        "post",
+                        "preparation",
+                        "refeed"
+                    ]
+                },
+                "duration_value": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "duration_unit": {
+                    "enum": [
+                        "days",
+                        "hours"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "plan_metric": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "metric_type_code",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "metric_type_code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "metric_schedule": {
+            "type": "object",
+            "required": [
+                "id",
+                "plan_metric_id",
+                "stage_kind",
+                "time_of_day",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "plan_metric_id": {
+                    "type": "string"
+                },
+                "stage_kind": {
+                    "enum": [
+                        "fast",
+                        "post",
+                        "preparation",
+                        "refeed"
+                    ]
+                },
+                "time_of_day": {
+                    "type": "string",
+                    "pattern": "^\\d{2}:\\d{2}$"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "rule": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "name",
+                "active",
+                "condition_kind",
+                "metric_type_code",
+                "bp_component",
+                "threshold",
+                "sustained_minutes",
+                "symptom_type_code",
+                "intake_type_code",
+                "check_time",
+                "filter_stage_kinds",
+                "filter_on_waking",
+                "filter_position",
+                "level",
+                "message",
+                "action",
+                "action_minutes",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "condition_kind": {
+                    "enum": [
+                        "alarm_symptom",
+                        "intake_below_goal",
+                        "manual",
+                        "metric_above",
+                        "metric_below"
+                    ]
+                },
+                "metric_type_code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "bp_component": {
+                    "enum": [
+                        "diastolic",
+                        "pulse",
+                        "systolic",
+                        null
+                    ]
+                },
+                "threshold": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "sustained_minutes": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "symptom_type_code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "intake_type_code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "check_time": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{2}:\\d{2}$"
+                },
+                "filter_stage_kinds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "fast",
+                            "post",
+                            "preparation",
+                            "refeed"
+                        ]
+                    }
+                },
+                "filter_on_waking": {
+                    "type": "boolean"
+                },
+                "filter_position": {
+                    "enum": [
+                        "lying",
+                        "sitting",
+                        "standing",
+                        null
+                    ]
+                },
+                "level": {
+                    "enum": [
+                        "alert",
+                        "notice"
+                    ]
+                },
+                "message": {
+                    "type": "string"
+                },
+                "action": {
+                    "enum": [
+                        "none",
+                        "offer_end",
+                        "schedule_measurement"
+                    ]
+                },
+                "action_minutes": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "intake_goal": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "intake_type_code",
+                "daily_amount",
+                "unit",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "intake_type_code": {
+                    "type": "string"
+                },
+                "daily_amount": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "checklist_item": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "text",
+                "is_checked",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "is_checked": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "stage_notice": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "text",
+                "stage_kinds",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "stage_kinds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "fast",
+                            "post",
+                            "preparation",
+                            "refeed"
+                        ]
+                    }
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "plan_product": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "product_code",
+                "during_fast",
+                "optional_enabled",
+                "reason",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "product_code": {
+                    "type": "string"
+                },
+                "during_fast": {
+                    "enum": [
+                        "continues",
+                        "optional",
+                        "stops"
+                    ]
+                },
+                "optional_enabled": {
+                    "type": "boolean"
+                },
+                "reason": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "refeed_step": {
+            "type": "object",
+            "required": [
+                "id",
+                "template_id",
+                "fast_id",
+                "kind",
+                "description",
+                "offset_minutes",
+                "repeat_every_minutes",
+                "repeat_for_minutes",
+                "day_offset",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "template_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fast_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "kind": {
+                    "enum": [
+                        "reintroduction",
+                        "timed"
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "offset_minutes": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "repeat_every_minutes": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "repeat_for_minutes": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "day_offset": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "measurement": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "metric_type_code",
+                "taken_at",
+                "scheduled_for",
+                "value_num",
+                "value_text",
+                "value_entered",
+                "unit_entered",
+                "source",
+                "trend",
+                "on_waking",
+                "not_done_reason",
+                "note",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "metric_type_code": {
+                    "type": "string"
+                },
+                "taken_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "scheduled_for": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "value_num": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "value_text": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "value_entered": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "unit_entered": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source": {
+                    "enum": [
+                        "cgm",
+                        "glucometer",
+                        null
+                    ]
+                },
+                "trend": {
+                    "enum": [
+                        "falling",
+                        "falling_fast",
+                        "rising",
+                        "rising_fast",
+                        "steady",
+                        null
+                    ]
+                },
+                "on_waking": {
+                    "type": "boolean"
+                },
+                "not_done_reason": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "note": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "blood_pressure_reading": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "taken_at",
+                "scheduled_for",
+                "systolic",
+                "diastolic",
+                "pulse",
+                "position",
+                "on_waking",
+                "paired_reading_id",
+                "not_done_reason",
+                "note",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "taken_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "scheduled_for": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "systolic": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "diastolic": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "pulse": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "position": {
+                    "enum": [
+                        "lying",
+                        "sitting",
+                        "standing"
+                    ]
+                },
+                "on_waking": {
+                    "type": "boolean"
+                },
+                "paired_reading_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "not_done_reason": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "note": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "symptom": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "symptom_type_code",
+                "noted_at",
+                "severity",
+                "note",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "symptom_type_code": {
+                    "type": "string"
+                },
+                "noted_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "severity": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "intake": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "intake_type_code",
+                "taken_at",
+                "amount",
+                "unit",
+                "note",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "intake_type_code": {
+                    "type": "string"
+                },
+                "taken_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "product_log": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "product_code",
+                "scheduled_at",
+                "status",
+                "taken_at",
+                "planned_amount",
+                "amount",
+                "unit",
+                "reason",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "product_code": {
+                    "type": "string"
+                },
+                "scheduled_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "status": {
+                    "enum": [
+                        "dose_changed",
+                        "not_taken",
+                        "taken"
+                    ]
+                },
+                "taken_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "planned_amount": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "amount": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "unit": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "reason": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "alert": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "rule_id",
+                "fired_at",
+                "trigger_entry_ids",
+                "user_choice",
+                "choice_reason",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "rule_id": {
+                    "type": "string"
+                },
+                "fired_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "trigger_entry_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_choice": {
+                    "enum": [
+                        "continue",
+                        "end_fast",
+                        null
+                    ]
+                },
+                "choice_reason": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "note": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "noted_at",
+                "text",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "noted_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "refeed_check": {
+            "type": "object",
+            "required": [
+                "id",
+                "refeed_step_id",
+                "scheduled_at",
+                "done_at",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "refeed_step_id": {
+                    "type": "string"
+                },
+                "scheduled_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "done_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "meal": {
+            "type": "object",
+            "required": [
+                "id",
+                "fast_id",
+                "eaten_at",
+                "description",
+                "approx_amount",
+                "tolerance",
+                "tolerance_detail",
+                "created_at",
+                "updated_at",
+                "deleted_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "fast_id": {
+                    "type": "string"
+                },
+                "eaten_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "approx_amount": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "tolerance": {
+                    "enum": [
+                        "diarrhea",
+                        "fine",
+                        "heaviness",
+                        "nausea",
+                        "other"
+                    ]
+                },
+                "tolerance_detail": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "deleted_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        },
+        "edit_log": {
+            "type": "object",
+            "required": [
+                "id",
+                "entity_name",
+                "row_id",
+                "action",
+                "edited_at",
+                "field",
+                "old_value",
+                "new_value",
+                "reason",
+                "created_at",
+                "updated_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "entity_name": {
+                    "type": "string"
+                },
+                "row_id": {
+                    "type": "string"
+                },
+                "action": {
+                    "enum": [
+                        "delete",
+                        "edit",
+                        "restore"
+                    ]
+                },
+                "edited_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "field": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "old_value": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "new_value": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "reason": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "created_at": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                },
+                "updated_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+                }
+            }
+        }
+    }
+}

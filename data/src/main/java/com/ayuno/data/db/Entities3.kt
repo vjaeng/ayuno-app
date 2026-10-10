@@ -48,3 +48,15 @@ data class MealEntity(
     @ColumnInfo(name = "updated_at") val updatedAt: String?,
     @ColumnInfo(name = "deleted_at") val deletedAt: String?,
 )
+
+/** Registro único (H-038), como `settings`: datos de identidad que solo viajan si la persona lo activa. */
+@Entity(tableName = "person_profile")
+data class PersonProfileEntity(
+    @PrimaryKey val id: Int = SettingsEntity.SINGLETON_ID,
+    @ColumnInfo(name = "full_name") val fullName: String?,
+    @ColumnInfo(name = "id_number") val idNumber: String?,
+    @ColumnInfo(name = "birth_date") val birthDate: String?,
+    @ColumnInfo(name = "created_at") val createdAt: String,
+    @ColumnInfo(name = "updated_at") val updatedAt: String?,
+    @ColumnInfo(name = "deleted_at") val deletedAt: String?,
+)

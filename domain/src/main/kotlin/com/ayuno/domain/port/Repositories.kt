@@ -11,7 +11,12 @@ import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Intake
 import com.ayuno.domain.model.IntakeType
 import com.ayuno.domain.model.Meal
+import com.ayuno.domain.model.ExportRequest
+import com.ayuno.domain.model.ImportCheck
+import com.ayuno.domain.model.ImportPreview
+import com.ayuno.domain.model.ImportResult
 import com.ayuno.domain.model.Note
+import com.ayuno.domain.model.PersonProfile
 import com.ayuno.domain.model.Plan
 import com.ayuno.domain.model.Settings
 import com.ayuno.domain.model.Product
@@ -115,6 +120,26 @@ interface SettingsRepository {
     fun observe(): Flow<Settings>
     suspend fun get(): Settings
     suspend fun save(settings: Settings)
+}
+
+interface PersonProfileRepository {
+    fun observe(): Flow<PersonProfile>
+    suspend fun get(): PersonProfile
+    suspend fun save(profile: PersonProfile)
+}
+
+/**
+ * Formato de intercambio (ADR-007) e importación todo o nada (ADR-SEG-006). Qué se exporta lo decide el caso de
+ * uso con [ExportRequest]; esta capa serializa, valida y escribe.
+ */
+interface DataExchange {
+    suspend fun export(request: ExportRequest): String
+
+    /** H-037: archivo comprimido con una tabla por lista, con las mismas columnas que el JSON. */
+    fun tables(json: String): ByteArray
+
+    suspend fun preview(content: ByteArray): ImportCheck<ImportPreview>
+    suspend fun import(content: ByteArray): ImportCheck<ImportResult>
 }
 
 interface AuditRepository {

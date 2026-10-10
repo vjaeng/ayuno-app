@@ -34,20 +34,20 @@ Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la 
 | H-024 | [Limitar una regla a ciertos momentos o contextos](reglas-024-filtros-regla.md) | reglas | media | tejida |
 | H-025 | [Elegir el nivel y el mensaje de cada regla](reglas-025-nivel-y-mensaje.md) | reglas | alta | tejida |
 | H-026 | [Que una regla programe otra medición u ofrezca terminar](reglas-026-accion-regla.md) | reglas | alta | entregada |
-| H-027 | [Decidir yo ante cada alerta y que quede constancia](reglas-027-decision-y-registro.md) | reglas | alta | en construcción |
+| H-027 | [Decidir yo ante cada alerta y que quede constancia](reglas-027-decision-y-registro.md) | reglas | alta | entregada |
 | H-028 | [Tener mis reglas siempre a un toque](reglas-028-boton-seguridad.md) | reglas | alta | entregada |
 | H-029 | [Llamar a mi contacto de emergencia con un toque](reglas-029-contacto-emergencia.md) | reglas | media | tejida |
 | H-030 | [Terminar el ayuno con su hora y motivo](fin-030-terminar-ayuno.md) | fin | alta | entregada |
 | H-031 | [Definir y seguir mi plan de vuelta a comer](vuelta-a-comer-031-plan-vuelta.md) | vuelta-a-comer | media | entregada |
 | H-032 | [Anotar cada comida y cómo me cayó](vuelta-a-comer-032-registrar-comida.md) | vuelta-a-comer | media | entregada |
-| H-033 | [Revisar mis ayunos pasados](historial-033-historial-ayunos.md) | historial | media | en construcción |
+| H-033 | [Revisar mis ayunos pasados](historial-033-historial-ayunos.md) | historial | media | entregada |
 | H-034 | [Corregir o borrar una entrada dejando rastro](historial-034-corregir-borrar.md) | historial | alta | tejida |
 | H-035 | [Escribir una nota libre](notas-035-nota-libre.md) | notas | alta | entregada |
-| H-036 | [Exportar un ayuno o todo a un archivo con formato fijo](exportacion-036-exportar.md) | exportacion | alta | tejida |
-| H-037 | [Exportar también en tablas](exportacion-037-exportar-tablas.md) | exportacion | baja | tejida |
-| H-038 | [Decidir si el archivo lleva mis datos personales](exportacion-038-datos-identidad.md) | exportacion | media | tejida |
-| H-039 | [Importar plantillas y mi lista de productos](importacion-039-importar-plantillas-productos.md) | importacion | media | tejida |
-| H-040 | [Restaurar todo desde un archivo exportado](importacion-040-restaurar.md) | importacion | alta | tejida |
+| H-036 | [Exportar un ayuno o todo a un archivo con formato fijo](exportacion-036-exportar.md) | exportacion | alta | entregada |
+| H-037 | [Exportar también en tablas](exportacion-037-exportar-tablas.md) | exportacion | baja | entregada |
+| H-038 | [Decidir si el archivo lleva mis datos personales](exportacion-038-datos-identidad.md) | exportacion | media | entregada |
+| H-039 | [Importar plantillas y mi lista de productos](importacion-039-importar-plantillas-productos.md) | importacion | media | entregada |
+| H-040 | [Restaurar todo desde un archivo exportado](importacion-040-restaurar.md) | importacion | alta | entregada |
 | H-041 | [Usar la app entera sin internet ni cuenta](privacidad-041-sin-conexion-sin-cuenta.md) | privacidad | alta | tejida |
 | H-042 | [Proteger mis datos en el teléfono y en copias](privacidad-042-proteger-datos.md) | privacidad | media | tejida |
 | H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | tejida |
@@ -123,10 +123,8 @@ Recorrido mínimo: plantillas, crear y empezar el ayuno, reloj, anotar medicione
 | Historia | Pendiente |
 |---|---|
 | H-006 | Reloj en < 1 s → verificación en dispositivo (PRUEBAS §4.7). Los totales del día ya funcionan. |
-| H-017 | «No se hizo» en la exportación → H-036. Acciones de la notificación con la app cerrada → verificación en dispositivo (PRUEBAS §4.7). |
+| H-017 | Acciones de la notificación con la app cerrada → verificación en dispositivo (PRUEBAS §4.7). «No se hizo» ya viaja en la exportación. |
 | H-016 | Verificación en dispositivo (alarma real con la app cerrada, reinicio real, 3 días). Ya incluye tomas de productos y pasos de la vuelta a comer. |
-| H-027 | Las alertas en la exportación → H-036 (en la línea de tiempo ya aparecen). |
-| H-033 | Exportar desde el ayuno → H-036. |
 
 ## Construcción — tanda 2a (2026-10-08)
 
@@ -145,6 +143,12 @@ Recordatorios completos y vista del día: pestaña «Hoy» con lo hecho, pendien
 Vuelta a comer e historial: pasos de la vuelta a comer en la plantilla (por horas, con repetición, o por días), copiados al ayuno; al terminar se calculan sus casillas desde el fin real en la misma transacción; pantalla de vuelta a comer (también en Inicio durante la etapa) con casillas que guardan la hora real, comidas con cómo cayeron y reintroducción con fecha; los pasos en Hoy y en los recordatorios; pestaña Historial con la lista de ayunos y la línea de tiempo por días con totales. Base de datos en versión 3 (migración 2→3 probada). 244 pruebas en verde; lint sin errores.
 
 **Entregadas en la tanda 3:** H-031, H-032; y pasan a entregadas H-004 (copia de la vuelta a comer), H-018 (pasos en el día), H-030 (la vuelta a comer empieza al terminar) y H-035 (la nota en la línea de tiempo). H-033 queda en construcción (exportar → H-036). Reglas de cálculo de las casillas en MODELO-DATOS D-14.
+
+## Construcción — tanda 4 (2026-10-10)
+
+Exportar e importar: archivo `fasting-log` 1.0 con nombres canónicos, `null` para lo no anotado, horas locales con segundos y desfase en la cabecera; esquema JSON publicado en `schema/` (generado desde la descripción del formato y comprobado en cada prueba) con ejemplo y registro de cambios; exportar un ayuno desde su detalle o todo desde Más, con tablas CSV opcionales en un comprimido, por la hoja de compartir; datos personales en Ajustes, que solo viajan si se activan; importar con resumen previo (nuevos, ya estaban, campos ignorados), validación completa y escritura todo o nada, sin duplicar. Base de datos en versión 4 (`person_profile`, migración 3→4 probada). 272 pruebas en verde; lint sin errores.
+
+**Entregadas en la tanda 4:** H-036, H-037, H-038, H-039, H-040; y pasan a entregadas H-027 (las alertas viajan en la exportación) y H-033 (exportar desde el ayuno). H-017 sigue pendiente solo de la verificación en dispositivo.
 
 ## Cambios aprobados durante la construcción
 

@@ -73,6 +73,7 @@ enum class ValidationError {
     REFEED_CHECK_NOT_FOUND,
     TOLERANCE_DETAIL_REQUIRED,
     TOLERANCE_REQUIRED,
+    NOTHING_TO_EXPORT,
 }
 
 fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

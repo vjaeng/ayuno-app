@@ -22,6 +22,7 @@ import com.ayuno.app.ui.components.ErrorState
 import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.ScreenScaffold
+import com.ayuno.app.ui.components.SecondaryButton
 import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
@@ -159,7 +160,7 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
 }
 
 @Composable
-fun FastDetailScreen(fastId: String, onBack: () -> Unit) {
+fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = {}) {
     val viewModel: FastDetailViewModel = viewModel(key = "detail-$fastId", factory = containerFactory { FastDetailViewModel(it, fastId) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     ScreenScaffold(stringResource(R.string.history_detail_title), onBack) {
@@ -177,6 +178,7 @@ fun FastDetailScreen(fastId: String, onBack: () -> Unit) {
         ).joinToString(" · ")
         Text(summary, style = MaterialTheme.typography.bodyLarge)
         fast.notes?.let { Text(stringResource(R.string.history_notes, it), style = MaterialTheme.typography.bodyLarge) }
+        SecondaryButton(stringResource(R.string.export_action), onClick = onExport)
         if (d.days.isEmpty()) EmptyState(stringResource(R.string.history_no_entries))
         d.days.forEach { day ->
             SectionTitle(Formats.date(day.day.atStartOfDay()))

@@ -40,8 +40,9 @@ import java.time.Clock
         RefeedStepEntity::class,
         RefeedCheckEntity::class,
         MealEntity::class,
+        PersonProfileEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AyunoDatabase : RoomDatabase() {
@@ -56,6 +57,7 @@ abstract class AyunoDatabase : RoomDatabase() {
     abstract fun plan2Dao(): Plan2Dao
     abstract fun record2Dao(): Record2Dao
     abstract fun refeedDao(): RefeedDao
+    abstract fun personProfileDao(): PersonProfileDao
 
     companion object {
         /** Configuración común a la base real y a la de pruebas: integridad y datos iniciales. */

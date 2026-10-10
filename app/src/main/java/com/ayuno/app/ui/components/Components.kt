@@ -41,11 +41,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.ayuno.app.R
 import com.ayuno.app.ui.theme.AyunoThemeTokens
@@ -126,7 +133,10 @@ fun AyunoTextField(
     error: String? = null,
     suffix: String? = null,
     singleLine: Boolean = true,
+    /** Dato sensible (documento de identidad): oculto salvo mientras se edita. */
+    masked: Boolean = false,
 ) {
+    var focused by remember { mutableStateOf(false) }
     Column(modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = value,
@@ -137,7 +147,8 @@ fun AyunoTextField(
             suffix = suffix?.let { { Text(it) } },
             textStyle = if (numeric) MaterialTheme.typography.displaySmall else MaterialTheme.typography.bodyLarge,
             keyboardOptions = KeyboardOptions(keyboardType = if (numeric) KeyboardType.Decimal else KeyboardType.Text),
-            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if (masked && !focused) PasswordVisualTransformation() else VisualTransformation.None,
+            modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused },
         )
         if (error != null) FieldError(error)
     }
