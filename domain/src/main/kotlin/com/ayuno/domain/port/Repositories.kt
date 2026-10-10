@@ -12,6 +12,7 @@ import com.ayuno.domain.model.Intake
 import com.ayuno.domain.model.IntakeType
 import com.ayuno.domain.model.Note
 import com.ayuno.domain.model.Plan
+import com.ayuno.domain.model.Settings
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.ProductLog
 import com.ayuno.domain.model.Symptom
@@ -92,6 +93,12 @@ interface AlertRepository {
     suspend fun get(id: String): Alert?
     suspend fun insert(alert: Alert)
     suspend fun update(alert: Alert)
+}
+
+interface SettingsRepository {
+    fun observe(): Flow<Settings>
+    suspend fun get(): Settings
+    suspend fun save(settings: Settings)
 }
 
 interface AuditRepository {

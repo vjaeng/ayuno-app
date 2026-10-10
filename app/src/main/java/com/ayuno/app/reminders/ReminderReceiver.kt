@@ -17,7 +17,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val pending = goAsync()
         app.appScope.launch {
             try {
-                handle(app, intent.getStringExtra(EXTRA_SCHEDULED_AT)?.let { LocalTimes.parse(it) })
+                if (intent.action == ACTION_SNOOZED) handleSnoozed(app, intent) else handle(app, intent.getStringExtra(EXTRA_SCHEDULED_AT)?.let { LocalTimes.parse(it) })
             } finally {
                 pending.finish()
             }
@@ -27,21 +27,28 @@ class ReminderReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION = "com.ayuno.app.REMINDER"
         const val EXTRA_SCHEDULED_AT = "scheduled_at"
+        const val ACTION_SNOOZED = "com.ayuno.app.REMINDER_SNOOZED"
+
+        /** Aviso pospuesto: se repite solo si sigue sin hacerse. */
+        suspend fun handleSnoozed(app: AyunoApplication, intent: Intent) {
+            val reminder = intent.toReminder() ?: return
+            if (app.container.reminders.stillPending(reminder)) ReminderNotifier.notifyReminder(app, reminder, label(app, reminder))
+        }
+
+        private suspend fun label(app: AyunoApplication, due: DueReminder): String {
+            val c = app.container
+            return when (due.item.kind) {
+                PendingKind.METRIC -> c.catalog.metricType(due.item.code)?.name ?: due.item.code
+                PendingKind.PRODUCT -> c.catalog.product(due.item.code)?.let { p ->
+                    "${p.name} · ${Formats.number(due.item.amount ?: p.defaultAmount)} ${p.unit}"
+                } ?: due.item.code
+            }
+        }
 
         suspend fun handle(app: AyunoApplication, at: java.time.LocalDateTime?) {
             val c = app.container
             if (at != null) {
-                val metricNames = c.catalog.metricTypes().associate { it.code to it.name }
-                val products = c.catalog.products().associateBy { it.code }
-                c.reminders.dueAt(at).forEach { due ->
-                    val label = when (due.item.kind) {
-                        PendingKind.METRIC -> metricNames[due.item.code] ?: due.item.code
-                        PendingKind.PRODUCT -> products[due.item.code]?.let { p ->
-                            "${p.name} · ${Formats.number(due.item.amount ?: p.defaultAmount)} ${p.unit}"
-                        } ?: due.item.code
-                    }
-                    ReminderNotifier.notifyReminder(app, due, label)
-                }
+                c.reminders.dueAt(at).forEach { due -> ReminderNotifier.notifyReminder(app, due, label(app, due)) }
             }
             c.fasts.all().firstOrNull { it.status == FastStatus.IN_PROGRESS }?.let { fast ->
                 val rules = c.fasts.get(fast.id)?.plan?.rules.orEmpty().associateBy { it.id }

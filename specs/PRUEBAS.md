@@ -39,17 +39,17 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
 | H-006 | Ver de un vistazo dónde estoy | alta | 7 | 14 | U + E2E | en verde (parcial) |
 | H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 4 | 9 | U + I + E2E | en verde |
-| H-008 | Anotar una medición en tres toques | alta | 8 | 20 | U + I + E2E | en verde (parcial) |
+| H-008 | Anotar una medición en tres toques | alta | 8 | 20 | U + I + E2E | en verde |
 | H-009 | Anotar la presión sentado y de pie | alta | 4 | 6 | U + I + E2E | en verde |
 | H-010 | Marcar síntomas de mi propio catálogo | alta | 5 | 8 | U + I + E2E | en verde |
 | H-011 | Definir mis tipos de líquidos y electrolitos | alta | 3 | 4 | U + I + E2E | en verde |
 | H-012 | Anotar lo que bebo y ver cuánto llevo | alta | 5 | 9 | U + I + E2E | en verde |
 | H-013 | Mantener mi lista de suplementos y medicamentos | alta | 3 | 11 | U + I + E2E | en verde |
 | H-014 | Decidir qué productos siguen y cuáles salen en el ayuno | alta | 3 | 6 | U + I + E2E | en verde |
-| H-015 | Marcar cada toma de un producto | alta | 3 | 10 | U + I + E2E | en verde (parcial) |
+| H-015 | Marcar cada toma de un producto | alta | 3 | 10 | U + I + E2E | en verde |
 | H-016 | Que cada recordatorio suene a su hora pase lo que pase | alta | 4 | 4 | U + E2E | en verde (parcial) |
-| H-017 | Resolver un pendiente desde la notificación | alta | 5 | 9 | U + I + E2E | pendiente |
-| H-018 | Ver el día como una línea de tiempo | alta | 3 | 10 | U + E2E | pendiente |
+| H-017 | Resolver un pendiente desde la notificación | alta | 5 | 9 | U + I + E2E | en verde (parcial) |
+| H-018 | Ver el día como una línea de tiempo | alta | 3 | 10 | U + E2E | en verde (parcial) |
 | H-019 | Definir una regla de alerta por umbral | alta | 5 | 18 | U + I + E2E | en verde |
 | H-020 | Definir una regla de alerta sostenida en el tiempo | alta | 3 | 5 | U + I + E2E | en verde |
 | H-021 | Definir una regla que salte con un síntoma de alarma | alta | 2 | 5 | U + I + E2E | en verde |
@@ -57,7 +57,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-023 | Pedir una alerta manual cuando algo no va bien | alta | 3 | 5 | U + I + E2E | en verde |
 | H-024 | Limitar una regla a ciertos momentos o contextos | media | 3 | 7 | U + I | pendiente |
 | H-025 | Elegir el nivel y el mensaje de cada regla | alta | 3 | 2 | U + I + E2E | pendiente |
-| H-026 | Que una regla programe otra medición u ofrezca terminar | alta | 3 | 3 | U + I + E2E | pendiente |
+| H-026 | Que una regla programe otra medición u ofrezca terminar | alta | 3 | 3 | U + I + E2E | en verde |
 | H-027 | Decidir yo ante cada alerta y que quede constancia | alta | 4 | 7 | U + I + E2E | en verde (parcial) |
 | H-028 | Tener mis reglas siempre a un toque | alta | 3 | 15 | U + E2E | en verde |
 | H-029 | Llamar a mi contacto de emergencia con un toque | media | 3 | 2 | U + I | pendiente |

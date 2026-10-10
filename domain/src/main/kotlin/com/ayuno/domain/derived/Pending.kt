@@ -1,6 +1,8 @@
 package com.ayuno.domain.derived
 
+import com.ayuno.domain.model.Alert
 import com.ayuno.domain.model.BloodPressureReading
+import com.ayuno.domain.model.RuleAction
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
@@ -14,8 +16,19 @@ enum class PendingState { DONE, PENDING, LATE, NOT_DONE }
 
 enum class PendingKind { METRIC, PRODUCT }
 
-/** Algo que toca hacer a una hora: una medición o una toma de producto. */
-data class PendingItem(val kind: PendingKind, val code: String, val scheduledAt: LocalDateTime, val amount: Double? = null)
+/**
+ * Algo que toca hacer a una hora: una medición o una toma de producto. [fromRule]: lo programó una regla
+ * («medir de nuevo en N minutos», H-026); suena aunque sea silencio nocturno y cuenta como hecho con cualquier
+ * lectura de esa medición posterior a [answeredAfter] (la hora de la alerta).
+ */
+data class PendingItem(
+    val kind: PendingKind,
+    val code: String,
+    val scheduledAt: LocalDateTime,
+    val amount: Double? = null,
+    val fromRule: Boolean = false,
+    val answeredAfter: LocalDateTime? = null,
+)
 
 data class PendingStatus(val item: PendingItem, val state: PendingState)
 
@@ -62,7 +75,20 @@ object Pending {
         return result.distinct().sortedWith(compareBy({ it.scheduledAt }, { it.kind }, { it.code }))
     }
 
+    /** H-026: recordatorios programados por reglas con acción «medir de nuevo en N minutos». */
+    fun ruleFollowUps(source: FastWithPlan, alerts: List<Alert>): List<PendingItem> {
+        val rules = source.plan.rules.associateBy { it.id }
+        return alerts.mapNotNull { alert ->
+            val rule = rules[alert.ruleId] ?: return@mapNotNull null
+            val code = rule.metricTypeCode ?: return@mapNotNull null
+            val minutes = rule.actionMinutes ?: return@mapNotNull null
+            if (rule.action != RuleAction.SCHEDULE_MEASUREMENT) return@mapNotNull null
+            PendingItem(PendingKind.METRIC, code, alert.firedAt.plusMinutes(minutes.toLong()), fromRule = true, answeredAfter = alert.firedAt)
+        }
+    }
+
     fun status(item: PendingItem, now: LocalDateTime, records: PendingRecords): PendingStatus {
+        if (item.fromRule) return PendingStatus(item, followUpState(item, now, records))
         // Cada respuesta es «hecho» (true) o «no se hizo» (false).
         val answers: List<Boolean> = when {
             item.kind == PendingKind.PRODUCT ->
@@ -79,5 +105,21 @@ object Pending {
             else -> PendingState.PENDING
         }
         return PendingStatus(item, state)
+    }
+
+    private fun followUpState(item: PendingItem, now: LocalDateTime, records: PendingRecords): PendingState {
+        val after = item.answeredAfter ?: item.scheduledAt
+        val answers: List<Pair<LocalDateTime?, String?>> = if (item.code == MetricType.BLOOD_PRESSURE_CODE) {
+            records.readings.map { Triple(it.takenAt, it.scheduledFor, it.notDoneReason) }.filter { it.first.isAfter(after) || it.second == item.scheduledAt }.map { it.second to it.third }
+        } else {
+            records.measurements.filter { it.metricTypeCode == item.code }.map { Triple(it.takenAt, it.scheduledFor, it.notDoneReason) }
+                .filter { it.first.isAfter(after) || it.second == item.scheduledAt }.map { it.second to it.third }
+        }
+        return when {
+            answers.any { it.second == null } -> PendingState.DONE
+            answers.any { it.first == item.scheduledAt } -> PendingState.NOT_DONE
+            now.isAfter(item.scheduledAt.plusMinutes(LATE_AFTER_MINUTES)) -> PendingState.LATE
+            else -> PendingState.PENDING
+        }
     }
 }

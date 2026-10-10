@@ -77,5 +77,8 @@ class AppContainer(
     val evaluateRules by lazy { com.ayuno.domain.usecase.EvaluateRules(catalog, fasts, records, alerts, transactions, clock) }
     val setChecklistItem by lazy { com.ayuno.domain.usecase.SetChecklistItem(fasts) }
 
-    val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, clock) }
+    val settings: com.ayuno.domain.port.SettingsRepository by lazy { com.ayuno.data.repository.RoomSettingsRepository(database) }
+    val saveQuietHours by lazy { com.ayuno.domain.usecase.SaveQuietHours(settings) }
+
+    val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, alerts, settings, clock) }
 }

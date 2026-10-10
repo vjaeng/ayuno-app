@@ -2,6 +2,8 @@ package com.ayuno.app.e2e
 
 import android.view.WindowManager
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -27,8 +29,8 @@ class NavigationShellE2eTest {
 
     @Test
     fun `tocar una pestana la selecciona`() {
-        compose.onNodeWithText("Hoy").performClick()
-        compose.onNodeWithText("Hoy").assertIsSelected()
+        compose.onNode(hasText("Hoy") and isSelectable()).performClick()
+        compose.onNode(hasText("Hoy") and isSelectable()).assertIsSelected()
     }
 
     @Test

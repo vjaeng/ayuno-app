@@ -149,6 +149,13 @@ class FakeAudit : AuditRepository {
     override suspend fun entriesFor(rowId: String) = entries.filter { it.rowId == rowId }
 }
 
+class FakeSettings : com.ayuno.domain.port.SettingsRepository {
+    val value = MutableStateFlow(com.ayuno.domain.model.Settings())
+    override fun observe() = value
+    override suspend fun get() = value.value
+    override suspend fun save(settings: com.ayuno.domain.model.Settings) { value.value = settings }
+}
+
 object DirectTransactions : TransactionRunner {
     override suspend fun <T> inTransaction(block: suspend () -> T): T = block()
 }

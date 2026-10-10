@@ -42,6 +42,11 @@ class MainActivity : ComponentActivity() {
         val fastId = getStringExtra(ReminderNotifier.EXTRA_FAST_ID) ?: return null
         val code = getStringExtra(ReminderNotifier.EXTRA_CODE) ?: return null
         val at = getStringExtra(ReminderNotifier.EXTRA_SCHEDULED_FOR)?.let { runCatching { LocalTimes.parse(it) }.getOrNull() } ?: return null
-        return if (getStringExtra(ReminderNotifier.EXTRA_KIND) == PendingKind.PRODUCT.name) DeepLink.Product(fastId, at) else DeepLink.Record(fastId, code, at)
+        val notDone = getBooleanExtra(ReminderNotifier.EXTRA_NOT_DONE, false)
+        return if (getStringExtra(ReminderNotifier.EXTRA_KIND) == PendingKind.PRODUCT.name) {
+            DeepLink.Product(fastId, code, at, notDone)
+        } else {
+            DeepLink.Record(fastId, code, at, notDone)
+        }
     }
 }

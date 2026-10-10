@@ -40,6 +40,11 @@ class RecordFormViewModel(private val container: AppContainer, val metricCode: S
 
     fun now(): LocalDateTime = LocalTimes.now(container.clock)
 
+    /** H-008: proponer «al despertar» en la primera lectura tras el fin del silencio nocturno. */
+    suspend fun proposeOnWaking(fastId: String): Boolean = com.ayuno.domain.derived.WakingProposal.propose(
+        now(), container.settings.get(), container.records.measurements(fastId), container.records.bloodPressure(fastId),
+    )
+
     suspend fun pairedDifference(fastId: String, standing: BloodPressureReading): BloodPressureReading? =
         container.records.bloodPressure(fastId).firstOrNull { it.id == standing.pairedReadingId }
 

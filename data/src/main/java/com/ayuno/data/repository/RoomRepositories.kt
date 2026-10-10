@@ -252,3 +252,27 @@ class RoomAuditRepository(private val database: AyunoDatabase, private val clock
     override suspend fun append(entry: EditLogEntry) = database.auditDao().insert(entry.toEntity(clock.stamp()))
     override suspend fun entriesFor(rowId: String): List<EditLogEntry> = database.auditDao().entriesFor(rowId).map { it.toDomain() }
 }
+
+/** Ajustes (registro único, H-017). Sin fila todavía = ajustes por defecto. */
+class RoomSettingsRepository(private val database: AyunoDatabase) : com.ayuno.domain.port.SettingsRepository {
+    private val dao get() = database.settingsDao()
+
+    private fun com.ayuno.data.db.SettingsEntity?.toDomain() = com.ayuno.domain.model.Settings(
+        quietStart = this?.quietStart?.localTime(),
+        quietEnd = this?.quietEnd?.localTime(),
+        exportPersonEnabled = this?.exportPersonEnabled ?: false,
+        appLockEnabled = this?.appLockEnabled ?: false,
+    )
+
+    override fun observe(): Flow<com.ayuno.domain.model.Settings> = dao.observe().map { it.toDomain() }
+    override suspend fun get(): com.ayuno.domain.model.Settings = dao.get().toDomain()
+
+    override suspend fun save(settings: com.ayuno.domain.model.Settings) = dao.upsert(
+        com.ayuno.data.db.SettingsEntity(
+            quietStart = settings.quietStart?.text(),
+            quietEnd = settings.quietEnd?.text(),
+            exportPersonEnabled = settings.exportPersonEnabled,
+            appLockEnabled = settings.appLockEnabled,
+        ),
+    )
+}

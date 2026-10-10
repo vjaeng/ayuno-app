@@ -2,19 +2,25 @@ package com.ayuno.app.ui.record
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.withResumed
 import com.ayuno.app.R
 import com.ayuno.app.ui.components.AyunoTextField
 import com.ayuno.app.ui.components.CheckRow
@@ -44,6 +50,7 @@ fun MeasurementFormScreen(
     scheduledFor: LocalDateTime?,
     onBack: () -> Unit,
     onSaved: (alerts: List<Alert>) -> Unit,
+    askNotDone: Boolean = false,
 ) {
     val viewModel: RecordFormViewModel = viewModel(key = "m-$metricCode-$scheduledFor", factory = containerFactory { RecordFormViewModel(it, metricCode) })
     val type by viewModel.type.collectAsStateWithLifecycle()
@@ -57,7 +64,8 @@ fun MeasurementFormScreen(
     var trend by remember { mutableStateOf<Trend?>(null) }
     var onWaking by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf("") }
-    var notDoneDialog by remember { mutableStateOf(false) }
+    var notDoneDialog by rememberNotDoneDialog(askNotDone)
+    LaunchedEffect(fastId) { if (viewModel.proposeOnWaking(fastId)) onWaking = true }
 
     val current = type
     ScreenScaffold(current?.name ?: "", onBack) {
@@ -145,11 +153,23 @@ fun MeasurementFormScreen(
     }
 }
 
+/** El diálogo pedido al abrir (desde Hoy o la notificación) espera a que la pantalla termine de entrar. */
+@Composable
+fun rememberNotDoneDialog(askOnOpen: Boolean): MutableState<Boolean> {
+    val open = remember { mutableStateOf(false) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(askOnOpen) { if (askOnOpen) lifecycle.withResumed { open.value = true } }
+    return open
+}
+
 @Composable
 fun NotDoneDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var reason by remember { mutableStateOf("") }
+    // Sin el ancho por defecto de la plataforma: con un campo de texto, Robolectric entra en un bucle de medida.
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.padding(horizontal = Dimens.spaceXl),
+        properties = DialogProperties(usePlatformDefaultWidth = false),
         title = { Text(stringResource(R.string.record_not_done)) },
         text = { Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) { AyunoTextField(stringResource(R.string.field_reason), reason, { reason = it }) } },
         confirmButton = { TextButton(onClick = { onConfirm(reason) }, enabled = reason.isNotBlank()) { Text(stringResource(R.string.action_save)) } },

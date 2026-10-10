@@ -116,6 +116,15 @@ class Repositories2Test {
     }
 
     @Test
+    fun `H-017 el silencio nocturno se guarda y se lee`() = runTest {
+        val repo = RoomSettingsRepository(w.database)
+        assertEquals(com.ayuno.domain.model.Settings(), repo.get())
+        com.ayuno.domain.usecase.SaveQuietHours(repo)(LocalTime.of(23, 0), LocalTime.of(6, 30))
+        assertEquals(LocalTime.of(23, 0), repo.get().quietStart)
+        assertEquals(LocalTime.of(6, 30), repo.get().quietEnd)
+    }
+
+    @Test
     fun `las nuevas entidades de plan tambien exigen un unico propietario`() {
         val db = w.database.openHelper.writableDatabase
         listOf(

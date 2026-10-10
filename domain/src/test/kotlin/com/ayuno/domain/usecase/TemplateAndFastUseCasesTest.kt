@@ -57,11 +57,11 @@ class TemplateAndFastUseCasesTest {
     }
 
     @Test
-    fun `H-019 reglas no soportadas aun se rechazan al guardar la plantilla`() = runTest {
+    fun `H-019 H-026 una regla incompleta se rechaza al guardar la plantilla`() = runTest {
         val w = TestWorld()
         val rule = w.glucoseBelow(55.0, action = RuleAction.SCHEDULE_MEASUREMENT).copy(message = "")
         val errors = (w.saveTemplate(TemplateWithPlan(Template(Ids.newId(), "X", 24.0, emptyList()), w.plan57h(listOf(rule)))) as Outcome.Invalid).errors
-        assertTrue(errors.containsAll(listOf(ValidationError.RULE_ACTION_UNSUPPORTED, ValidationError.RULE_MESSAGE_REQUIRED)))
+        assertTrue(errors.containsAll(listOf(ValidationError.RULE_ACTION_MINUTES_REQUIRED, ValidationError.RULE_MESSAGE_REQUIRED)))
     }
 
     // ---------- H-004 ----------

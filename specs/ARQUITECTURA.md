@@ -135,7 +135,6 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 
 | Deuda | Razón | Plan |
 |---|---|---|
-| Sin icono de la app | No lo pide ninguna historia | Añadir antes de la primera instalación |
 | `USE_EXACT_ALARM` incompatible con publicar en Google Play | La distribución es por APK (ADR-005) | Revisar ADR-005 si se decide publicar en Play |
 | Columnas JSON no consultables por SQL | Listas pequeñas (ADR-003) | Normalizar si aparece una consulta que lo necesite |
 

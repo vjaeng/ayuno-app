@@ -131,16 +131,25 @@ fun IntakeFormScreen(fastId: String, onBack: () -> Unit, onSaved: (alerts: List<
 
 /** H-015: tomas pendientes primero; los que salen en gris; aviso si es «a evitar». */
 @Composable
-fun ProductFormScreen(fastId: String, scheduledFor: LocalDateTime?, onBack: () -> Unit, onSaved: () -> Unit) {
+fun ProductFormScreen(
+    fastId: String,
+    scheduledFor: LocalDateTime?,
+    onBack: () -> Unit,
+    onSaved: () -> Unit,
+    productCode: String? = null,
+    notDone: Boolean = false,
+) {
     val viewModel: ProductViewModel = viewModel(key = "product-$fastId-$scheduledFor", factory = containerFactory { ProductViewModel(it, fastId, scheduledFor) })
     val choices by viewModel.choices.collectAsStateWithLifecycle()
     val save by viewModel.save.collectAsStateWithLifecycle()
     var chosen by remember { mutableStateOf<ProductChoice?>(null) }
     var confirmAvoid by remember { mutableStateOf<ProductChoice?>(null) }
     LaunchedEffect(save) { if (save is SimpleSave.Saved) onSaved() }
+    // Desde la notificación (H-017) se abre directamente la toma de ese producto.
+    LaunchedEffect(choices) { if (chosen == null && productCode != null) chosen = choices?.firstOrNull { it.product.code == productCode } }
 
     chosen?.let { choice ->
-        ProductLogForm(choice, viewModel, fastId, onBack = { chosen = null })
+        ProductLogForm(choice, viewModel, fastId, onBack = { chosen = null }, startNotTaken = notDone && choice.product.code == productCode)
         return
     }
     ScreenScaffold(stringResource(R.string.record_product), onBack) {
@@ -173,10 +182,10 @@ fun ProductFormScreen(fastId: String, scheduledFor: LocalDateTime?, onBack: () -
 }
 
 @Composable
-private fun ProductLogForm(choice: ProductChoice, viewModel: ProductViewModel, fastId: String, onBack: () -> Unit) {
+private fun ProductLogForm(choice: ProductChoice, viewModel: ProductViewModel, fastId: String, onBack: () -> Unit, startNotTaken: Boolean = false) {
     val save by viewModel.save.collectAsStateWithLifecycle()
     var takenAt by remember { mutableStateOf(viewModel.now()) }
-    var status by remember { mutableStateOf(ProductLogStatus.TAKEN) }
+    var status by remember { mutableStateOf(if (startNotTaken) ProductLogStatus.NOT_TAKEN else ProductLogStatus.TAKEN) }
     var amount by remember { mutableStateOf("") }
     var reason by remember { mutableStateOf("") }
     val planned = choice.pendingAmount ?: choice.product.defaultAmount

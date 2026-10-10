@@ -38,6 +38,7 @@ fun BloodPressureFormScreen(
     scheduledFor: LocalDateTime?,
     onBack: () -> Unit,
     onSaved: (alerts: List<Alert>) -> Unit,
+    askNotDone: Boolean = false,
 ) {
     val viewModel: RecordFormViewModel = viewModel(key = "bp-$scheduledFor", factory = containerFactory { RecordFormViewModel(it, MetricType.BLOOD_PRESSURE_CODE) })
     val save by viewModel.save.collectAsStateWithLifecycle()
@@ -52,7 +53,8 @@ fun BloodPressureFormScreen(
     var pairedWith by remember { mutableStateOf<BloodPressureReading?>(null) }
     var askStanding by remember { mutableStateOf<BloodPressureReading?>(null) }
     var difference by remember { mutableStateOf<Pair<BloodPressureReading, BloodPressureReading>?>(null) }
-    var notDoneDialog by remember { mutableStateOf(false) }
+    var notDoneDialog by rememberNotDoneDialog(askNotDone)
+    LaunchedEffect(fastId) { if (viewModel.proposeOnWaking(fastId)) onWaking = true }
 
     fun input(confirmed: Boolean = false, notDone: String? = null) = RecordBloodPressure.Input(
         fastId = fastId,

@@ -28,6 +28,17 @@ object ReminderNotifier {
     const val EXTRA_CODE = "code"
     const val EXTRA_SCHEDULED_FOR = "scheduled_for"
     const val EXTRA_ALERT_ID = "alert_id"
+    const val EXTRA_NOT_DONE = "not_done"
+    const val EXTRA_SNOOZE_MINUTES = "snooze_minutes"
+
+    fun idOf(reminder: DueReminder): Int =
+        "${reminder.fastId}|${reminder.item.kind}|${reminder.item.code}|${LocalTimes.format(reminder.item.scheduledAt)}".hashCode()
+
+    private fun itemExtras(intent: Intent, reminder: DueReminder): Intent = intent
+        .putExtra(EXTRA_FAST_ID, reminder.fastId)
+        .putExtra(EXTRA_KIND, reminder.item.kind.name)
+        .putExtra(EXTRA_CODE, reminder.item.code)
+        .putExtra(EXTRA_SCHEDULED_FOR, LocalTimes.format(reminder.item.scheduledAt))
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -50,23 +61,37 @@ object ReminderNotifier {
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
             NotificationManagerCompat.from(context).areNotificationsEnabled()
 
-    /** [label]: nombre de la medición o del producto (y su dosis). */
+    /**
+     * [label]: nombre de la medición o del producto (y su dosis). Acciones directas (H-017): anotar, posponer
+     * 10 o 30 minutos y «no se hizo» (abre la app para pedir el motivo).
+     */
     fun notifyReminder(context: Context, reminder: DueReminder, label: String) {
         if (!canNotify(context)) return
-        val scheduledFor = LocalTimes.format(reminder.item.scheduledAt)
-        val open = Intent(context, MainActivity::class.java)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            .putExtra(EXTRA_FAST_ID, reminder.fastId)
-            .putExtra(EXTRA_KIND, reminder.item.kind.name)
-            .putExtra(EXTRA_CODE, reminder.item.code)
-            .putExtra(EXTRA_SCHEDULED_FOR, scheduledFor)
-        val id = "${reminder.fastId}|${reminder.item.kind}|${reminder.item.code}|$scheduledFor".hashCode()
-        val title = context.getString(
-            if (reminder.item.kind == PendingKind.PRODUCT) R.string.notification_product_title else R.string.notification_reminder_title,
-            label,
+        val id = idOf(reminder)
+        val open = itemExtras(Intent(context, MainActivity::class.java), reminder).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val notDone = itemExtras(Intent(context, MainActivity::class.java), reminder).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .putExtra(EXTRA_NOT_DONE, true)
+        fun snooze(minutes: Long) = PendingIntent.getBroadcast(
+            context, id + minutes.toInt(),
+            itemExtras(Intent(context, NotificationActionReceiver::class.java).setAction(NotificationActionReceiver.ACTION_SNOOZE), reminder)
+                .putExtra(EXTRA_SNOOZE_MINUTES, minutes),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        post(context, id, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title)
+        val isProduct = reminder.item.kind == PendingKind.PRODUCT
+        val title = context.getString(if (isProduct) R.string.notification_product_title else R.string.notification_reminder_title, label)
+        val actions = listOf(
+            NotificationCompat.Action(0, context.getString(if (isProduct) R.string.notification_action_record_product else R.string.notification_action_record), activity(context, id, open)),
+            NotificationCompat.Action(0, context.getString(R.string.notification_action_snooze_10), snooze(10)),
+            NotificationCompat.Action(0, context.getString(R.string.notification_action_snooze_30), snooze(30)),
+            NotificationCompat.Action(0, context.getString(R.string.record_not_done), activity(context, id + 1, notDone)),
+        )
+        post(context, id, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, actions)
     }
+
+    fun cancel(context: Context, id: Int) = NotificationManagerCompat.from(context).cancel(id)
+
+    private fun activity(context: Context, requestCode: Int, intent: Intent) =
+        PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
     fun notifyAlert(context: Context, alert: Alert, level: RuleLevel, message: String) {
         if (!canNotify(context)) return
@@ -77,13 +102,22 @@ object ReminderNotifier {
         post(context, alert.id.hashCode(), CHANNEL_ALERTS, title, message, open, R.string.notification_public_alert)
     }
 
-    private fun post(context: Context, id: Int, channel: String, title: String, text: String, open: Intent, publicTitle: Int) {
+    private fun post(
+        context: Context,
+        id: Int,
+        channel: String,
+        title: String,
+        text: String,
+        open: Intent,
+        publicTitle: Int,
+        actions: List<NotificationCompat.Action> = emptyList(),
+    ) {
         val content = PendingIntent.getActivity(context, id, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val publicVersion = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(publicTitle))
             .build()
-        val notification = NotificationCompat.Builder(context, channel)
+        val builder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(text)
@@ -93,7 +127,8 @@ object ReminderNotifier {
             .setPublicVersion(publicVersion)
             .setContentIntent(content)
             .setAutoCancel(true)
-            .build()
+        actions.forEach { builder.addAction(it) }
+        val notification = builder.build()
         @Suppress("MissingPermission") // comprobado en canNotify
         NotificationManagerCompat.from(context).notify(id, notification)
     }

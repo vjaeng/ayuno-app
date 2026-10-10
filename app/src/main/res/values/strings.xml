@@ -373,4 +373,35 @@
     <string name="field_end_planned">Fin previsto</string>
     <string name="create_target_computed">Objetivo: %1$s horas</string>
     <string name="error_planned_end">El fin previsto debe ser posterior al inicio del reloj.</string>
+
+    <!-- Tanda 2b -->
+    <string name="notification_action_record">Anotar</string>
+    <string name="notification_action_record_product">Marcar</string>
+    <string name="notification_action_snooze_10">+10 min</string>
+    <string name="notification_action_snooze_30">+30 min</string>
+    <string name="action_schedule_measurement">Medir de nuevo pasados unos minutos</string>
+    <string name="field_action_minutes">Volver a medir en</string>
+    <string name="today_no_fast">No hay ningún ayuno en curso: hoy no hay nada programado.</string>
+    <string name="today_empty">Hoy no hay mediciones ni tomas programadas.</string>
+    <string name="today_morning">Mañana</string>
+    <string name="today_afternoon">Tarde</string>
+    <string name="today_evening">Noche</string>
+    <string name="today_done">Hecho</string>
+    <string name="today_pending">Pendiente</string>
+    <string name="today_late">Atrasado</string>
+    <string name="today_not_done">No se hizo</string>
+    <string name="today_from_rule">(por una regla)</string>
+    <string name="today_stopped_title">No se toman durante el ayuno</string>
+    <string name="fast_hour">hora %1$d</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="more_settings_hint">Silencio nocturno</string>
+    <string name="settings_reminders">Recordatorios</string>
+    <string name="settings_quiet">Silencio nocturno</string>
+    <string name="settings_quiet_hint">No suenan recordatorios en esa franja</string>
+    <string name="settings_quiet_start">Desde</string>
+    <string name="settings_quiet_end">Hasta</string>
+    <string name="settings_quiet_rules">Los recordatorios que programa una regla de alerta suenan igual, aunque sea de noche.</string>
+    <string name="error_quiet_end">Elige la hora de fin del silencio.</string>
+    <string name="error_rule_action_minutes">Escribe en cuántos minutos volver a medir.</string>
+    <string name="error_rule_action_metric">«Medir de nuevo» solo está disponible en reglas sobre una medición.</string>
 </resources>

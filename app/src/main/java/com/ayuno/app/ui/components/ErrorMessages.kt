@@ -60,4 +60,7 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.TAKEN_AT_REQUIRED -> R.string.error_taken_at
     ValidationError.SODIUM_FACTOR_NOT_POSITIVE -> R.string.error_sodium_factor
     ValidationError.PLANNED_END_NOT_AFTER_START -> R.string.error_planned_end
+    ValidationError.QUIET_END_REQUIRED -> R.string.error_quiet_end
+    ValidationError.RULE_ACTION_MINUTES_REQUIRED -> R.string.error_rule_action_minutes
+    ValidationError.RULE_ACTION_NEEDS_METRIC -> R.string.error_rule_action_metric
 }

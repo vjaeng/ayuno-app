@@ -15,17 +15,17 @@ Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la 
 | H-005 | [Empezar el ayuno con un toque](reloj-005-empezar-ayuno.md) | reloj | alta | entregada |
 | H-006 | [Ver de un vistazo dónde estoy](reloj-006-pantalla-inicio.md) | reloj | alta | en construcción |
 | H-007 | [Ajustar el catálogo de mediciones a lo que uso](mediciones-007-catalogo-mediciones.md) | mediciones | alta | entregada |
-| H-008 | [Anotar una medición en tres toques](mediciones-008-anotar-medicion.md) | mediciones | alta | en construcción |
+| H-008 | [Anotar una medición en tres toques](mediciones-008-anotar-medicion.md) | mediciones | alta | entregada |
 | H-009 | [Anotar la presión sentado y de pie](mediciones-009-presion-sentado-de-pie.md) | mediciones | alta | entregada |
 | H-010 | [Marcar síntomas de mi propio catálogo](sintomas-010-sintomas.md) | sintomas | alta | entregada |
 | H-011 | [Definir mis tipos de líquidos y electrolitos](liquidos-011-tipos-ingesta.md) | liquidos | alta | entregada |
 | H-012 | [Anotar lo que bebo y ver cuánto llevo](liquidos-012-anotar-ingesta.md) | liquidos | alta | entregada |
 | H-013 | [Mantener mi lista de suplementos y medicamentos](productos-013-lista-productos.md) | productos | alta | entregada |
 | H-014 | [Decidir qué productos siguen y cuáles salen en el ayuno](productos-014-estado-durante-ayuno.md) | productos | alta | entregada |
-| H-015 | [Marcar cada toma de un producto](productos-015-marcar-toma.md) | productos | alta | en construcción |
+| H-015 | [Marcar cada toma de un producto](productos-015-marcar-toma.md) | productos | alta | entregada |
 | H-016 | [Que cada recordatorio suene a su hora pase lo que pase](recordatorios-016-recordatorio-fiable.md) | recordatorios | alta | en construcción |
-| H-017 | [Resolver un pendiente desde la notificación](recordatorios-017-gestionar-pendiente.md) | recordatorios | alta | tejida |
-| H-018 | [Ver el día como una línea de tiempo](recordatorios-018-vista-hoy.md) | recordatorios | alta | tejida |
+| H-017 | [Resolver un pendiente desde la notificación](recordatorios-017-gestionar-pendiente.md) | recordatorios | alta | en construcción |
+| H-018 | [Ver el día como una línea de tiempo](recordatorios-018-vista-hoy.md) | recordatorios | alta | en construcción |
 | H-019 | [Definir una regla de alerta por umbral](reglas-019-regla-umbral.md) | reglas | alta | entregada |
 | H-020 | [Definir una regla de alerta sostenida en el tiempo](reglas-020-regla-sostenida.md) | reglas | alta | entregada |
 | H-021 | [Definir una regla que salte con un síntoma de alarma](reglas-021-regla-sintoma-alarma.md) | reglas | alta | entregada |
@@ -33,7 +33,7 @@ Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la 
 | H-023 | [Pedir una alerta manual cuando algo no va bien](reglas-023-boton-algo-no-va-bien.md) | reglas | alta | entregada |
 | H-024 | [Limitar una regla a ciertos momentos o contextos](reglas-024-filtros-regla.md) | reglas | media | tejida |
 | H-025 | [Elegir el nivel y el mensaje de cada regla](reglas-025-nivel-y-mensaje.md) | reglas | alta | tejida |
-| H-026 | [Que una regla programe otra medición u ofrezca terminar](reglas-026-accion-regla.md) | reglas | alta | tejida |
+| H-026 | [Que una regla programe otra medición u ofrezca terminar](reglas-026-accion-regla.md) | reglas | alta | entregada |
 | H-027 | [Decidir yo ante cada alerta y que quede constancia](reglas-027-decision-y-registro.md) | reglas | alta | en construcción |
 | H-028 | [Tener mis reglas siempre a un toque](reglas-028-boton-seguridad.md) | reglas | alta | entregada |
 | H-029 | [Llamar a mi contacto de emergencia con un toque](reglas-029-contacto-emergencia.md) | reglas | media | tejida |
@@ -124,8 +124,8 @@ Recorrido mínimo: plantillas, crear y empezar el ayuno, reloj, anotar medicione
 |---|---|
 | H-004 | La copia del plan cubre todo salvo la vuelta a comer → H-031. |
 | H-006 | Reloj en < 1 s → verificación en dispositivo (PRUEBAS §4.7). Los totales del día ya funcionan. |
-| H-008 | La propuesta automática de «al despertar» tras el silencio nocturno → H-017 (la marca manual ya funciona). |
-| H-015 | Las tomas pendientes en la vista del día → H-018. |
+| H-017 | «No se hizo» en la exportación → H-036. Acciones de la notificación con la app cerrada → verificación en dispositivo (PRUEBAS §4.7). |
+| H-018 | Los pasos de la vuelta a comer en el día → H-031. |
 | H-016 | Verificación en dispositivo (alarma real con la app cerrada, reinicio real, 3 días). Recordatorios de vuelta a comer → H-031. Ya incluye tomas de productos. |
 | H-027 | Las alertas en la línea de tiempo y en la exportación → H-033, H-036. |
 | H-030 | Empezar la vuelta a comer al terminar → H-031. |
@@ -136,6 +136,12 @@ Recorrido mínimo: plantillas, crear y empezar el ayuno, reloj, anotar medicione
 Registro completo durante el ayuno: síntomas, líquidos y sal (con totales y sodio), productos con sus tomas, notas; metas, lista previa y avisos de la plantilla; reglas por síntoma de alarma, por ingesta bajo la meta (evaluadas también al llegar cada hora programada) y botón «algo no va bien». 136 pruebas en verde; lint sin errores.
 
 **Entregadas en la tanda 2a:** H-002, H-010, H-011, H-012, H-013, H-014, H-021, H-022, H-023; y pasan a entregadas H-019 (evaluación a la hora programada) y H-028 («algo no va bien»). La tabla de pendientes de arriba refleja el estado actual.
+
+## Construcción — tanda 2b (2026-10-10)
+
+Recordatorios completos y vista del día: pestaña «Hoy» con lo hecho, pendiente, atrasado y no hecho, agrupado por franjas y con la hora del ayuno; acciones en la notificación (anotar, posponer 10 o 30 minutos, «no se hizo» con motivo); horario de silencio nocturno configurable en Ajustes; reglas con «medir de nuevo en N minutos», cuyo recordatorio suena aunque sea silencio; propuesta de «al despertar» en la primera lectura tras el silencio. 222 pruebas en verde; lint sin errores.
+
+**Entregadas en la tanda 2b:** H-026; y pasan a entregadas H-008 (propuesta al despertar) y H-015 (tomas en la vista del día). H-017 y H-018 quedan en construcción (pendientes en la tabla de arriba).
 
 ## Cambios aprobados durante la construcción
 

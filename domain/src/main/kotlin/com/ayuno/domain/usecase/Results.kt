@@ -63,6 +63,9 @@ enum class ValidationError {
     TAKEN_AT_REQUIRED,
     SODIUM_FACTOR_NOT_POSITIVE,
     PLANNED_END_NOT_AFTER_START,
+    QUIET_END_REQUIRED,
+    RULE_ACTION_MINUTES_REQUIRED,
+    RULE_ACTION_NEEDS_METRIC,
 }
 
 fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

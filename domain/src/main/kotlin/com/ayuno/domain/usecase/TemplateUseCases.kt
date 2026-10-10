@@ -51,18 +51,23 @@ object PlanValidator {
 
 /**
  * Validación de reglas: condiciones de medición (H-019, H-020), síntoma de alarma (H-021), ingesta bajo la meta
- * (H-022) y manual (H-023); acciones «ninguna» y «ofrecer terminar». «Medir de nuevo» llega con H-026.
+ * (H-022) y manual (H-023); acciones «ninguna», «ofrecer terminar» y «medir de nuevo en N minutos» (H-026), esta
+ * solo en condiciones de medición: el recordatorio necesita saber qué medir.
  */
 object RuleValidator {
     val SUPPORTED_CONDITIONS = RuleConditionKind.entries.toSet()
     private val METRIC_CONDITIONS = setOf(RuleConditionKind.METRIC_BELOW, RuleConditionKind.METRIC_ABOVE)
-    val SUPPORTED_ACTIONS = setOf(RuleAction.NONE, RuleAction.OFFER_END)
+    val SUPPORTED_ACTIONS = RuleAction.entries.toSet()
 
     fun validate(rule: Rule): List<ValidationError> = buildList {
         if (rule.name.isBlank()) add(ValidationError.NAME_REQUIRED)
         if (rule.message.isBlank()) add(ValidationError.RULE_MESSAGE_REQUIRED)
         if (rule.conditionKind !in SUPPORTED_CONDITIONS) add(ValidationError.RULE_CONDITION_UNSUPPORTED)
         if (rule.action !in SUPPORTED_ACTIONS) add(ValidationError.RULE_ACTION_UNSUPPORTED)
+        if (rule.action == RuleAction.SCHEDULE_MEASUREMENT) {
+            if (rule.actionMinutes == null || rule.actionMinutes <= 0) add(ValidationError.RULE_ACTION_MINUTES_REQUIRED)
+            if (rule.conditionKind !in METRIC_CONDITIONS) add(ValidationError.RULE_ACTION_NEEDS_METRIC)
+        }
         if (rule.conditionKind == RuleConditionKind.INTAKE_BELOW_GOAL) {
             if (rule.intakeTypeCode.isNullOrBlank()) add(ValidationError.RULE_INTAKE_REQUIRED)
             if (rule.checkTime == null) add(ValidationError.RULE_CHECK_TIME_REQUIRED)

@@ -33,6 +33,7 @@
         </activity>
 
         <receiver android:name=".reminders.ReminderReceiver" android:exported="false" />
+        <receiver android:name=".reminders.NotificationActionReceiver" android:exported="false" />
         <receiver android:name=".reminders.SystemEventsReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

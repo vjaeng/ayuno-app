@@ -151,11 +151,16 @@ fun RuleEditor(
             { rule = rule.copy(level = it) },
         )
         AyunoTextField(stringResource(R.string.field_rule_message), rule.message, { rule = rule.copy(message = it) }, singleLine = false)
-        RadioList(
-            listOf(RuleAction.NONE to stringResource(R.string.action_none), RuleAction.OFFER_END to stringResource(R.string.action_offer_end)),
-            rule.action,
-            { rule = rule.copy(action = it) },
-        )
+        // «Medir de nuevo» solo con condiciones de medición: el recordatorio necesita saber qué medir (H-026).
+        val actions = listOf(RuleAction.NONE to stringResource(R.string.action_none), RuleAction.OFFER_END to stringResource(R.string.action_offer_end)) +
+            listOfNotNull((RuleAction.SCHEDULE_MEASUREMENT to stringResource(R.string.action_schedule_measurement)).takeIf { group == ConditionGroup.METRIC })
+        RadioList(actions, rule.action, { rule = rule.copy(action = it, actionMinutes = if (it == RuleAction.SCHEDULE_MEASUREMENT) rule.actionMinutes ?: 15 else null) })
+        if (rule.action == RuleAction.SCHEDULE_MEASUREMENT) {
+            AyunoTextField(
+                stringResource(R.string.field_action_minutes), rule.actionMinutes?.toString().orEmpty(),
+                { rule = rule.copy(actionMinutes = it.trim().toIntOrNull()) }, numeric = true, suffix = stringResource(R.string.unit_minutes),
+            )
+        }
 
         SectionTitle(stringResource(R.string.rule_preview))
         Text(RuleSentences.describe(context, current(), types, symptoms, intakes), style = MaterialTheme.typography.bodyLarge)
