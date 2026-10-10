@@ -60,7 +60,10 @@ class AppContainer(
     val startFast by lazy { StartFast(fasts, transactions, clock) }
     val registerLastMeal by lazy { RegisterLastMeal(fasts, audit, transactions, clock) }
     val correctClockStart by lazy { CorrectClockStart(fasts, audit, transactions, clock) }
-    val endFast by lazy { EndFast(fasts, transactions, clock) }
+    val refeed: com.ayuno.domain.port.RefeedRepository by lazy { com.ayuno.data.repository.RoomRefeedRepository(database, clock) }
+    val endFast by lazy { EndFast(fasts, refeed, transactions, clock) }
+    val setRefeedCheck by lazy { com.ayuno.domain.usecase.SetRefeedCheck(refeed, audit, transactions, clock) }
+    val recordMeal by lazy { com.ayuno.domain.usecase.RecordMeal(fasts, refeed) }
     val recordMeasurement by lazy { RecordMeasurement(catalog, fasts, records, alerts, transactions, clock) }
     val recordBloodPressure by lazy { RecordBloodPressure(catalog, fasts, records, alerts, transactions, clock) }
     val decideAlert by lazy { DecideAlert(alerts) }
@@ -80,5 +83,5 @@ class AppContainer(
     val settings: com.ayuno.domain.port.SettingsRepository by lazy { com.ayuno.data.repository.RoomSettingsRepository(database) }
     val saveQuietHours by lazy { com.ayuno.domain.usecase.SaveQuietHours(settings) }
 
-    val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, alerts, settings, clock) }
+    val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, fasts, catalog, records, alerts, refeed, settings, clock) }
 }

@@ -84,3 +84,17 @@ data class ProductLog(
 
 /** `note` (H-035). */
 data class Note(val id: String, val fastId: String, val notedAt: LocalDateTime, val text: String)
+
+/** `refeed_check` (H-031): una ocurrencia de un paso de la vuelta a comer; [doneAt] es la hora real de la casilla. */
+data class RefeedCheck(val id: String, val refeedStepId: String, val scheduledAt: LocalDateTime, val doneAt: LocalDateTime?)
+
+/** `meal` (H-032). [toleranceDetail] solo con «otro». */
+data class Meal(
+    val id: String,
+    val fastId: String,
+    val eatenAt: LocalDateTime,
+    val description: String,
+    val approxAmount: String?,
+    val tolerance: MealTolerance,
+    val toleranceDetail: String?,
+)

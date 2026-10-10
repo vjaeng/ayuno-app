@@ -51,6 +51,13 @@ class MigrationTest {
     }
 
     @Test
+    fun `la migracion 2 a 3 produce exactamente el esquema 3 de Room`() {
+        createV1WithAFast()
+        helper.runMigrationsAndValidate(dbName, 2, true, Migrations.From1To2(ApplicationProvider.getApplicationContext(), Clock.systemDefaultZone())).close()
+        helper.runMigrationsAndValidate(dbName, 3, true, Migrations.From2To3)
+    }
+
+    @Test
     fun `la app nueva abre la base de la primera instalacion y conserva el ayuno y sus mediciones`() = runTest {
         createV1WithAFast()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()
@@ -70,6 +77,12 @@ class MigrationTest {
             assertTrue(runCatching {
                 db.execSQL("INSERT INTO intake_goal (id, template_id, fast_id, intake_type_code, daily_amount, unit, created_at) VALUES ('g', NULL, NULL, 'salt', 4, 'g', 'x')")
             }.isFailure)
+            assertTrue(runCatching {
+                db.execSQL("INSERT INTO refeed_step (id, template_id, fast_id, kind, description, created_at) VALUES ('r', NULL, NULL, 'timed', 'x', 'x')")
+            }.isFailure)
+            // Tanda 3: el ayuno migrado sigue cargando su plan (sin vuelta a comer) y admite comidas.
+            assertTrue(RoomFastRepository(database, clock).get("f1")!!.plan.refeed.isEmpty())
+            assertTrue(database.refeedDao().meals("f1").isEmpty())
         } finally {
             database.close()
         }

@@ -86,6 +86,10 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
             }
         }
 
+        if (d.usesStage(StageKind.REFEED) || d.refeed.isNotEmpty()) {
+            RefeedStepsSection(d.refeed, onAdd = viewModel::addRefeedStep, onRemove = viewModel::removeRefeedStep)
+        }
+
         SectionTitle(stringResource(R.string.template_metrics))
         types.filter { it.active }.forEach { type ->
             val metric = d.metrics[type.code]

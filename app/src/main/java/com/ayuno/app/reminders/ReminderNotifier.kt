@@ -78,6 +78,17 @@ object ReminderNotifier {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val isProduct = reminder.item.kind == PendingKind.PRODUCT
+        if (reminder.item.kind == PendingKind.REFEED) {
+            // H-031: el paso se marca en la pantalla de vuelta a comer; aquí solo abrir o posponer.
+            val refeedActions = listOf(
+                NotificationCompat.Action(0, context.getString(R.string.notification_action_open_refeed), activity(context, id, open)),
+                NotificationCompat.Action(0, context.getString(R.string.notification_action_snooze_10), snooze(10)),
+                NotificationCompat.Action(0, context.getString(R.string.notification_action_snooze_30), snooze(30)),
+            )
+            val title = context.getString(R.string.notification_refeed_title, label)
+            post(context, id, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, refeedActions)
+            return
+        }
         val title = context.getString(if (isProduct) R.string.notification_product_title else R.string.notification_reminder_title, label)
         val actions = listOf(
             NotificationCompat.Action(0, context.getString(if (isProduct) R.string.notification_action_record_product else R.string.notification_action_record), activity(context, id, open)),

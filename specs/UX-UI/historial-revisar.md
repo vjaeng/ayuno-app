@@ -115,6 +115,8 @@
 
 ## Decisiones de producto
 
+*Implementación (tanda 3, 2026-10-10):* construidas la lista y la línea de tiempo por días con totales de ingesta. Quedan para su historia: «Exportar» (H-036), «Borradas» y tocar una entrada para corregirla (H-034). El filtro por tipo queda pendiente: con la agrupación por día la lista se mantiene legible y ningún criterio lo exige; se añadirá con H-034.
+
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - **Alertas:** ¿se permite borrar o editar una alerta registrada? Propuesta: no (S8: registro de seguridad).
 - **Editar un ayuno terminado:** ¿se permite corregir entradas de ayunos ya terminados? Propuesta: sí, siempre con rastro.

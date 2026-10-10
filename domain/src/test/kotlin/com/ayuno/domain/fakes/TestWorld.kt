@@ -44,6 +44,7 @@ class TestWorld {
     val records = FakeRecords()
     val alerts = FakeAlerts()
     val audit = FakeAudit()
+    val refeed = FakeRefeed(fasts)
 
     val saveMetricType = SaveMetricType(catalog)
     val setMetricTypeActive = SetMetricTypeActive(catalog)
@@ -52,7 +53,9 @@ class TestWorld {
     val startFast = StartFast(fasts, DirectTransactions, clock)
     val registerLastMeal = RegisterLastMeal(fasts, audit, DirectTransactions, clock)
     val correctClockStart = CorrectClockStart(fasts, audit, DirectTransactions, clock)
-    val endFast = EndFast(fasts, DirectTransactions, clock)
+    val endFast = EndFast(fasts, refeed, DirectTransactions, clock)
+    val setRefeedCheck = com.ayuno.domain.usecase.SetRefeedCheck(refeed, audit, DirectTransactions, clock)
+    val recordMeal = com.ayuno.domain.usecase.RecordMeal(fasts, refeed)
     val recordMeasurement = RecordMeasurement(catalog, fasts, records, alerts, DirectTransactions, clock)
     val recordBloodPressure = RecordBloodPressure(catalog, fasts, records, alerts, DirectTransactions, clock)
     val decideAlert = DecideAlert(alerts)

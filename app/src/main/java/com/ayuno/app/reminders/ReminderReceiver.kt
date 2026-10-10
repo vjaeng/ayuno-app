@@ -42,6 +42,9 @@ class ReminderReceiver : BroadcastReceiver() {
                 PendingKind.PRODUCT -> c.catalog.product(due.item.code)?.let { p ->
                     "${p.name} · ${Formats.number(due.item.amount ?: p.defaultAmount)} ${p.unit}"
                 } ?: due.item.code
+                PendingKind.REFEED -> c.refeed.check(due.item.code)?.let { check ->
+                    c.fasts.get(due.fastId)?.plan?.refeed?.firstOrNull { it.id == check.refeedStepId }?.description
+                } ?: ""
             }
         }
 

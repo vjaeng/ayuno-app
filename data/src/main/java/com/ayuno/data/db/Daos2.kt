@@ -117,5 +117,8 @@ interface Record2Dao {
     @Query("SELECT * FROM note WHERE fast_id = :fastId AND deleted_at IS NULL ORDER BY noted_at")
     fun observeNotes(fastId: String): Flow<List<NoteEntity>>
 
+    @Query("SELECT * FROM note WHERE fast_id = :fastId AND deleted_at IS NULL ORDER BY noted_at")
+    suspend fun notes(fastId: String): List<NoteEntity>
+
     @Insert suspend fun insertNote(entity: NoteEntity)
 }

@@ -1,5 +1,6 @@
 package com.ayuno.domain.usecase
 
+import com.ayuno.domain.derived.RefeedSchedule
 import com.ayuno.domain.id.Ids
 import com.ayuno.domain.model.EditAction
 import com.ayuno.domain.model.EditLogEntry
@@ -10,6 +11,7 @@ import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.Plan
 import com.ayuno.domain.port.AuditRepository
 import com.ayuno.domain.port.FastRepository
+import com.ayuno.domain.port.RefeedRepository
 import com.ayuno.domain.port.TemplateRepository
 import com.ayuno.domain.port.TransactionRunner
 import com.ayuno.domain.time.LocalTimes
@@ -31,6 +33,7 @@ internal fun Plan.copyWithNewIds(): Plan = Plan(
     checklist = checklist.map { it.copy(id = Ids.newId()) },
     notices = notices.map { it.copy(id = Ids.newId()) },
     products = products.map { it.copy(id = Ids.newId()) },
+    refeed = refeed.map { it.copy(id = Ids.newId()) },
 )
 
 /** H-004: crear un ayuno desde una plantilla (o desde cero) con la última comida y el inicio previsto. */
@@ -152,9 +155,13 @@ class CorrectClockStart(
     }
 }
 
-/** H-030: terminar el ayuno con hora real y motivo obligatorio; un ayuno terminado no se reanuda. */
+/**
+ * H-030: terminar el ayuno con hora real y motivo obligatorio; un ayuno terminado no se reanuda. Si el plan tiene
+ * vuelta a comer, sus casillas se calculan desde el fin real en la misma transacción (H-031).
+ */
 class EndFast(
     private val fasts: FastRepository,
+    private val refeed: RefeedRepository,
     private val transactions: TransactionRunner,
     private val clock: Clock,
 ) {
@@ -187,13 +194,14 @@ class EndFast(
             endRuleId = input.ruleId.takeIf { input.reason == EndReason.ALERT_RULE },
         )
         fasts.update(ended)
+        if (source.plan.refeed.isNotEmpty()) refeed.insertChecks(RefeedSchedule.occurrences(source.plan.refeed, end))
         Outcome.Ok(ended)
     }
 }
 
-internal fun editEntry(rowId: String, field: String, old: String?, new: String?, reason: String?, clock: Clock) = EditLogEntry(
+internal fun editEntry(rowId: String, field: String, old: String?, new: String?, reason: String?, clock: Clock, entityName: String = "fast") = EditLogEntry(
     id = Ids.newId(),
-    entityName = "fast",
+    entityName = entityName,
     rowId = rowId,
     action = EditAction.EDIT,
     editedAt = LocalTimes.now(clock),

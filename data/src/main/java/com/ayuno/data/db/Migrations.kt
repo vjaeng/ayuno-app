@@ -52,5 +52,23 @@ object Migrations {
         }
     }
 
-    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock))
+    /** Versión 2 (tandas 2a y 2b) → 3 (tanda 3: pasos y casillas de la vuelta a comer, comidas). */
+    object From2To3 : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            CREATE_V3.forEach(db::execSQL)
+            AyunoDatabase.createOwnerTriggers(db, listOf("refeed_step"))
+        }
+
+        private val CREATE_V3 = listOf(
+            """CREATE TABLE IF NOT EXISTS `refeed_step` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `kind` TEXT NOT NULL, `description` TEXT NOT NULL, `offset_minutes` INTEGER, `repeat_every_minutes` INTEGER, `repeat_for_minutes` INTEGER, `day_offset` INTEGER, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+            """CREATE INDEX IF NOT EXISTS `index_refeed_step_template_id` ON `refeed_step` (`template_id`)""",
+            """CREATE INDEX IF NOT EXISTS `index_refeed_step_fast_id` ON `refeed_step` (`fast_id`)""",
+            """CREATE TABLE IF NOT EXISTS `refeed_check` (`id` TEXT NOT NULL, `refeed_step_id` TEXT NOT NULL, `scheduled_at` TEXT NOT NULL, `done_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+            """CREATE INDEX IF NOT EXISTS `index_refeed_check_refeed_step_id` ON `refeed_check` (`refeed_step_id`)""",
+            """CREATE TABLE IF NOT EXISTS `meal` (`id` TEXT NOT NULL, `fast_id` TEXT NOT NULL, `eaten_at` TEXT NOT NULL, `description` TEXT NOT NULL, `approx_amount` TEXT, `tolerance` TEXT NOT NULL, `tolerance_detail` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+            """CREATE INDEX IF NOT EXISTS `index_meal_fast_id` ON `meal` (`fast_id`)""",
+        )
+    }
+
+    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock), From2To3)
 }

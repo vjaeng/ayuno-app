@@ -139,6 +139,8 @@ Lista de reglas (`rule.name`, `rule.level`, `rule.active`) → [reglas-editar.md
 
 ## Decisiones de producto
 
+*Implementación (tanda 3, 2026-10-10):* la subpantalla «Vuelta a comer» se construye como sección del mismo editor (como el resto de secciones), visible al activar la etapa. Cada paso se valida al añadirlo.
+
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - ¿El editor de plantilla sirve también para editar el plan copiado de un ayuno? Ligado a la pregunta de [ayuno-crear.md](ayuno-crear.md). Propuesta: sí, mismo editor con un aviso «Estás editando el plan de este ayuno, no la plantilla».
 - Duplicar: ¿nombre por defecto «Copia de …»? Propuesta: sí.

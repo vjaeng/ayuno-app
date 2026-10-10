@@ -9,7 +9,7 @@ import com.ayuno.domain.model.Settings
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-/** H-018: lo que toca un día natural (mediciones, tomas y recordatorios de reglas) con su estado. */
+/** H-018: lo que toca un día natural (mediciones, tomas, recordatorios de reglas y vuelta a comer) con su estado. */
 object DayAgenda {
     fun of(
         source: FastWithPlan,
@@ -24,11 +24,16 @@ object DayAgenda {
         val to = day.plusDays(1).atStartOfDay().minusSeconds(1)
         val planned = Pending.items(source, activeTypes, products, from, to)
         val followUps = Pending.ruleFollowUps(source, alerts).filter { !it.scheduledAt.isBefore(from) && !it.scheduledAt.isAfter(to) }
-        return (planned + followUps).sortedBy { it.scheduledAt }.map { Pending.status(it, now, records) }
+        val refeed = Pending.refeedItems(source.plan, records.refeedChecks, from, to)
+        return (planned + followUps + refeed).sortedBy { it.scheduledAt }.map { Pending.status(it, now, records) }
     }
 
-    /** ¿Se recuerda este pendiente? Los de reglas siempre; el resto, no durante el silencio nocturno (H-017). */
-    fun isNotified(item: PendingItem, settings: Settings): Boolean = item.fromRule || !settings.isQuiet(item.scheduledAt.toLocalTime())
+    /**
+     * ¿Se recuerda este pendiente? Los de reglas siempre; los pasos de fecha (reintroducción) nunca; el resto, no
+     * durante el silencio nocturno (H-017).
+     */
+    fun isNotified(item: PendingItem, settings: Settings): Boolean =
+        item.fromRule || (!item.allDay && !settings.isQuiet(item.scheduledAt.toLocalTime()))
 }
 
 /**

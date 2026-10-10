@@ -10,11 +10,13 @@ import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Intake
 import com.ayuno.domain.model.IntakeType
+import com.ayuno.domain.model.Meal
 import com.ayuno.domain.model.Note
 import com.ayuno.domain.model.Plan
 import com.ayuno.domain.model.Settings
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.ProductLog
+import com.ayuno.domain.model.RefeedCheck
 import com.ayuno.domain.model.Symptom
 import com.ayuno.domain.model.SymptomType
 import com.ayuno.domain.model.Template
@@ -84,7 +86,21 @@ interface RecordRepository {
     suspend fun insertProductLog(log: ProductLog)
 
     fun observeNotes(fastId: String): Flow<List<Note>>
+    suspend fun notes(fastId: String): List<Note>
     suspend fun insertNote(note: Note)
+}
+
+/** Vuelta a comer (H-031, H-032): casillas de los pasos del plan del ayuno y comidas. */
+interface RefeedRepository {
+    fun observeChecks(fastId: String): Flow<List<RefeedCheck>>
+    suspend fun checks(fastId: String): List<RefeedCheck>
+    suspend fun check(id: String): RefeedCheck?
+    suspend fun insertChecks(checks: List<RefeedCheck>)
+    suspend fun updateCheck(check: RefeedCheck)
+
+    fun observeMeals(fastId: String): Flow<List<Meal>>
+    suspend fun meals(fastId: String): List<Meal>
+    suspend fun insertMeal(meal: Meal)
 }
 
 interface AlertRepository {

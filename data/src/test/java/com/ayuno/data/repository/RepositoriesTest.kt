@@ -176,7 +176,7 @@ class RepositoriesTest {
         val fast = (w.createFast(CreateFast.Input(t.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), 57.0, null)) as Outcome.Ok).value.fast
         w.now = Instant.parse("2026-10-23T03:10:00Z"); w.startFast(fast.id)
         w.now = Instant.parse("2026-10-25T12:10:00Z")
-        val end = com.ayuno.domain.usecase.EndFast(w.fasts, w.tx, w.clock)
+        val end = com.ayuno.domain.usecase.EndFast(w.fasts, w.refeed, w.tx, w.clock)
         end(com.ayuno.domain.usecase.EndFast.Input(fast.id, LocalDateTime.of(2026, 10, 25, 7, 10), EndReason.GOAL_MET, null, null))
         val stored = w.fasts.get(fast.id)!!.fast
         assertEquals(LocalDateTime.of(2026, 10, 25, 7, 10), stored.endActual)

@@ -63,4 +63,11 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.QUIET_END_REQUIRED -> R.string.error_quiet_end
     ValidationError.RULE_ACTION_MINUTES_REQUIRED -> R.string.error_rule_action_minutes
     ValidationError.RULE_ACTION_NEEDS_METRIC -> R.string.error_rule_action_metric
+    ValidationError.REFEED_STAGE_NOT_USED -> R.string.error_refeed_stage
+    ValidationError.REFEED_OFFSET_REQUIRED -> R.string.error_refeed_offset
+    ValidationError.REFEED_REPEAT_FOR_REQUIRED -> R.string.error_refeed_repeat_for
+    ValidationError.REFEED_DAY_REQUIRED -> R.string.error_refeed_day
+    ValidationError.REFEED_CHECK_NOT_FOUND -> R.string.error_refeed_check
+    ValidationError.TOLERANCE_DETAIL_REQUIRED -> R.string.error_tolerance_detail
+    ValidationError.TOLERANCE_REQUIRED -> R.string.error_tolerance_required
 }

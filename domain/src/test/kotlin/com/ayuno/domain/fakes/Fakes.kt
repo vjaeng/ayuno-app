@@ -10,7 +10,9 @@ import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Intake
 import com.ayuno.domain.model.IntakeType
+import com.ayuno.domain.model.Meal
 import com.ayuno.domain.model.Note
+import com.ayuno.domain.model.RefeedCheck
 import com.ayuno.domain.model.Plan
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.ProductLog
@@ -23,6 +25,7 @@ import com.ayuno.domain.port.AuditRepository
 import com.ayuno.domain.port.CatalogRepository
 import com.ayuno.domain.port.FastRepository
 import com.ayuno.domain.port.RecordRepository
+import com.ayuno.domain.port.RefeedRepository
 import com.ayuno.domain.port.TemplateRepository
 import com.ayuno.domain.port.TransactionRunner
 import kotlinx.coroutines.flow.Flow
@@ -131,7 +134,23 @@ class FakeRecords : RecordRepository {
 
     val notes = MutableStateFlow<List<Note>>(emptyList())
     override fun observeNotes(fastId: String) = notes.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun notes(fastId: String) = notes.value.filter { it.fastId == fastId }
     override suspend fun insertNote(note: Note) { notes.value = notes.value + note }
+}
+
+/** Las casillas no llevan `fast_id` (cuelgan del paso copiado al ayuno): se resuelven por el plan del ayuno. */
+class FakeRefeed(private val fasts: FakeFasts) : RefeedRepository {
+    val checks = MutableStateFlow<List<RefeedCheck>>(emptyList())
+    val meals = MutableStateFlow<List<Meal>>(emptyList())
+    private fun stepIds(fastId: String) = fasts.items.value[fastId]?.plan?.refeed.orEmpty().map { it.id }.toSet()
+    override fun observeChecks(fastId: String) = checks.map { l -> l.filter { it.refeedStepId in stepIds(fastId) } }
+    override suspend fun checks(fastId: String) = checks.value.filter { it.refeedStepId in stepIds(fastId) }.sortedBy { it.scheduledAt }
+    override suspend fun check(id: String) = checks.value.firstOrNull { it.id == id }
+    override suspend fun insertChecks(checks: List<RefeedCheck>) { this.checks.value = this.checks.value + checks }
+    override suspend fun updateCheck(check: RefeedCheck) { checks.value = checks.value.map { if (it.id == check.id) check else it } }
+    override fun observeMeals(fastId: String) = meals.map { l -> l.filter { it.fastId == fastId } }
+    override suspend fun meals(fastId: String) = meals.value.filter { it.fastId == fastId }
+    override suspend fun insertMeal(meal: Meal) { meals.value = meals.value + meal }
 }
 
 class FakeAlerts : AlertRepository {

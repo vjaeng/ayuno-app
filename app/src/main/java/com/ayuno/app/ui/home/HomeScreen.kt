@@ -59,6 +59,7 @@ import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
+import com.ayuno.app.ui.refeed.RefeedContent
 import com.ayuno.app.ui.theme.AyunoThemeTokens
 import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.derived.Milestone
@@ -74,6 +75,8 @@ data class HomeActions(
     val onSafety: () -> Unit,
     val onEndFast: (fastId: String) -> Unit,
     val onAlert: (alertId: String) -> Unit,
+    val onRefeed: (fastId: String) -> Unit = {},
+    val onMeal: (fastId: String) -> Unit = {},
 )
 
 @Composable
@@ -123,6 +126,16 @@ private fun PermissionBanners(viewModel: HomeViewModel) {
 
 @Composable
 private fun IdleContent(state: HomeUiState.Idle, viewModel: HomeViewModel, actions: HomeActions) {
+    state.refeedFastId?.let { fastId ->
+        SectionTitle(stringResource(R.string.stage_refeed))
+        RefeedContent(fastId, onMeal = { actions.onMeal(fastId) })
+        SecondaryButton(stringResource(R.string.home_record), onClick = { actions.onRecord(fastId) })
+    }
+    if (state.pendingReintroduction.isNotEmpty()) {
+        SectionTitle(stringResource(R.string.home_reintroduction_pending))
+        state.pendingReintroduction.forEach { (at, description) -> Text("${Formats.date(at)} · $description", style = MaterialTheme.typography.bodyLarge) }
+        state.lastFinished?.let { fast -> SecondaryButton(stringResource(R.string.home_open_refeed), onClick = { actions.onRefeed(fast.id) }) }
+    }
     if (state.planned == null && state.lastFinished == null) {
         EmptyState(stringResource(R.string.home_empty), stringResource(R.string.home_new_fast), actions.onNewFast)
         return

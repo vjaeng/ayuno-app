@@ -46,3 +46,9 @@ enum class ProductKind(override val code: String) : Coded { SUPPLEMENT("suppleme
 enum class DuringFast(override val code: String) : Coded { CONTINUES("continues"), STOPS("stops"), OPTIONAL("optional") }
 
 enum class ProductLogStatus(override val code: String) : Coded { TAKEN("taken"), NOT_TAKEN("not_taken"), DOSE_CHANGED("dose_changed") }
+
+enum class RefeedStepKind(override val code: String) : Coded { TIMED("timed"), REINTRODUCTION("reintroduction") }
+
+enum class MealTolerance(override val code: String) : Coded {
+    FINE("fine"), HEAVINESS("heaviness"), NAUSEA("nausea"), DIARRHEA("diarrhea"), OTHER("other"),
+}

@@ -35,7 +35,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-001 | Crear una plantilla con qué medir y cuándo | alta | 7 | 10 | U + I + E2E | en verde |
 | H-002 | Completar la plantilla con metas, lista previa y avisos | media | 4 | 8 | U + I | en verde |
 | H-003 | Duplicar, borrar y partir de una plantilla de ejemplo | media | 4 | 8 | U + I | pendiente |
-| H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 7 | 23 | U + I + E2E | en verde (parcial) |
+| H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 7 | 23 | U + I + E2E | en verde |
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
 | H-006 | Ver de un vistazo dónde estoy | alta | 7 | 14 | U + E2E | en verde (parcial) |
 | H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 4 | 9 | U + I + E2E | en verde |
@@ -49,7 +49,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-015 | Marcar cada toma de un producto | alta | 3 | 10 | U + I + E2E | en verde |
 | H-016 | Que cada recordatorio suene a su hora pase lo que pase | alta | 4 | 4 | U + E2E | en verde (parcial) |
 | H-017 | Resolver un pendiente desde la notificación | alta | 5 | 9 | U + I + E2E | en verde (parcial) |
-| H-018 | Ver el día como una línea de tiempo | alta | 3 | 10 | U + E2E | en verde (parcial) |
+| H-018 | Ver el día como una línea de tiempo | alta | 3 | 10 | U + E2E | en verde |
 | H-019 | Definir una regla de alerta por umbral | alta | 5 | 18 | U + I + E2E | en verde |
 | H-020 | Definir una regla de alerta sostenida en el tiempo | alta | 3 | 5 | U + I + E2E | en verde |
 | H-021 | Definir una regla que salte con un síntoma de alarma | alta | 2 | 5 | U + I + E2E | en verde |
@@ -61,12 +61,12 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-027 | Decidir yo ante cada alerta y que quede constancia | alta | 4 | 7 | U + I + E2E | en verde (parcial) |
 | H-028 | Tener mis reglas siempre a un toque | alta | 3 | 15 | U + E2E | en verde |
 | H-029 | Llamar a mi contacto de emergencia con un toque | media | 3 | 2 | U + I | pendiente |
-| H-030 | Terminar el ayuno con su hora y motivo | alta | 5 | 7 | U + I + E2E | en verde (parcial) |
-| H-031 | Definir y seguir mi plan de vuelta a comer | media | 4 | 10 | U + I | pendiente |
-| H-032 | Anotar cada comida y cómo me cayó | media | 2 | 5 | U + I | pendiente |
-| H-033 | Revisar mis ayunos pasados | media | 4 | 15 | U | pendiente |
+| H-030 | Terminar el ayuno con su hora y motivo | alta | 5 | 7 | U + I + E2E | en verde |
+| H-031 | Definir y seguir mi plan de vuelta a comer | media | 4 | 10 | U + I | en verde |
+| H-032 | Anotar cada comida y cómo me cayó | media | 2 | 5 | U + I | en verde |
+| H-033 | Revisar mis ayunos pasados | media | 4 | 15 | U | en verde (parcial) |
 | H-034 | Corregir o borrar una entrada dejando rastro | alta | 4 | 15 | U + I + E2E | pendiente |
-| H-035 | Escribir una nota libre | alta | 3 | 2 | U + I + E2E | en verde (parcial) |
+| H-035 | Escribir una nota libre | alta | 3 | 2 | U + I + E2E | en verde |
 | H-036 | Exportar un ayuno o todo a un archivo con formato fijo | alta | 9 | 29 | U + E2E | pendiente |
 | H-037 | Exportar también en tablas | baja | 2 | 2 | U | pendiente |
 | H-038 | Decidir si el archivo lleva mis datos personales | media | 2 | 4 | U + I | pendiente |

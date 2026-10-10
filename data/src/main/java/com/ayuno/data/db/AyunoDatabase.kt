@@ -37,8 +37,11 @@ import java.time.Clock
         PlanProductEntity::class,
         ProductLogEntity::class,
         NoteEntity::class,
+        RefeedStepEntity::class,
+        RefeedCheckEntity::class,
+        MealEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AyunoDatabase : RoomDatabase() {
@@ -52,6 +55,7 @@ abstract class AyunoDatabase : RoomDatabase() {
     abstract fun catalog2Dao(): Catalog2Dao
     abstract fun plan2Dao(): Plan2Dao
     abstract fun record2Dao(): Record2Dao
+    abstract fun refeedDao(): RefeedDao
 
     companion object {
         /** Configuración común a la base real y a la de pruebas: integridad y datos iniciales. */
@@ -59,7 +63,7 @@ abstract class AyunoDatabase : RoomDatabase() {
             addCallback(CreateCallback(context.applicationContext, clock))
                 .addMigrations(*Migrations.all(context.applicationContext, clock))
 
-        private val PLAN_TABLES = listOf("stage", "plan_metric", "rule", "intake_goal", "checklist_item", "stage_notice", "plan_product")
+        private val PLAN_TABLES = listOf("stage", "plan_metric", "rule", "intake_goal", "checklist_item", "stage_notice", "plan_product", "refeed_step")
 
         /** Propietario de plan: exactamente uno de template_id / fast_id (D-03). Room no declara CHECK. */
         internal fun createOwnerTriggers(db: SupportSQLiteDatabase, tables: List<String>) {

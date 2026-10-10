@@ -11,6 +11,7 @@ import com.ayuno.domain.model.DurationUnit
 import com.ayuno.domain.model.IntakeGoal
 import com.ayuno.domain.model.IntakeType
 import com.ayuno.domain.model.PlanProduct
+import com.ayuno.domain.model.RefeedStep
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.StageNotice
 import com.ayuno.domain.model.SymptomType
@@ -24,6 +25,7 @@ import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.Template
 import com.ayuno.domain.model.TemplateWithPlan
 import com.ayuno.domain.usecase.Outcome
+import com.ayuno.domain.usecase.RefeedStepValidator
 import com.ayuno.domain.usecase.RuleValidator
 import com.ayuno.domain.usecase.ValidationError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +52,7 @@ data class TemplateDraft(
     val checklist: List<ChecklistItem> = emptyList(),
     val notices: List<StageNotice> = emptyList(),
     val products: Map<String, PlanProduct> = emptyMap(),
+    val refeed: List<RefeedStep> = emptyList(),
 ) {
     fun usesStage(kind: StageKind) = kind == StageKind.FAST || stageDurations.containsKey(kind)
 }
@@ -90,6 +93,7 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         checklist = t.plan.checklist,
         notices = t.plan.notices,
         products = t.plan.products.associateBy { it.productCode },
+        refeed = t.plan.refeed,
     )
 
     fun edit(change: (TemplateDraft) -> TemplateDraft) = _draft.update { it?.let(change) }
@@ -136,6 +140,15 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         d.copy(products = d.products + (code to PlanProduct(current?.id ?: Ids.newId(), code, duringFast, optionalEnabled, reason ?: current?.reason)))
     }
 
+    /** H-031: valida y añade un paso de la vuelta a comer; devuelve los errores (vacío si se aceptó). */
+    fun addRefeedStep(step: RefeedStep): List<ValidationError> {
+        val errors = RefeedStepValidator.validate(step)
+        if (errors.isEmpty()) edit { d -> d.copy(refeed = d.refeed + RefeedStepValidator.normalize(step)) }
+        return errors
+    }
+
+    fun removeRefeedStep(id: String) = edit { d -> d.copy(refeed = d.refeed.filterNot { it.id == id }) }
+
     fun setRuleActive(ruleId: String, active: Boolean) = edit { d -> d.copy(rules = d.rules.map { if (it.id == ruleId) it.copy(active = active) else it }) }
 
     fun save(onDone: () -> Unit) {
@@ -159,6 +172,7 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
                 checklist = d.checklist,
                 notices = d.notices,
                 products = d.products.values.toList(),
+                refeed = d.refeed,
             ),
         )
         viewModelScope.launch {

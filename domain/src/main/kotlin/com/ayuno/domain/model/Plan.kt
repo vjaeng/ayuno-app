@@ -57,6 +57,20 @@ data class PlanProduct(
     val isReminded: Boolean get() = duringFast == DuringFast.CONTINUES || (duringFast == DuringFast.OPTIONAL && optionalEnabled)
 }
 
+/**
+ * `refeed_step` (H-031): paso de la vuelta a comer. `timed`: a [offsetMinutes] del fin real, repetido cada
+ * [repeatEveryMinutes] durante [repeatForMinutes] si se indica; `reintroduction`: el día [dayOffset] tras el fin.
+ */
+data class RefeedStep(
+    val id: String,
+    val kind: RefeedStepKind,
+    val description: String,
+    val offsetMinutes: Int?,
+    val repeatEveryMinutes: Int?,
+    val repeatForMinutes: Int?,
+    val dayOffset: Int?,
+)
+
 /** Plan completo de una plantilla o de un ayuno. */
 data class Plan(
     val stages: List<Stage>,
@@ -66,6 +80,7 @@ data class Plan(
     val checklist: List<ChecklistItem> = emptyList(),
     val notices: List<StageNotice> = emptyList(),
     val products: List<PlanProduct> = emptyList(),
+    val refeed: List<RefeedStep> = emptyList(),
 ) {
     fun usesStage(kind: StageKind): Boolean = kind == StageKind.FAST || stages.any { it.kind == kind }
 

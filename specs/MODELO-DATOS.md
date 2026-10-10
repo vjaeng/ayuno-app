@@ -757,6 +757,7 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-11 | 2026-10-08 | Entra `fast.notes`; se descarta `fast.name` | Decisión del humano (P-02). H-004 actualizada con el criterio de notas generales. |
 | D-12 | 2026-10-08 | Tejido: se retiran `checklist_item.position` y `alert.decided_at` (nudos N2) | Ninguna historia los pide: la lista previa se ordena por creación y la hora de la alerta (`alert.fired_at`) basta. Decisión del humano. |
 | D-13 | 2026-10-08 | Tejido: `fast.last_meal_actual` y `*.on_waking` quedan justificados por criterios nuevos en H-005 y H-008 (nudos N4) | Se leían sin que ninguna historia los escribiera. Decisión del humano. |
+| D-14 | 2026-10-10 | Construcción (H-031): reglas de cálculo de `refeed_check.scheduled_at`. Un paso repetido suena al empezar y cada intervalo mientras quede ventana (`repeat_for_minutes` excluye su final: «cada 60 minutos durante 4 horas» = 4 casillas). La reintroducción del día N cae a las 00:00 de ese día: no suena y no cuenta como atrasada hasta que acaba su día. Los pasos exigen la etapa `refeed` en el plan. | Los criterios no fijaban el borde de la ventana ni la hora de un paso «por día»; se elige lo que no produce una taza de más ni un aviso de madrugada. Sin cambios de esquema. |
 
 ## 6. Preguntas para el humano
 

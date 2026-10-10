@@ -2,8 +2,6 @@ package com.ayuno.app.ui.navigation
 
 import android.net.Uri
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -11,7 +9,6 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -19,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -59,7 +55,11 @@ import com.ayuno.app.ui.record.RecordGridScreen
 import com.ayuno.app.ui.safety.AlertScreen
 import com.ayuno.app.ui.safety.SafetyScreen
 import com.ayuno.app.ui.today.TodayScreen
-import com.ayuno.app.ui.theme.Dimens
+import com.ayuno.app.ui.history.FastDetailScreen
+import com.ayuno.app.ui.history.HistoryScreen
+import com.ayuno.app.ui.refeed.MealFormScreen
+import com.ayuno.app.ui.refeed.RefeedScreen
+import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.model.Alert
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.time.LocalTimes
@@ -78,6 +78,7 @@ sealed interface DeepLink {
     data class Record(val fastId: String, val metricCode: String, val scheduledFor: LocalDateTime, val notDone: Boolean = false) : DeepLink
     data class Product(val fastId: String, val productCode: String, val scheduledFor: LocalDateTime, val notDone: Boolean = false) : DeepLink
     data class OpenAlert(val alertId: String) : DeepLink
+    data class Refeed(val fastId: String) : DeepLink
 }
 
 private object Routes {
@@ -92,6 +93,9 @@ private object Routes {
     const val NOTE = "note/{fastId}"
     const val CATALOGS = "catalogs"
     const val SETTINGS = "settings"
+    const val REFEED = "refeed/{fastId}"
+    const val MEAL = "meal/{fastId}"
+    const val FAST_DETAIL = "history/{fastId}"
     const val SYMPTOMS = "catalog/symptoms"
     const val SYMPTOM_EDIT = "catalog/symptom?code={code}"
     const val INTAKES = "catalog/intakes"
@@ -111,6 +115,9 @@ private object Routes {
             "notDone=true".takeIf { notDone },
         ).joinToString("&")
     fun alert(id: String) = "alert/$id"
+    fun refeed(fastId: String) = "refeed/$fastId"
+    fun meal(fastId: String) = "meal/$fastId"
+    fun fastDetail(fastId: String) = "history/$fastId"
     fun end(fastId: String, ruleId: String? = null, endAt: LocalDateTime? = null) = "end/$fastId?" +
         listOfNotNull(ruleId?.let { "ruleId=$it" }, endAt?.let { "endAt=" + Uri.encode(LocalTimes.format(it)) }).joinToString("&")
     fun product(fastId: String, scheduledFor: LocalDateTime?, code: String? = null, notDone: Boolean = false) =
@@ -138,6 +145,7 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
             is DeepLink.Record -> navController.navigate(Routes.measure(link.fastId, link.metricCode, link.scheduledFor, link.notDone))
             is DeepLink.Product -> navController.navigate(Routes.product(link.fastId, link.scheduledFor, link.productCode, link.notDone))
             is DeepLink.OpenAlert -> navController.navigate(Routes.alert(link.alertId))
+            is DeepLink.Refeed -> navController.navigate(Routes.refeed(link.fastId))
             null -> return@LaunchedEffect
         }
         onDeepLinkHandled()
@@ -179,20 +187,32 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                         onSafety = { navController.navigate(Routes.SAFETY) },
                         onEndFast = { navController.navigate(Routes.end(it)) },
                         onAlert = { navController.navigate(Routes.alert(it)) },
+                        onRefeed = { navController.navigate(Routes.refeed(it)) },
+                        onMeal = { navController.navigate(Routes.meal(it)) },
                     ),
                 )
             }
             composable(TopLevelDestination.TODAY.route) {
                 TodayScreen(onOpen = { fastId, item, notDone ->
-                    if (item.kind == com.ayuno.domain.derived.PendingKind.PRODUCT) {
-                        navController.navigate(Routes.product(fastId, item.scheduledAt, item.code, notDone))
-                    } else {
-                        navController.navigate(Routes.measure(fastId, item.code, item.scheduledAt, notDone))
+                    when (item.kind) {
+                        PendingKind.PRODUCT -> navController.navigate(Routes.product(fastId, item.scheduledAt, item.code, notDone))
+                        PendingKind.REFEED -> navController.navigate(Routes.refeed(fastId))
+                        PendingKind.METRIC -> navController.navigate(Routes.measure(fastId, item.code, item.scheduledAt, notDone))
                     }
                 })
             }
             composable(Routes.SETTINGS) { com.ayuno.app.ui.settings.SettingsScreen(onBack = { navController.popBackStack() }) }
-            composable(TopLevelDestination.HISTORY.route) { PendingSection(stringResource(R.string.tab_history)) }
+            composable(TopLevelDestination.HISTORY.route) {
+                HistoryScreen(onOpen = { navController.navigate(Routes.fastDetail(it)) }, onNewFast = { navController.navigate(Routes.NEW_FAST) })
+            }
+            composable(Routes.FAST_DETAIL) { entry -> FastDetailScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }) }
+            composable(Routes.REFEED) { entry ->
+                val fastId = entry.arguments?.getString("fastId")!!
+                RefeedScreen(fastId, onBack = { navController.popBackStack() }, onMeal = { navController.navigate(Routes.meal(fastId)) })
+            }
+            composable(Routes.MEAL) { entry ->
+                MealFormScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }, onSaved = { navController.popBackStack() })
+            }
             composable(TopLevelDestination.MORE.route) {
                 MoreScreen(
                     onTemplates = { navController.navigate(Routes.TEMPLATES) },
@@ -306,12 +326,4 @@ private fun NavController.navigateToTab(destination: TopLevelDestination) = navi
     popUpTo(graph.findStartDestination().id) { saveState = true }
     launchSingleTop = true
     restoreState = true
-}
-
-/** Marcador temporal de las pestañas cuyas historias aún no se han construido (Historial: H-033). */
-@Composable
-private fun PendingSection(title: String) {
-    Box(Modifier.fillMaxSize().padding(Dimens.screenPadding), contentAlignment = Alignment.Center) {
-        Text(text = "$title\n\n${stringResource(R.string.section_pending)}", style = MaterialTheme.typography.bodyLarge)
-    }
 }

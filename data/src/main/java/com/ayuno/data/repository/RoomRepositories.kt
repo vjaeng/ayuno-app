@@ -110,6 +110,7 @@ internal class PlanStore(private val database: AyunoDatabase, private val clock:
             checklist = dao2.checklist(templateId, fastId).map { it.toDomain() },
             notices = dao2.notices(templateId, fastId).map { it.toDomain() },
             products = dao2.planProducts(templateId, fastId).map { it.toDomain() },
+            refeed = database.refeedDao().steps(templateId, fastId).map { it.toDomain() },
         )
     }
 
@@ -146,11 +147,15 @@ internal class PlanStore(private val database: AyunoDatabase, private val clock:
         dao2.upsertChecklist(plan.checklist.map { c -> c.toEntity(owner, now).let { e -> oldChecklist[c.id]?.let { e.copy(createdAt = it.createdAt, updatedAt = now) } ?: e } })
         dao2.upsertNotices(plan.notices.map { n -> n.toEntity(owner, now).let { e -> oldNotices[n.id]?.let { e.copy(createdAt = it.createdAt, updatedAt = now) } ?: e } })
         dao2.upsertPlanProducts(plan.products.map { p -> p.toEntity(owner, now).let { e -> oldProducts[p.id]?.let { e.copy(createdAt = it.createdAt, updatedAt = now) } ?: e } })
+        val refeedDao = database.refeedDao()
+        val oldSteps = refeedDao.steps(templateId, fastId).associateBy { it.id }
+        refeedDao.upsertSteps(plan.refeed.map { r -> r.toEntity(owner, now).let { e -> oldSteps[r.id]?.let { e.copy(createdAt = it.createdAt, updatedAt = now) } ?: e } })
         if (templateId != null) {
             dao2.softDeleteGoals(templateId, plan.goals.map { it.id }, now)
             dao2.softDeleteChecklist(templateId, plan.checklist.map { it.id }, now)
             dao2.softDeleteNotices(templateId, plan.notices.map { it.id }, now)
             dao2.softDeletePlanProducts(templateId, plan.products.map { it.id }, now)
+            refeedDao.softDeleteSteps(templateId, plan.refeed.map { it.id }, now)
             dao.softDeleteStages(templateId, plan.stages.map { it.id }, now)
             dao.softDeletePlanMetrics(templateId, plan.metrics.map { it.id }, now)
             dao.softDeleteSchedules(templateId, plan.metrics.flatMap { m -> m.schedules.map { it.id } }, now)
@@ -231,7 +236,29 @@ class RoomRecordRepository(private val database: AyunoDatabase, private val cloc
     override suspend fun productLogs(fastId: String): List<ProductLog> = dao2.productLogs(fastId).map { it.toDomain() }
     override suspend fun insertProductLog(log: ProductLog) = dao2.insertProductLog(log.toEntity(clock.stamp()))
     override fun observeNotes(fastId: String): Flow<List<Note>> = dao2.observeNotes(fastId).map { l -> l.map { it.toDomain() } }
+    override suspend fun notes(fastId: String): List<Note> = dao2.notes(fastId).map { it.toDomain() }
     override suspend fun insertNote(note: Note) = dao2.insertNote(note.toEntity(clock.stamp()))
+}
+
+class RoomRefeedRepository(private val database: AyunoDatabase, private val clock: Clock) : com.ayuno.domain.port.RefeedRepository {
+    private val dao get() = database.refeedDao()
+
+    override fun observeChecks(fastId: String): Flow<List<com.ayuno.domain.model.RefeedCheck>> = dao.observeChecks(fastId).map { l -> l.map { it.toDomain() } }
+    override suspend fun checks(fastId: String) = dao.checks(fastId).map { it.toDomain() }
+    override suspend fun check(id: String) = dao.check(id)?.toDomain()
+    override suspend fun insertChecks(checks: List<com.ayuno.domain.model.RefeedCheck>) {
+        val now = clock.stamp()
+        dao.insertChecks(checks.map { it.toEntity(now, null) })
+    }
+
+    override suspend fun updateCheck(check: com.ayuno.domain.model.RefeedCheck) {
+        val existing = dao.check(check.id) ?: error("Casilla inexistente")
+        dao.updateCheck(check.toEntity(existing.createdAt, clock.stamp()))
+    }
+
+    override fun observeMeals(fastId: String): Flow<List<com.ayuno.domain.model.Meal>> = dao.observeMeals(fastId).map { l -> l.map { it.toDomain() } }
+    override suspend fun meals(fastId: String) = dao.meals(fastId).map { it.toDomain() }
+    override suspend fun insertMeal(meal: com.ayuno.domain.model.Meal) = dao.insertMeal(meal.toEntity(clock.stamp()))
 }
 
 class RoomAlertRepository(private val database: AyunoDatabase, private val clock: Clock) : AlertRepository {

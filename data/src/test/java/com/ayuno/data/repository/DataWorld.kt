@@ -32,6 +32,7 @@ class DataWorld {
     val records = RoomRecordRepository(database, clock)
     val alerts = RoomAlertRepository(database, clock)
     val audit = RoomAuditRepository(database, clock)
+    val refeed = RoomRefeedRepository(database, clock)
 
     val saveTemplate = SaveTemplate(templates)
     val createFast = CreateFast(templates, fasts, tx, clock)

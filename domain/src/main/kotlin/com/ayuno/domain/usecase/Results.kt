@@ -66,6 +66,13 @@ enum class ValidationError {
     QUIET_END_REQUIRED,
     RULE_ACTION_MINUTES_REQUIRED,
     RULE_ACTION_NEEDS_METRIC,
+    REFEED_STAGE_NOT_USED,
+    REFEED_OFFSET_REQUIRED,
+    REFEED_REPEAT_FOR_REQUIRED,
+    REFEED_DAY_REQUIRED,
+    REFEED_CHECK_NOT_FOUND,
+    TOLERANCE_DETAIL_REQUIRED,
+    TOLERANCE_REQUIRED,
 }
 
 fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

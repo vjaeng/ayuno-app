@@ -2,6 +2,8 @@ package com.ayuno.domain.usecase
 
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Plan
+import com.ayuno.domain.model.RefeedStep
+import com.ayuno.domain.model.RefeedStepKind
 import com.ayuno.domain.model.Rule
 import com.ayuno.domain.model.RuleAction
 import com.ayuno.domain.model.RuleConditionKind
@@ -21,7 +23,8 @@ class SaveTemplate(private val templates: TemplateRepository) {
             addAll(PlanValidator.validate(input.plan))
         }.distinct()
         if (errors.isNotEmpty()) return Outcome.Invalid(errors)
-        val saved = TemplateWithPlan(template.copy(milestoneHours = template.milestoneHours.distinct().sorted()), input.plan)
+        val plan = input.plan.copy(refeed = input.plan.refeed.map(RefeedStepValidator::normalize))
+        val saved = TemplateWithPlan(template.copy(milestoneHours = template.milestoneHours.distinct().sorted()), plan)
         templates.save(saved)
         return Outcome.Ok(saved)
     }
@@ -46,6 +49,35 @@ object PlanValidator {
             if (it.text.isBlank()) add(ValidationError.TEXT_REQUIRED)
             if (it.stageKinds.isEmpty()) add(ValidationError.NOTICE_STAGES_REQUIRED)
         }
+        if (plan.refeed.isNotEmpty() && !plan.usesStage(StageKind.REFEED)) add(ValidationError.REFEED_STAGE_NOT_USED)
+        plan.refeed.forEach { addAll(RefeedStepValidator.validate(it)) }
+    }
+}
+
+/** H-031: un paso por horas necesita su hora tras el fin (y ventana si se repite); uno de reintroducción, su día. */
+object RefeedStepValidator {
+    fun validate(step: RefeedStep): List<ValidationError> = buildList {
+        if (step.description.isBlank()) add(ValidationError.TEXT_REQUIRED)
+        when (step.kind) {
+            RefeedStepKind.TIMED -> {
+                if (step.offsetMinutes == null || step.offsetMinutes < 0) add(ValidationError.REFEED_OFFSET_REQUIRED)
+                if (step.repeatEveryMinutes != null) {
+                    if (step.repeatEveryMinutes <= 0) add(ValidationError.AMOUNT_NOT_POSITIVE)
+                    if (step.repeatForMinutes == null || step.repeatForMinutes <= 0) add(ValidationError.REFEED_REPEAT_FOR_REQUIRED)
+                }
+            }
+            RefeedStepKind.REINTRODUCTION -> if (step.dayOffset == null || step.dayOffset < 1) add(ValidationError.REFEED_DAY_REQUIRED)
+        }
+    }
+
+    /** Normaliza según el tipo: lo que no aplica queda vacío (el modelo lo exige así). */
+    fun normalize(step: RefeedStep): RefeedStep = when (step.kind) {
+        RefeedStepKind.TIMED -> step.copy(
+            description = step.description.trim(),
+            repeatForMinutes = step.repeatForMinutes.takeIf { step.repeatEveryMinutes != null },
+            dayOffset = null,
+        )
+        RefeedStepKind.REINTRODUCTION -> step.copy(description = step.description.trim(), offsetMinutes = null, repeatEveryMinutes = null, repeatForMinutes = null)
     }
 }
 

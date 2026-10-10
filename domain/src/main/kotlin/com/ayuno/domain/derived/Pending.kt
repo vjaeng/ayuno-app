@@ -9,17 +9,21 @@ import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.ProductLog
 import com.ayuno.domain.model.ProductLogStatus
+import com.ayuno.domain.model.Plan
+import com.ayuno.domain.model.RefeedCheck
 import com.ayuno.domain.model.StageKind
 import java.time.LocalDateTime
 
 enum class PendingState { DONE, PENDING, LATE, NOT_DONE }
 
-enum class PendingKind { METRIC, PRODUCT }
+enum class PendingKind { METRIC, PRODUCT, REFEED }
 
 /**
- * Algo que toca hacer a una hora: una medición o una toma de producto. [fromRule]: lo programó una regla
- * («medir de nuevo en N minutos», H-026); suena aunque sea silencio nocturno y cuenta como hecho con cualquier
- * lectura de esa medición posterior a [answeredAfter] (la hora de la alerta).
+ * Algo que toca hacer a una hora: una medición, una toma de producto o un paso de la vuelta a comer (H-031; su
+ * [code] es el id de la casilla `refeed_check`). [fromRule]: lo programó una regla («medir de nuevo en N minutos»,
+ * H-026); suena aunque sea silencio nocturno y cuenta como hecho con cualquier lectura de esa medición posterior a
+ * [answeredAfter] (la hora de la alerta). [allDay]: paso de fecha sin hora (reintroducción): no suena y no se
+ * atrasa hasta que acaba su día.
  */
 data class PendingItem(
     val kind: PendingKind,
@@ -28,6 +32,7 @@ data class PendingItem(
     val amount: Double? = null,
     val fromRule: Boolean = false,
     val answeredAfter: LocalDateTime? = null,
+    val allDay: Boolean = false,
 )
 
 data class PendingStatus(val item: PendingItem, val state: PendingState)
@@ -37,6 +42,7 @@ data class PendingRecords(
     val measurements: List<Measurement> = emptyList(),
     val readings: List<BloodPressureReading> = emptyList(),
     val productLogs: List<ProductLog> = emptyList(),
+    val refeedChecks: List<RefeedCheck> = emptyList(),
 )
 
 /**
@@ -87,8 +93,17 @@ object Pending {
         }
     }
 
+    /** H-031: casillas de la vuelta a comer del ayuno (la descripción sale del paso del plan). */
+    fun refeedItems(plan: Plan, checks: List<RefeedCheck>, from: LocalDateTime, to: LocalDateTime): List<PendingItem> {
+        val steps = plan.refeed.associateBy { it.id }
+        return checks.filter { !it.scheduledAt.isBefore(from) && !it.scheduledAt.isAfter(to) }.map { check ->
+            PendingItem(PendingKind.REFEED, check.id, check.scheduledAt, allDay = RefeedSchedule.isReintroduction(steps[check.refeedStepId]))
+        }
+    }
+
     fun status(item: PendingItem, now: LocalDateTime, records: PendingRecords): PendingStatus {
         if (item.fromRule) return PendingStatus(item, followUpState(item, now, records))
+        if (item.kind == PendingKind.REFEED) return PendingStatus(item, refeedState(item, now, records))
         // Cada respuesta es «hecho» (true) o «no se hizo» (false).
         val answers: List<Boolean> = when {
             item.kind == PendingKind.PRODUCT ->
@@ -105,6 +120,16 @@ object Pending {
             else -> PendingState.PENDING
         }
         return PendingStatus(item, state)
+    }
+
+    private fun refeedState(item: PendingItem, now: LocalDateTime, records: PendingRecords): PendingState {
+        val check = records.refeedChecks.firstOrNull { it.id == item.code }
+        val lateFrom = if (item.allDay) item.scheduledAt.toLocalDate().plusDays(1).atStartOfDay() else item.scheduledAt.plusMinutes(LATE_AFTER_MINUTES)
+        return when {
+            check?.doneAt != null -> PendingState.DONE
+            now.isAfter(lateFrom) -> PendingState.LATE
+            else -> PendingState.PENDING
+        }
     }
 
     private fun followUpState(item: PendingItem, now: LocalDateTime, records: PendingRecords): PendingState {

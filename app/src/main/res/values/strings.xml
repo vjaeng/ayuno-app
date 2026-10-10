@@ -8,7 +8,6 @@
     <string name="tab_today">Hoy</string>
     <string name="tab_history">Historial</string>
     <string name="tab_more">Más</string>
-    <string name="section_pending">Esta sección se irá completando con las próximas historias.</string>
 
     <!-- Acciones -->
     <string name="action_accept">Aceptar</string>
@@ -404,4 +403,65 @@
     <string name="error_quiet_end">Elige la hora de fin del silencio.</string>
     <string name="error_rule_action_minutes">Escribe en cuántos minutos volver a medir.</string>
     <string name="error_rule_action_metric">«Medir de nuevo» solo está disponible en reglas sobre una medición.</string>
+
+    <!-- Tanda 3: vuelta a comer (H-031, H-032) e historial (H-033) -->
+    <string name="template_refeed">Vuelta a comer</string>
+    <string name="refeed_timed_title">Pasos tras el fin</string>
+    <string name="refeed_reintroduction_title">Reintroducción</string>
+    <string name="refeed_day_n">Día %1$d tras el fin</string>
+    <string name="refeed_at_hours">a las %1$s horas</string>
+    <string name="refeed_repeat">desde las %1$s horas · cada %2$d minutos durante %3$s horas</string>
+    <string name="refeed_kind_timed">Por horas</string>
+    <string name="refeed_kind_reintroduction">Por días</string>
+    <string name="field_refeed_description">Qué toca (p. ej. una taza de caldo)</string>
+    <string name="field_refeed_at_hours">A las … horas del fin</string>
+    <string name="field_refeed_every">Repetir cada (opcional)</string>
+    <string name="field_refeed_for_hours">Durante</string>
+    <string name="field_refeed_day">Día tras el fin</string>
+    <string name="refeed_add_step">Añadir paso</string>
+    <string name="refeed_since">%1$s · desde las %2$s</string>
+    <string name="refeed_empty">Tu plantilla no tiene plan de vuelta a comer. Puedes anotar igualmente lo que comes.</string>
+    <string name="refeed_steps_title">Pasos</string>
+    <string name="refeed_done_at">(hecho a las %1$s)</string>
+    <string name="refeed_meals_title">Comidas anotadas</string>
+    <string name="refeed_add_meal">Anotar comida</string>
+    <string name="refeed_uncheck_question">¿Desmarcar «%1$s»? Se borrará la hora en que lo marcaste; el cambio queda registrado.</string>
+    <string name="refeed_uncheck">Desmarcar</string>
+    <string name="tolerance_fine">Bien</string>
+    <string name="tolerance_heaviness">Pesadez</string>
+    <string name="tolerance_nausea">Náusea</string>
+    <string name="tolerance_diarrhea">Diarrea</string>
+    <string name="tolerance_other">Otro</string>
+    <string name="meal_title">Comida</string>
+    <string name="field_meal_description">¿Qué comiste?</string>
+    <string name="field_meal_amount">Cantidad aproximada (opcional)</string>
+    <string name="field_meal_tolerance">¿Cómo te cayó?</string>
+    <string name="field_tolerance_detail">¿Qué notaste?</string>
+    <string name="home_reintroduction_pending">Reintroducción pendiente</string>
+    <string name="home_open_refeed">Ver la vuelta a comer</string>
+    <string name="today_all_day">Todo el día</string>
+    <string name="notification_refeed_title">Vuelta a comer: %1$s</string>
+    <string name="notification_action_open_refeed">Abrir</string>
+    <string name="history_empty">Aún no hay ayunos.</string>
+    <string name="history_in_progress">● En curso · desde el %1$s</string>
+    <string name="history_planned">○ Planificado · %1$s</string>
+    <string name="history_target">objetivo %1$s horas</string>
+    <string name="history_end_rule">regla «%1$s»</string>
+    <string name="history_detail_title">Ayuno</string>
+    <string name="history_range">Del %1$s al %2$s</string>
+    <string name="history_notes">Notas: «%1$s»</string>
+    <string name="history_no_entries">Todavía no hay registros en este ayuno.</string>
+    <string name="history_totals">Totales: %1$s</string>
+    <string name="history_pulse">pulso %1$d</string>
+    <string name="history_alert_undecided">sin decidir</string>
+    <string name="history_note">Nota: «%1$s»</string>
+    <string name="history_refeed_step">Vuelta a comer: %1$s ✔</string>
+    <string name="history_meal">Comida: %1$s · %2$s</string>
+    <string name="error_refeed_stage">Activa la etapa «Vuelta a comer» para usar sus pasos.</string>
+    <string name="error_refeed_offset">Indica a cuántas horas del fin toca el paso.</string>
+    <string name="error_refeed_repeat_for">Si el paso se repite, indica durante cuántas horas.</string>
+    <string name="error_refeed_day">Indica el día tras el fin (1 o más).</string>
+    <string name="error_refeed_check">No se encontró ese paso. Vuelve a abrir la vuelta a comer.</string>
+    <string name="error_tolerance_detail">Escribe qué notaste.</string>
+    <string name="error_tolerance_required">Elige cómo te cayó.</string>
 </resources>

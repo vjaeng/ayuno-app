@@ -19,6 +19,7 @@ import com.ayuno.domain.model.RuleConditionKind
 import com.ayuno.domain.port.CatalogRepository
 import com.ayuno.domain.port.FastRepository
 import com.ayuno.domain.port.RecordRepository
+import com.ayuno.domain.port.RefeedRepository
 import com.ayuno.domain.time.LocalTimes
 import java.time.Clock
 import java.time.LocalDateTime
@@ -28,7 +29,7 @@ data class DueReminder(val fastId: String, val item: PendingItem)
 
 /**
  * Programa los recordatorios con alarmas de despertador del sistema (ADR-005, enmienda: solo la **siguiente**).
- * Los puntos de alarma son los pendientes (mediciones y tomas) y las horas de comprobación de las reglas de
+ * Los puntos de alarma son los pendientes (mediciones, tomas y pasos de la vuelta a comer) y las horas de comprobación de las reglas de
  * ingesta (H-022); en cada alarma se notifica lo que vence y se evalúan las reglas del ayuno en curso (H-019).
  */
 class ReminderScheduler(
@@ -37,6 +38,7 @@ class ReminderScheduler(
     private val catalog: CatalogRepository,
     private val records: RecordRepository,
     private val alerts: AlertRepository,
+    private val refeed: RefeedRepository,
     private val settings: SettingsRepository,
     private val clock: Clock,
 ) {
@@ -52,11 +54,10 @@ class ReminderScheduler(
         val quiet = settings.get()
         val to = from.plusHours(HORIZON_HOURS)
         return sources().flatMap { source ->
-            val pending = PendingRecords(
-                records.measurements(source.fast.id), records.bloodPressure(source.fast.id), records.productLogs(source.fast.id),
-            )
+            val pending = pendingRecords(source.fast.id)
             val followUps = Pending.ruleFollowUps(source, alerts.alerts(source.fast.id)).filter { !it.scheduledAt.isBefore(from) && !it.scheduledAt.isAfter(to) }
-            (Pending.items(source, active, products, from, to) + followUps)
+            val refeedSteps = Pending.refeedItems(source.plan, pending.refeedChecks, from, to)
+            (Pending.items(source, active, products, from, to) + followUps + refeedSteps)
                 .filter { DayAgenda.isNotified(it, quiet) }
                 .filter { Pending.status(it, from, pending).state == PendingState.PENDING }
                 .map { DueReminder(source.fast.id, it) }
@@ -85,8 +86,7 @@ class ReminderScheduler(
     /** El pendiente sigue sin hacerse (para un aviso pospuesto). */
     suspend fun stillPending(reminder: DueReminder): Boolean {
         val source = fasts.get(reminder.fastId) ?: return false
-        val pending = PendingRecords(records.measurements(source.fast.id), records.bloodPressure(source.fast.id), records.productLogs(source.fast.id))
-        val state = Pending.status(reminder.item, LocalTimes.now(clock), pending).state
+        val state = Pending.status(reminder.item, LocalTimes.now(clock), pendingRecords(source.fast.id)).state
         return state == PendingState.PENDING || state == PendingState.LATE
     }
 
@@ -120,6 +120,10 @@ class ReminderScheduler(
     suspend fun dueAt(at: LocalDateTime): List<DueReminder> = upcoming(at).filter { it.item.scheduledAt == at }
 
     fun canScheduleExact(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarms.canScheduleExactAlarms()
+
+    private suspend fun pendingRecords(fastId: String) = PendingRecords(
+        records.measurements(fastId), records.bloodPressure(fastId), records.productLogs(fastId), refeed.checks(fastId),
+    )
 
     private suspend fun sources(): List<FastWithPlan> = fasts.all().mapNotNull { fasts.get(it.id) }
 
