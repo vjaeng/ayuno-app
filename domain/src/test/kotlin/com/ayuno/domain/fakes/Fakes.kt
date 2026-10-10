@@ -86,9 +86,12 @@ class FakeCatalog(types: List<MetricType> = SeedCatalog.all) : CatalogRepository
 
 class FakeTemplates : TemplateRepository {
     val items = MutableStateFlow<Map<String, TemplateWithPlan>>(emptyMap())
-    override fun observeTemplates(): Flow<List<Template>> = items.map { m -> m.values.map { it.template } }
-    override suspend fun get(id: String) = items.value[id]
-    override suspend fun save(template: TemplateWithPlan) { items.value = items.value + (template.template.id to template) }
+    override suspend fun get(id: String) = items.value[id]?.takeIf { id !in deleted.value }
+    override suspend fun save(template: TemplateWithPlan) { items.value = items.value + (template.template.id to template); deleted.value = deleted.value - template.template.id }
+    val deleted = MutableStateFlow<Set<String>>(emptySet())
+    override fun observeTemplates(): Flow<List<Template>> = items.map { m -> m.values.filter { it.template.id !in deleted.value }.map { it.template } }
+    override fun observeDeleted(): Flow<List<Template>> = items.map { m -> m.values.filter { it.template.id in deleted.value }.map { it.template } }
+    override suspend fun setDeleted(id: String, deleted: Boolean) { this.deleted.value = if (deleted) this.deleted.value + id else this.deleted.value - id }
 }
 
 class FakeFasts : FastRepository {

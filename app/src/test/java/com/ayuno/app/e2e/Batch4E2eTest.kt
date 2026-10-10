@@ -76,7 +76,7 @@ class Batch4E2eTest {
         compose.tap("Exportar e importar")
         pickFile(backup, "copia.json")
         compose.assertShown("Importar copia.json")
-        compose.assertShown("Contiene: 1 ayunos, 1 plantillas, 0 productos y 1 registros.")
+        compose.assertShown("Contiene: 1 ayunos, 2 plantillas, 0 productos y 1 registros.") // la suya y la de ejemplo
         compose.assertShown("Nuevos: 0 ayunos, 0 plantillas, 0 productos y 0 registros.")
         compose.tap("Importar")
         compose.assertShown("Importado: 0 nuevos, 0 actualizados", substring = true)

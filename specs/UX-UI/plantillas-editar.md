@@ -139,6 +139,8 @@ Lista de reglas (`rule.name`, `rule.level`, `rule.active`) → [reglas-editar.md
 
 ## Decisiones de producto
 
+*Implementación (H-003, 2026-10-10):* Duplicar y Borrar en el menú ⋮ de cada fila; «Borradas (n)» despliega las borradas con «Restaurar» (también visible si la lista queda vacía, para recuperar la de ejemplo).
+
 *Implementación (tanda 3, 2026-10-10):* la subpantalla «Vuelta a comer» se construye como sección del mismo editor (como el resto de secciones), visible al activar la etapa. Cada paso se valida al añadirlo.
 
 *Propuestas aceptadas por el humano el 2026-10-08.*

@@ -1,5 +1,8 @@
 package com.ayuno.domain.usecase
 
+import com.ayuno.domain.id.Ids
+import com.ayuno.domain.model.EditAction
+import com.ayuno.domain.model.EditLogEntry
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Plan
 import com.ayuno.domain.model.RefeedStep
@@ -9,7 +12,43 @@ import com.ayuno.domain.model.RuleAction
 import com.ayuno.domain.model.RuleConditionKind
 import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.TemplateWithPlan
+import com.ayuno.domain.port.AuditRepository
 import com.ayuno.domain.port.TemplateRepository
+import com.ayuno.domain.port.TransactionRunner
+import com.ayuno.domain.time.LocalTimes
+import java.time.Clock
+
+/** H-003: duplicar una plantilla en otra independiente, con identificadores nuevos en todo su plan. */
+class DuplicateTemplate(private val templates: TemplateRepository) {
+    suspend operator fun invoke(id: String, copyName: String): Outcome<TemplateWithPlan> {
+        val source = templates.get(id) ?: return invalid(ValidationError.TEMPLATE_NOT_FOUND)
+        val copy = TemplateWithPlan(source.template.copy(id = Ids.newId(), name = copyName.trim()), source.plan.copyWithNewIds())
+        templates.save(copy)
+        return Outcome.Ok(copy)
+    }
+}
+
+/**
+ * H-003: borrar (en blando) o restaurar una plantilla, con constancia en la bitácora (S8). Los ayunos creados desde
+ * ella no cambian: llevan su propia copia del plan (D-03).
+ */
+class SetTemplateDeleted(
+    private val templates: TemplateRepository,
+    private val audit: AuditRepository,
+    private val transactions: TransactionRunner,
+    private val clock: Clock,
+) {
+    suspend operator fun invoke(id: String, deleted: Boolean): Outcome<Unit> = transactions.inTransaction {
+        templates.setDeleted(id, deleted)
+        audit.append(
+            EditLogEntry(
+                id = Ids.newId(), entityName = "template", rowId = id, action = if (deleted) EditAction.DELETE else EditAction.RESTORE,
+                editedAt = LocalTimes.now(clock), field = null, oldValue = null, newValue = null, reason = null,
+            ),
+        )
+        Outcome.Ok(Unit)
+    }
+}
 
 /** H-001 (plantilla, etapas, hitos, mediciones y horarios) y H-019/H-020 (reglas de la plantilla). */
 class SaveTemplate(private val templates: TemplateRepository) {
@@ -106,7 +145,8 @@ object RuleValidator {
         }
         if (rule.conditionKind in METRIC_CONDITIONS) {
             if (rule.metricTypeCode.isNullOrBlank()) add(ValidationError.RULE_METRIC_REQUIRED)
-            if (rule.threshold == null) add(ValidationError.RULE_THRESHOLD_REQUIRED)
+            // Una regla inactiva puede quedar sin umbral (estructura de la plantilla de ejemplo, H-003): nunca se evalúa.
+            if (rule.threshold == null && rule.active) add(ValidationError.RULE_THRESHOLD_REQUIRED)
             if (rule.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE && rule.bpComponent == null) add(ValidationError.RULE_BP_COMPONENT_REQUIRED)
             if (rule.sustainedMinutes != null && rule.sustainedMinutes <= 0) add(ValidationError.RULE_SUSTAINED_NOT_POSITIVE)
         }

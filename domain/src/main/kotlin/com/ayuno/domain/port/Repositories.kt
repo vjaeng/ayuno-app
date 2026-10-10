@@ -57,6 +57,12 @@ interface TemplateRepository {
 
     /** Guarda la plantilla y su plan; los hijos que ya no están se borran en blando. */
     suspend fun save(template: TemplateWithPlan)
+
+    /** H-003: plantillas borradas (en blando), para restaurarlas. */
+    fun observeDeleted(): Flow<List<Template>>
+
+    /** Borra (o restaura) solo la plantilla: su plan se conserva para restaurarla entera. */
+    suspend fun setDeleted(id: String, deleted: Boolean)
 }
 
 interface FastRepository {

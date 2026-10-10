@@ -79,5 +79,12 @@ object Migrations {
         }
     }
 
-    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock), From2To3, From3To4)
+    /** Versión 4 (tanda 4) → 5 (H-003): sin cambios de esquema; añade la plantilla de ejemplo a las instalaciones existentes. */
+    class From4To5(private val context: Context, private val clock: Clock) : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            CatalogSeed.insertExampleTemplate(db, context, LocalTimes.format(LocalTimes.now(clock)))
+        }
+    }
+
+    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock), From2To3, From3To4, From4To5(context, clock))
 }

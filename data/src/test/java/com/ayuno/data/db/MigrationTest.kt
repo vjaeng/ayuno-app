@@ -66,6 +66,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `la migracion 4 a 5 conserva el esquema y anade la plantilla de ejemplo una sola vez`() {
+        createV1WithAFast()
+        val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        val clock = Clock.systemDefaultZone()
+        helper.runMigrationsAndValidate(dbName, 2, true, Migrations.From1To2(context, clock)).close()
+        helper.runMigrationsAndValidate(dbName, 3, true, Migrations.From2To3).close()
+        helper.runMigrationsAndValidate(dbName, 4, true, Migrations.From3To4).close()
+        val db = helper.runMigrationsAndValidate(dbName, 5, true, Migrations.From4To5(context, clock))
+        Migrations.From4To5(context, clock).migrate(db)
+        db.query("SELECT COUNT(*) FROM template WHERE name = 'Ejemplo (sin valores clínicos)'").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
+        db.query("SELECT COUNT(*) FROM fast").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
+    }
+
+    @Test
     fun `la app nueva abre la base de la primera instalacion y conserva el ayuno y sus mediciones`() = runTest {
         createV1WithAFast()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()

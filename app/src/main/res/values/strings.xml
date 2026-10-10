@@ -501,4 +501,14 @@
     <string name="person_id_number">Documento de identidad</string>
     <string name="person_birth_date">Fecha de nacimiento (AAAA-MM-DD)</string>
     <string name="person_birth_date_error">Escribe la fecha como 1980-05-01.</string>
+
+    <!-- H-003: duplicar, borrar y restaurar plantillas -->
+    <string name="templates_copy_of">Copia de</string>
+    <string name="templates_menu">Opciones de %1$s</string>
+    <string name="templates_duplicate">Duplicar</string>
+    <string name="templates_delete">Borrar</string>
+    <string name="templates_delete_question">¿Borrar «%1$s»? Los ayunos creados desde ella no cambian y podrás restaurarla.</string>
+    <string name="templates_deleted">Borradas (%1$d)</string>
+    <string name="templates_deleted_title">Plantillas borradas</string>
+    <string name="templates_restore">Restaurar</string>
 </resources>

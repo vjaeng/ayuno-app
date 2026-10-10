@@ -169,6 +169,12 @@ class RoomTemplateRepository(private val database: AyunoDatabase, private val cl
     private val plans = PlanStore(database, clock)
 
     override fun observeTemplates(): Flow<List<Template>> = dao.observeTemplates().map { l -> l.map { it.toDomain() } }
+    override fun observeDeleted(): Flow<List<Template>> = dao.observeDeletedTemplates().map { l -> l.map { it.toDomain() } }
+
+    override suspend fun setDeleted(id: String, deleted: Boolean) {
+        val now = clock.stamp()
+        dao.setTemplateDeleted(id, now.takeIf { deleted }, now)
+    }
 
     override suspend fun get(id: String): TemplateWithPlan? {
         val template = dao.template(id) ?: return null

@@ -10,7 +10,7 @@ Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la 
 |---|---|---|---|---|
 | H-001 | [Crear una plantilla con qué medir y cuándo](plantillas-001-crear-plantilla.md) | plantillas | alta | entregada |
 | H-002 | [Completar la plantilla con metas, lista previa y avisos](plantillas-002-metas-lista-avisos.md) | plantillas | media | entregada |
-| H-003 | [Duplicar, borrar y partir de una plantilla de ejemplo](plantillas-003-gestionar-plantillas.md) | plantillas | media | tejida |
+| H-003 | [Duplicar, borrar y partir de una plantilla de ejemplo](plantillas-003-gestionar-plantillas.md) | plantillas | media | entregada |
 | H-004 | [Crear un ayuno desde una plantilla con dos datos](ayuno-004-crear-ayuno.md) | ayuno | alta | entregada |
 | H-005 | [Empezar el ayuno con un toque](reloj-005-empezar-ayuno.md) | reloj | alta | entregada |
 | H-006 | [Ver de un vistazo dónde estoy](reloj-006-pantalla-inicio.md) | reloj | alta | en construcción |
@@ -149,6 +149,10 @@ Vuelta a comer e historial: pasos de la vuelta a comer en la plantilla (por hora
 Exportar e importar: archivo `fasting-log` 1.0 con nombres canónicos, `null` para lo no anotado, horas locales con segundos y desfase en la cabecera; esquema JSON publicado en `schema/` (generado desde la descripción del formato y comprobado en cada prueba) con ejemplo y registro de cambios; exportar un ayuno desde su detalle o todo desde Más, con tablas CSV opcionales en un comprimido, por la hoja de compartir; datos personales en Ajustes, que solo viajan si se activan; importar con resumen previo (nuevos, ya estaban, campos ignorados), validación completa y escritura todo o nada, sin duplicar. Base de datos en versión 4 (`person_profile`, migración 3→4 probada). 272 pruebas en verde; lint sin errores.
 
 **Entregadas en la tanda 4:** H-036, H-037, H-038, H-039, H-040; y pasan a entregadas H-027 (las alertas viajan en la exportación) y H-033 (exportar desde el ayuno). H-017 sigue pendiente solo de la verificación en dispositivo.
+
+## Construcción — H-003 (2026-10-10)
+
+Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia de …»), borrarla en blando con confirmación y constancia en la bitácora (los ayunos creados desde ella no cambian) y restaurarla desde «Borradas». Al instalar existe una plantilla de ejemplo (etapas, mediciones y reglas sin umbrales ni dosis), con identificadores fijos; las instalaciones existentes la reciben con la migración 4→5 (sin cambios de esquema). Una regla inactiva puede quedar sin umbral; al activarla lo exige. 281 pruebas en verde; lint sin errores.
 
 ## Cambios aprobados durante la construcción
 

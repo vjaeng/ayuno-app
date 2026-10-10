@@ -104,7 +104,7 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 hechas (32 historias entregadas, 3 en construcción; ver `specs/HISTORIAS/README.md`). Pendiente: verificación en dispositivo y siguientes tandas.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas (33 historias entregadas, 3 en construcción; ver `specs/HISTORIAS/README.md`). Pendiente: verificación en dispositivo y siguientes tandas.
 
 ## Decisiones Técnicas
 

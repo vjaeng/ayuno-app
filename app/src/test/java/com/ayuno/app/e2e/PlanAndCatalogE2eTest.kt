@@ -33,7 +33,7 @@ class PlanAndCatalogE2eTest {
         compose.assertShown("Crear plantilla") // de vuelta en la lista: guardado
         compose.assertShown("Ayuno de 36 horas")
         val saved = runBlocking {
-            val id = app.container.templates.observeTemplates().first().single().id
+            val id = app.container.templates.observeTemplates().first().single { it.name != EXAMPLE_TEMPLATE }.id
             app.container.templates.get(id)!!
         }
         assertEquals(36.0, saved.template.targetHours, 0.0)
@@ -65,7 +65,7 @@ class PlanAndCatalogE2eTest {
         compose.tap("Guardar")
         compose.assertShown("Crear plantilla")
         val rules = runBlocking {
-            val id = app.container.templates.observeTemplates().first().single().id
+            val id = app.container.templates.observeTemplates().first().single { it.name != EXAMPLE_TEMPLATE }.id
             app.container.templates.get(id)!!.plan.rules
         }
         assertEquals("Toma sal en agua.", rules.single().message)
@@ -87,3 +87,6 @@ class PlanAndCatalogE2eTest {
         compose.eventually { assertEquals("cm", runBlocking { app.container.catalog.metricType("perimetro_de_cuello")!!.unit }) }
     }
 }
+
+/** Plantilla de ejemplo que trae la app al instalar (H-003). */
+private const val EXAMPLE_TEMPLATE = "Ejemplo (sin valores clínicos)"

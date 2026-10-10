@@ -42,7 +42,7 @@ import java.time.Clock
         MealEntity::class,
         PersonProfileEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class AyunoDatabase : RoomDatabase() {

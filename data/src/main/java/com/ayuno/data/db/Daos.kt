@@ -31,6 +31,13 @@ interface PlanDao {
     suspend fun template(id: String): TemplateEntity?
 
     @Upsert suspend fun upsertTemplate(entity: TemplateEntity)
+
+    @Query("SELECT * FROM template WHERE deleted_at IS NOT NULL ORDER BY name")
+    fun observeDeletedTemplates(): Flow<List<TemplateEntity>>
+
+    /** Borrado blando (o restauración con nulo); `updated_at` cambia para que la exportación lo refleje. */
+    @Query("UPDATE template SET deleted_at = :deletedAt, updated_at = :now WHERE id = :id")
+    suspend fun setTemplateDeleted(id: String, deletedAt: String?, now: String)
     @Upsert suspend fun upsertStages(entities: List<StageEntity>)
     @Upsert suspend fun upsertPlanMetrics(entities: List<PlanMetricEntity>)
     @Upsert suspend fun upsertSchedules(entities: List<MetricScheduleEntity>)

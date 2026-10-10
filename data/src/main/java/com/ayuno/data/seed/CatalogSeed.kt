@@ -10,6 +10,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.Clock
+import java.util.UUID
 
 /** Datos iniciales y configuración fuera del código (ADR-008): `assets/seed/` y `assets/config/`. */
 object CatalogSeed {
@@ -45,6 +46,36 @@ object CatalogSeed {
     )
 
     @Serializable
+    private data class SeedStage(val kind: String, @SerialName("duration_value") val durationValue: Double?, @SerialName("duration_unit") val durationUnit: String)
+
+    @Serializable
+    private data class SeedSchedule(@SerialName("stage_kind") val stageKind: String, @SerialName("time_of_day") val timeOfDay: String)
+
+    @Serializable
+    private data class SeedMetric(@SerialName("metric_type_code") val metricTypeCode: String, val schedules: List<SeedSchedule>)
+
+    @Serializable
+    private data class SeedRule(
+        val name: String,
+        val active: Boolean,
+        @SerialName("condition_kind") val conditionKind: String,
+        @SerialName("metric_type_code") val metricTypeCode: String?,
+        val level: String,
+        val message: String,
+        val action: String,
+    )
+
+    @Serializable
+    private data class SeedTemplate(
+        val name: String,
+        @SerialName("target_hours") val targetHours: Double,
+        @SerialName("milestone_hours") val milestoneHours: List<Double>,
+        val stages: List<SeedStage>,
+        val metrics: List<SeedMetric>,
+        val rules: List<SeedRule>,
+    )
+
+    @Serializable
     private data class Range(val min: Double, val max: Double)
 
     @Serializable
@@ -72,6 +103,59 @@ object CatalogSeed {
             )
         }
         insertCatalogs(db, context, now)
+        insertExampleTemplate(db, context, now)
+    }
+
+    /** Identificadores fijos: la plantilla de ejemplo es la misma en cada instalación y no se duplica al importar. */
+    private fun exampleId(path: String): String = UUID.nameUUIDFromBytes("ayuno-ejemplo/$path".toByteArray()).toString()
+
+    /**
+     * H-003: plantilla de ejemplo con etapas, mediciones y estructura de reglas, sin umbrales ni dosis. La regla de
+     * medición va inactiva y sin umbral: la persona pone el suyo al activarla. También la usa la migración 4→5.
+     */
+    fun insertExampleTemplate(db: SupportSQLiteDatabase, context: Context, now: String) {
+        val t = json.decodeFromString<SeedTemplate>(read(context, "seed/example_template.json"))
+        val templateId = exampleId("template")
+        fun insert(table: String, values: ContentValues) = db.insert(table, SQLiteDatabase.CONFLICT_IGNORE, values.apply { put("created_at", now) })
+        insert(
+            "template",
+            ContentValues().apply {
+                put("id", templateId); put("name", t.name); put("target_hours", t.targetHours)
+                put("milestone_hours", t.milestoneHours.joinToString(",", "[", "]"))
+            },
+        )
+        t.stages.forEach { s ->
+            insert(
+                "stage",
+                ContentValues().apply {
+                    put("id", exampleId("stage/${s.kind}")); put("template_id", templateId); put("kind", s.kind)
+                    put("duration_value", s.durationValue); put("duration_unit", s.durationUnit)
+                },
+            )
+        }
+        t.metrics.forEach { m ->
+            val metricId = exampleId("metric/${m.metricTypeCode}")
+            insert("plan_metric", ContentValues().apply { put("id", metricId); put("template_id", templateId); put("metric_type_code", m.metricTypeCode) })
+            m.schedules.forEach { s ->
+                insert(
+                    "metric_schedule",
+                    ContentValues().apply {
+                        put("id", exampleId("schedule/${m.metricTypeCode}/${s.stageKind}/${s.timeOfDay}")); put("plan_metric_id", metricId)
+                        put("stage_kind", s.stageKind); put("time_of_day", s.timeOfDay)
+                    },
+                )
+            }
+        }
+        t.rules.forEachIndexed { i, r ->
+            insert(
+                "rule",
+                ContentValues().apply {
+                    put("id", exampleId("rule/$i")); put("template_id", templateId); put("name", r.name); put("active", r.active)
+                    put("condition_kind", r.conditionKind); put("metric_type_code", r.metricTypeCode); put("filter_stage_kinds", "[]")
+                    put("filter_on_waking", false); put("level", r.level); put("message", r.message); put("action", r.action)
+                },
+            )
+        }
     }
 
     /** Síntomas y tipos de ingesta de ejemplo (H-010, H-011); también los usa la migración 1→2. */

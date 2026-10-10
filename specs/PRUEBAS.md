@@ -34,7 +34,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 |---|---|---|---|---|---|---|
 | H-001 | Crear una plantilla con qué medir y cuándo | alta | 7 | 10 | U + I + E2E | en verde |
 | H-002 | Completar la plantilla con metas, lista previa y avisos | media | 4 | 8 | U + I | en verde |
-| H-003 | Duplicar, borrar y partir de una plantilla de ejemplo | media | 4 | 8 | U + I | pendiente |
+| H-003 | Duplicar, borrar y partir de una plantilla de ejemplo | media | 4 | 8 | U + I | en verde |
 | H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 7 | 23 | U + I + E2E | en verde |
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
 | H-006 | Ver de un vistazo dónde estoy | alta | 7 | 14 | U + E2E | en verde (parcial) |

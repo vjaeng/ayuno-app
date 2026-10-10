@@ -19,6 +19,7 @@ class ReleasedSchemasTest {
         2 to "990883c8c7ecb51462bd7224d57d1ce7", // tanda 2a
         3 to "afeb8a35b0895c78266d8cd105b90c30", // tanda 3 (APK 0.4.0)
         4 to "2cdc8d628e5c5b9cb27dbaab8f9a4c4d", // tanda 4 (APK 0.5.0)
+        5 to "2cdc8d628e5c5b9cb27dbaab8f9a4c4d", // H-003 (APK 0.6.0): mismo esquema, migración solo de datos
     )
 
     @Test
