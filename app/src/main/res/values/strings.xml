@@ -5,6 +5,7 @@
 
     <!-- Navegación -->
     <string name="tab_home">Inicio</string>
+    <string name="tab_planned">Planificados</string>
     <string name="tab_today">Hoy</string>
     <string name="tab_history">Historial</string>
     <string name="tab_more">Más</string>
@@ -42,11 +43,9 @@
 
     <!-- Inicio -->
     <string name="home_empty">Crea tu primer ayuno: elige una plantilla y la hora de tu última comida.</string>
-    <string name="home_new_fast">Nuevo ayuno</string>
     <string name="home_next_fast">Próximo ayuno</string>
     <string name="home_last_fast">Último ayuno</string>
     <string name="home_last_meal_planned">Última comida prevista: %1$s</string>
-    <string name="home_last_meal_actual">Última comida real: %1$s</string>
     <string name="home_last_meal_planned_vs_actual">Última comida: prevista %1$s · real %2$s</string>
     <string name="home_clock_planned">Inicio previsto del reloj: %1$s</string>
     <string name="home_planned_vs_actual">Inicio del reloj: previsto %1$s · real %2$s</string>
@@ -75,6 +74,40 @@
     <string name="create_from_scratch">Empezar desde cero</string>
     <string name="create_stage_range">%1$s: de %2$s a %3$s</string>
     <string name="create_action">Crear ayuno</string>
+    <!-- H-044: cambiar un ayuno planificado -->
+    <string name="change_title">Cambiar ayuno</string>
+    <string name="change_action">Guardar cambios</string>
+    <string name="change_template_title">¿Cambiar de plantilla?</string>
+    <string name="change_template_question">Se reemplazará el plan de este ayuno por el de «%1$s». Las marcas de la lista previa se perderán. Lo que ya anotaste no cambia.</string>
+    <string name="change_template_question_scratch">Se quitará el plan de este ayuno. Las marcas de la lista previa se perderán. Lo que ya anotaste no cambia.</string>
+    <string name="change_template_confirm">Cambiar plantilla</string>
+    <string name="home_view_planned">Ver y preparar este ayuno</string>
+    <string name="home_plan_next">Planificar el siguiente ayuno</string>
+    <string name="planned_new">Planificar ayuno</string>
+    <string name="planned_open_tab">Ver los ayunos planificados</string>
+    <string name="planned_empty">No tienes ayunos planificados. Planifica uno eligiendo una plantilla y la hora de tu última comida.</string>
+    <string name="planned_from_scratch">desde cero</string>
+    <string name="planned_template_deleted">plantilla borrada</string>
+    <string name="planned_detail_title">Ayuno del %1$s</string>
+    <string name="planned_gone">Este ayuno ya no está planificado.</string>
+    <string name="planned_other_in_progress">Termina el ayuno en curso para poder empezar este.</string>
+    <string name="error_fast_too_close">Tiene que pasar al menos una semana entre un ayuno y el siguiente. Cambia las fechas.</string>
+    <string name="error_fast_too_close_after">Tiene que pasar una semana desde el ayuno que termina el %1$s. Puedes planificarlo desde el %2$s.</string>
+    <string name="error_fast_too_close_before">Este ayuno tiene que terminar una semana antes del que empieza el %1$s.</string>
+    <!-- H-045: borrar un ayuno para siempre -->
+    <string name="fast_menu">Más acciones de este ayuno</string>
+    <string name="fast_change">Cambiar</string>
+    <string name="fast_delete">Borrar ayuno</string>
+    <string name="fast_delete_title">¿Borrar este ayuno para siempre?</string>
+    <string name="fast_delete_question_empty">Se borrará el ayuno del %1$s con su plan. No se puede deshacer. Los archivos que ya exportaste no cambian.</string>
+    <plurals name="fast_delete_question">
+        <item quantity="one">Se borrarán el ayuno del %1$s y su registro, con su plan y sus cambios. No se puede deshacer. Los archivos que ya exportaste no cambian.</item>
+        <item quantity="many">Se borrarán el ayuno del %1$s y sus %2$d registros, con su plan y sus cambios. No se puede deshacer. Los archivos que ya exportaste no cambian.</item>
+        <item quantity="other">Se borrarán el ayuno del %1$s y sus %2$d registros, con su plan y sus cambios. No se puede deshacer. Los archivos que ya exportaste no cambian.</item>
+    </plurals>
+    <string name="fast_delete_in_progress">Sus recordatorios dejarán de sonar.</string>
+    <string name="fast_delete_confirm">Borrar para siempre</string>
+    <string name="error_delete_fast">No se pudo borrar el ayuno. No se ha borrado nada. Inténtalo de nuevo.</string>
 
     <!-- Anotar -->
     <string name="record_title">Anotar</string>
@@ -442,9 +475,8 @@
     <string name="today_all_day">Todo el día</string>
     <string name="notification_refeed_title">Vuelta a comer: %1$s</string>
     <string name="notification_action_open_refeed">Abrir</string>
-    <string name="history_empty">Aún no hay ayunos.</string>
+    <string name="history_empty">Aún no has hecho ningún ayuno.</string>
     <string name="history_in_progress">● En curso · desde el %1$s</string>
-    <string name="history_planned">○ Planificado · %1$s</string>
     <string name="history_target">objetivo %1$s horas</string>
     <string name="history_end_rule">regla «%1$s»</string>
     <string name="history_detail_title">Ayuno</string>

@@ -76,7 +76,7 @@ class AlertViewModel(private val container: AppContainer, private val alertId: S
         viewModelScope.launch {
             val alert = container.alerts.get(alertId) ?: return@launch
             val source = container.fasts.get(alert.fastId) ?: return@launch
-            val rule = source.plan.rules.firstOrNull { it.id == alert.ruleId } ?: return@launch
+            val rule = source.ruleById(alert.ruleId) ?: return@launch
             val types = container.catalog.metricTypes()
             val names = types.associate { it.code to it.name }
             val measurements = container.records.measurements(alert.fastId).associateBy { it.id }

@@ -174,9 +174,10 @@ class Batch2aE2eTest {
     }
 
     @Test
-    fun `H002 la lista previa se marca en Inicio y no impide empezar`() {
+    fun `H002 la lista previa se marca en el detalle del planificado y no impide empezar`() {
         seedPlannedFast(templateWith { it.copy(checklist = listOf(ChecklistItem(Ids.newId(), "Comprar sal", false), ChecklistItem(Ids.newId(), "Cargar el tensiómetro", false))) })
         compose.activityRule.scenario.recreate()
+        compose.tap("Ver y preparar este ayuno") // EV-002: la lista previa sale de Inicio
         compose.assertShown("Lista previa: marcados 0 de 2")
         compose.tap("Comprar sal")
         compose.assertShown("Lista previa: marcados 1 de 2")

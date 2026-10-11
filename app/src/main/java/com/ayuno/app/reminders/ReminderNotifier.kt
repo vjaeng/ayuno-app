@@ -86,7 +86,7 @@ object ReminderNotifier {
                 NotificationCompat.Action(0, context.getString(R.string.notification_action_snooze_30), snooze(30)),
             )
             val title = context.getString(R.string.notification_refeed_title, label)
-            post(context, id, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, refeedActions)
+            post(context, id, reminder.fastId, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, refeedActions)
             return
         }
         val title = context.getString(if (isProduct) R.string.notification_product_title else R.string.notification_reminder_title, label)
@@ -96,10 +96,16 @@ object ReminderNotifier {
             NotificationCompat.Action(0, context.getString(R.string.notification_action_snooze_30), snooze(30)),
             NotificationCompat.Action(0, context.getString(R.string.record_not_done), activity(context, id + 1, notDone)),
         )
-        post(context, id, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, actions)
+        post(context, id, reminder.fastId, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, actions)
     }
 
     fun cancel(context: Context, id: Int) = NotificationManagerCompat.from(context).cancel(id)
+
+    /** H-045: retira los avisos visibles de un ayuno borrado (recordatorios y alertas). */
+    fun cancelForFast(context: Context, fastId: String) {
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.activeNotifications.filter { it.notification.extras.getString(EXTRA_FAST_ID) == fastId }.forEach { manager.cancel(it.tag, it.id) }
+    }
 
     private fun activity(context: Context, requestCode: Int, intent: Intent) =
         PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -110,12 +116,13 @@ object ReminderNotifier {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             .putExtra(EXTRA_ALERT_ID, alert.id)
         val title = context.getString(if (level == RuleLevel.ALERT) R.string.notification_alert_title else R.string.notification_notice_title)
-        post(context, alert.id.hashCode(), CHANNEL_ALERTS, title, message, open, R.string.notification_public_alert)
+        post(context, alert.id.hashCode(), alert.fastId, CHANNEL_ALERTS, title, message, open, R.string.notification_public_alert)
     }
 
     private fun post(
         context: Context,
         id: Int,
+        fastId: String,
         channel: String,
         title: String,
         text: String,
@@ -138,6 +145,7 @@ object ReminderNotifier {
             .setPublicVersion(publicVersion)
             .setContentIntent(content)
             .setAutoCancel(true)
+            .addExtras(android.os.Bundle().apply { putString(EXTRA_FAST_ID, fastId) })
         actions.forEach { builder.addAction(it) }
         val notification = builder.build()
         @Suppress("MissingPermission") // comprobado en canNotify

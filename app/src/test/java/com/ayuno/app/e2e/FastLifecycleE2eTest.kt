@@ -25,10 +25,12 @@ class FastLifecycleE2eTest {
     fun `H004 sin ayunos la pantalla explica como empezar y crea un ayuno desde una plantilla`() {
         compose.assertShown("Crea tu primer ayuno", substring = true)
         seedTemplate()
-        compose.tap("Nuevo ayuno")
+        compose.tap("Planificar ayuno")
         compose.tap("Ayuno de 57 horas · 57 h")
         compose.assertShown("Objetivo: 57 horas") // calculado: jueves 22:00 + 57 h propuesto por la plantilla
         compose.tap("Crear ayuno")
+        compose.assertShown("jueves 22 de octubre, 18:00") // de vuelta en Planificados (H-046)
+        compose.tap("Inicio")
         compose.assertShown("Próximo ayuno")
         compose.assertShown("Fin previsto: domingo 25 de octubre, 07:00", substring = true)
         compose.assertShown("Empieza el ayuno ahora")
@@ -54,9 +56,10 @@ class FastLifecycleE2eTest {
     @Test
     fun `H005 registrar la ultima comida real por defecto a la hora planificada`() {
         val id = seedPlannedFast(seedTemplate())
+        compose.tap("Ver y preparar este ayuno") // EV-002: la última comida se registra en el detalle del planificado
         compose.tap("Registrar la última comida")
         compose.tap("Guardar")
-        compose.assertShown("Última comida real:", substring = true)
+        compose.assertShown("· real jueves 22 de octubre, 18:00", substring = true)
         compose.eventually { assertEquals(LocalDateTime.of(2026, 10, 22, 18, 0), runBlocking { app.container.fasts.get(id)!!.fast.lastMealActual }) }
     }
 

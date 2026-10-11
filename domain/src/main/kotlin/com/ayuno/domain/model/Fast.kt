@@ -20,4 +20,10 @@ data class Fast(
     val notes: String?,
 )
 
-data class FastWithPlan(val fast: Fast, val plan: Plan)
+/**
+ * [replacedRules]: reglas de copias del plan sustituidas al cambiar la plantilla (D-16). No se evalúan, pero las
+ * alertas que dispararon siguen resolviendo su regla (nudo EV1-01).
+ */
+data class FastWithPlan(val fast: Fast, val plan: Plan, val replacedRules: List<Rule> = emptyList()) {
+    fun ruleById(id: String?): Rule? = id?.let { plan.rules.firstOrNull { r -> r.id == it } ?: replacedRules.firstOrNull { r -> r.id == it } }
+}

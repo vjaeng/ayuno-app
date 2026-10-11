@@ -84,13 +84,14 @@ Los paquetes de `ui/`, `usecase/` y `repository/` se agrupan por las mismas áre
 | Área | Historias | Entidades principales |
 |---|---|---|
 | `plan` | H-001–H-003, H-014, H-031 (definir) | template, stage, plan_metric, metric_schedule, intake_goal, checklist_item, stage_notice, plan_product, refeed_step |
-| `fast` | H-004–H-006, H-030 | fast |
+| `fast` | H-004–H-006, H-030, H-044 | fast |
+| `planned` | H-046 | fast (lista y detalle de planificados; reutiliza los casos de uso de `fast`) |
 | `record` | H-008–H-010, H-012, H-015, H-032, H-035 | measurement, blood_pressure_reading, symptom, intake, product_log, meal, note |
 | `catalog` | H-007, H-010, H-011, H-013 | metric_type, symptom_type, intake_type, product, product_schedule |
 | `rules` | H-019–H-029 | rule, alert |
 | `refeed` | H-031, H-032 | refeed_step, refeed_check, meal |
 | `reminders` | H-016–H-018 | (derivados de horarios) |
-| `history` | H-033, H-034 | todas las de registro, edit_log |
+| `history` | H-033, H-034, H-045 | todas las de registro, edit_log; fast (borrado definitivo) |
 | `exchange` | H-036–H-040 | todas |
 | `settings` | H-017, H-029, H-038, H-042, H-043 | settings, person_profile, emergency_contact |
 
@@ -121,12 +122,14 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 
 | Transacción | Historias | Por qué califica |
 |---|---|---|
-| Crear ayuno desde plantilla | H-004 | Escribe `fast` y copia 9 entidades de plan; programa alarmas |
+| Crear ayuno desde plantilla | H-004 | Escribe `fast` y copia 9 entidades de plan; programa alarmas. La semana de separación (D-17) se valida dentro de la transacción |
 | Duplicar plantilla | H-003 | Copia multi-entidad |
 | Empezar el ayuno | H-005 | `fast` + `edit_log` (si corrige) + reprogramar alarmas (efecto externo) |
 | Guardar entrada con evaluación de reglas | H-008–H-012, H-019–H-027 | Entrada + `alert` en una transacción; programa recordatorio de regla |
 | Terminar el ayuno | H-030, H-031 | `fast` + generación de `refeed_check` + alarmas |
 | Corregir o borrar entrada | H-034, H-005 | Entrada + `edit_log` |
+| Cambiar un ayuno planificado | H-044 | `fast` + sustitución de la copia del plan + `edit_log`; reprograma alarmas; semana de separación si cambian las horas (D-17). Las alertas resuelven su regla también entre las sustituidas (D-16) |
+| Borrar un ayuno para siempre | H-045 | Borrado físico de `fast` y de todo lo que cuelga de él (~19 tablas) todo o nada (ADR-SEG-007); retira notificaciones y reprograma alarmas |
 | Exportar | H-036, H-037 | Efecto externo (archivo, hoja de compartir) |
 | Importar / restaurar | H-039, H-040 | Escritura masiva, todo o nada |
 | Copia cifrada y su restauración | H-042 | Archivo externo + escritura masiva |
@@ -164,6 +167,7 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-10 | Tanda 4: el formato de intercambio se describe una sola vez (`:data/exchange/ExchangeFormat`: listas, booleanos, listas JSON, enumerados, referencias y propietario por tabla; columnas por `PRAGMA table_info`). Exportar, validar, las tablas CSV y el esquema publicado salen de ella; el esquema se genera en pruebas y una prueba falla si el publicado difiere | ADR-007 |
 | 2026-10-10 | H-003: la plantilla de ejemplo se siembra desde `assets/seed/example_template.json` con identificadores fijos (UUID por nombre), al crear la base y con la migración 4→5 (solo datos). `RuleValidator` admite una regla de medición **inactiva** sin umbral (estructura del ejemplo); activarla lo exige y el motor ignora las inactivas | ADR-006, ADR-008 |
 | 2026-10-10 | Tanda 4: una sola vía de importación para H-039 y H-040 (importa lo que traiga el archivo; fusión por clave, gana `updated_at` más reciente). El bloque `person` del archivo no se importa (la copia cifrada de H-042 lo restaurará) | ADR-SEG-006 |
+| 2026-10-11 | EV-002: área `planned` (H-046) en `:app` reutilizando los casos de uso de `fast`; la semana de separación vive en el dominio (`derived/FastSpacing`) y la UI la usa para el mensaje detallado, sin añadir datos al resultado tipado. El diálogo de borrado, el borrado con recordatorios y el recuento de registros se comparten entre Historial y Planificados | Un solo cálculo de la regla (D-17) para el caso de uso y el mensaje; sin puertos nuevos (`FastRepository.all()` basta) |
 
 ## 7. Versiones y dependencias
 

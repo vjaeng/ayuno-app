@@ -1,5 +1,6 @@
 package com.ayuno.domain.usecase
 
+import com.ayuno.domain.derived.FastSpacing
 import com.ayuno.domain.derived.RefeedSchedule
 import com.ayuno.domain.id.Ids
 import com.ayuno.domain.model.EditAction
@@ -82,8 +83,12 @@ class CreateFast(
             notes = input.notes?.trim()?.ifEmpty { null },
         )
         val created = FastWithPlan(fast, source?.plan?.copyWithNewIds() ?: Plan.EMPTY)
-        transactions.inTransaction { fasts.insert(created) }
-        return Outcome.Ok(created)
+        // La separación se valida dentro de la transacción para que dos creaciones seguidas no se cuelen (D-17).
+        return transactions.inTransaction {
+            if (FastSpacing.conflict(fast, fasts.all(), LocalTimes.now(clock)) != null) return@inTransaction invalid(ValidationError.FAST_TOO_CLOSE)
+            fasts.insert(created)
+            Outcome.Ok(created)
+        }
     }
 }
 
@@ -94,6 +99,91 @@ class UpdateFastNotes(private val fasts: FastRepository) {
         val updated = fast.copy(notes = notes?.trim()?.ifEmpty { null })
         fasts.update(updated)
         return Outcome.Ok(updated)
+    }
+}
+
+/**
+ * H-044: cambiar un ayuno que aún no ha empezado. Cada dato cambiado deja una fila en la bitácora; cambiar la plantilla
+ * sustituye la copia del plan (la anterior queda en borrado blando, D-16). Sin diferencias no se escribe nada.
+ */
+class ChangePlannedFast(
+    private val templates: TemplateRepository,
+    private val fasts: FastRepository,
+    private val audit: AuditRepository,
+    private val transactions: TransactionRunner,
+    private val clock: Clock,
+) {
+    data class Input(
+        val fastId: String,
+        val templateId: String?,
+        val lastMealPlanned: LocalDateTime,
+        val clockStartPlanned: LocalDateTime,
+        val targetHours: Double,
+        val notes: String?,
+        val reason: String? = null,
+    ) {
+        companion object {
+            fun withPlannedEnd(fastId: String, templateId: String?, lastMeal: LocalDateTime, start: LocalDateTime, end: LocalDateTime, notes: String?, reason: String? = null) =
+                Input(fastId, templateId, lastMeal, start, com.ayuno.domain.derived.FastClock.targetHoursBetween(start, end), notes, reason)
+        }
+    }
+
+    suspend operator fun invoke(input: Input): Outcome<FastWithPlan> = transactions.inTransaction {
+        val source = fasts.get(input.fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
+        val fast = source.fast
+        if (fast.status != FastStatus.PLANNED) return@inTransaction invalid(ValidationError.FAST_NOT_PLANNED)
+        val templateChanged = input.templateId != fast.templateId
+        val template = if (templateChanged && input.templateId != null) {
+            templates.get(input.templateId) ?: return@inTransaction invalid(ValidationError.TEMPLATE_NOT_FOUND)
+        } else {
+            null
+        }
+        val errors = buildList {
+            if (input.clockStartPlanned.isBefore(input.lastMealPlanned)) add(ValidationError.CLOCK_START_BEFORE_LAST_MEAL)
+            if (input.targetHours <= 0) add(ValidationError.PLANNED_END_NOT_AFTER_START)
+        }
+        if (errors.isNotEmpty()) return@inTransaction Outcome.Invalid(errors)
+        val changed = fast.copy(
+            templateId = input.templateId,
+            targetHours = input.targetHours,
+            milestoneHours = if (templateChanged) template?.template?.milestoneHours.orEmpty() else fast.milestoneHours,
+            lastMealPlanned = input.lastMealPlanned.withNano(0),
+            clockStartPlanned = input.clockStartPlanned.withNano(0),
+            notes = input.notes?.trim()?.ifEmpty { null },
+        )
+        val entries = differences(fast, changed).map { (field, old, new) -> editEntry(fast.id, field, old, new, input.reason, clock) }
+        if (entries.isEmpty()) return@inTransaction Outcome.Ok(source)
+        val hoursChanged = changed.lastMealPlanned != fast.lastMealPlanned || changed.clockStartPlanned != fast.clockStartPlanned || changed.targetHours != fast.targetHours
+        if (hoursChanged && FastSpacing.conflict(changed, fasts.all(), LocalTimes.now(clock)) != null) {
+            return@inTransaction invalid(ValidationError.FAST_TOO_CLOSE)
+        }
+        fasts.update(changed)
+        if (templateChanged) fasts.replacePlan(fast.id, template?.plan?.copyWithNewIds() ?: Plan.EMPTY)
+        entries.forEach { audit.append(it) }
+        Outcome.Ok(fasts.get(fast.id) ?: FastWithPlan(changed, source.plan))
+    }
+
+    private fun differences(old: Fast, new: Fast): List<Triple<String, String?, String?>> = listOfNotNull(
+        diff("template_id", old.templateId, new.templateId),
+        diff("last_meal_planned", LocalTimes.format(old.lastMealPlanned), LocalTimes.format(new.lastMealPlanned)),
+        diff("clock_start_planned", LocalTimes.format(old.clockStartPlanned), LocalTimes.format(new.clockStartPlanned)),
+        diff("target_hours", old.targetHours.toString(), new.targetHours.toString()),
+        diff("milestone_hours", old.milestoneHours.joinToString(","), new.milestoneHours.joinToString(",")),
+        diff("notes", old.notes, new.notes),
+    )
+
+    private fun diff(field: String, old: String?, new: String?) = if (old == new) null else Triple(field, old, new)
+}
+
+/**
+ * H-045: borrar un ayuno para siempre con todo lo que cuelga de él (D-15). Sin traza por decisión del humano
+ * (ADR-SEG-007); todo o nada.
+ */
+class DeleteFast(private val fasts: FastRepository, private val transactions: TransactionRunner) {
+    suspend operator fun invoke(fastId: String): Outcome<Unit> = transactions.inTransaction {
+        fasts.get(fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
+        fasts.deleteForever(fastId)
+        Outcome.Ok(Unit)
     }
 }
 
@@ -183,7 +273,7 @@ class EndFast(
             if (end.isBefore(start)) add(ValidationError.END_BEFORE_START)
             if (end.isAfter(LocalTimes.now(clock))) add(ValidationError.END_IN_FUTURE)
             if (input.reason == EndReason.OTHER && input.detail.isNullOrBlank()) add(ValidationError.END_DETAIL_REQUIRED)
-            if (input.reason == EndReason.ALERT_RULE && source.plan.rules.none { it.id == input.ruleId }) add(ValidationError.END_RULE_REQUIRED)
+            if (input.reason == EndReason.ALERT_RULE && source.ruleById(input.ruleId) == null) add(ValidationError.END_RULE_REQUIRED)
         }
         if (errors.isNotEmpty()) return@inTransaction Outcome.Invalid(errors)
         val ended = fast.copy(

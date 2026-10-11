@@ -2,7 +2,7 @@
 
 Fuente: `docs/SOLICITUD_app_movil_ayuno.md` (versión base, app genérica). Actor único: **la persona que ayuna**.
 
-Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la versión base; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
+Total: **46** historias · alta 32 · media 13 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
 
 ## Índice
 
@@ -51,6 +51,9 @@ Total: **43** historias · alta 30 · media 12 · baja 1. Todas pertenecen a la 
 | H-041 | [Usar la app entera sin internet ni cuenta](privacidad-041-sin-conexion-sin-cuenta.md) | privacidad | alta | tejida |
 | H-042 | [Proteger mis datos en el teléfono y en copias](privacidad-042-proteger-datos.md) | privacidad | media | tejida |
 | H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | tejida |
+| H-044 | [Cambiar un ayuno que aún no ha empezado](ayuno-044-cambiar-ayuno-planificado.md) | ayuno | media | entregada (EV-001) |
+| H-045 | [Borrar un ayuno para siempre con todos sus datos](historial-045-borrar-ayuno.md) | historial | alta | en construcción (EV-001) |
+| H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
 
 ## Épicas
 
@@ -108,7 +111,7 @@ Matriz CRUD poblada en las 43 historias y Mapa de Consumo en las 29 entidades de
 
 Sin N3 (el glosario del modelo cubre los sinónimos detectados). Sin N5 de nombres: todo campo citado en UX-UI existe en el modelo.
 
-Convención: las historias de exportación, importación y corrección (H-034, H-036, H-037, H-039, H-040) usan comodines `entidad.*`; no cuentan para detectar campos huérfanos ni como origen de datos.
+Convención: las historias de exportación, importación, corrección y borrado (H-034, H-036, H-037, H-039, H-040, H-045) usan comodines `entidad.*`; no cuentan para detectar campos huérfanos ni como origen de datos.
 
 **Veredicto: compuerta abierta** — sin N1 ni N4. Resoluciones aprobadas por el humano.
 
@@ -125,6 +128,7 @@ Recorrido mínimo: plantillas, crear y empezar el ayuno, reloj, anotar medicione
 | H-006 | Reloj en < 1 s → verificación en dispositivo (PRUEBAS §4.7). Los totales del día ya funcionan. |
 | H-017 | Acciones de la notificación con la app cerrada → verificación en dispositivo (PRUEBAS §4.7). «No se hizo» ya viaja en la exportación. |
 | H-016 | Verificación en dispositivo (alarma real con la app cerrada, reinicio real, 3 días). Ya incluye tomas de productos y pasos de la vuelta a comer. |
+| H-045 | Retirar las notificaciones visibles de un ayuno borrado → verificación en dispositivo (PRUEBAS §4.7). El borrado, la confirmación y el recálculo de recordatorios ya funcionan (EV-001). |
 
 ## Construcción — tanda 2a (2026-10-08)
 
@@ -159,3 +163,4 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | Fecha | Historia | Cambio | Origen |
 |---|---|---|---|
 | 2026-10-08 | H-004 | El objetivo se calcula entre el inicio y el fin previstos (antes se tecleaba); nuevo criterio de fin posterior al inicio. Sin cambios de modelo: `fast.target_hours` se sigue guardando | Petición del humano |
+| 2026-10-11 | EV-002: H-046 nueva (pestaña Planificados con lista y detalle); H-006 deja en Inicio solo el próximo ayuno con una acción principal; H-004 y H-044 exigen una semana de separación entre ayunos (D-17). Motivo: Inicio era confuso con todas las opciones juntas y no había dónde elegir qué ayuno planificado cambiar | Petición del humano (EV-002) |

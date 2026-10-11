@@ -71,6 +71,8 @@ class TestWorld {
     val triggerManualAlert = com.ayuno.domain.usecase.TriggerManualAlert(fasts, alerts, DirectTransactions, clock)
     val evaluateRules = com.ayuno.domain.usecase.EvaluateRules(catalog, fasts, records, alerts, DirectTransactions, clock)
     val setChecklistItem = com.ayuno.domain.usecase.SetChecklistItem(fasts)
+    val changePlannedFast = com.ayuno.domain.usecase.ChangePlannedFast(templates, fasts, audit, DirectTransactions, clock)
+    val deleteFast = com.ayuno.domain.usecase.DeleteFast(fasts, DirectTransactions)
 
     fun glucoseBelow(threshold: Double, sustained: Int? = null, action: RuleAction = RuleAction.OFFER_END) = Rule(
         id = Ids.newId(), name = "Glucosa baja", active = true, conditionKind = RuleConditionKind.METRIC_BELOW,
@@ -104,11 +106,11 @@ class TestWorld {
     }
 
     /** Ayuno planificado: última comida jueves 22-oct 18:00, reloj previsto 22:00, objetivo 57 h. */
-    suspend fun plannedFast(plan: Plan = plan57h()): FastWithPlan {
+    /** Ayuno planificado con última comida el jueves 22 oct a las 18:00; [weeksLater] lo aleja para respetar D-17. */
+    suspend fun plannedFast(plan: Plan = plan57h(), weeksLater: Long = 0): FastWithPlan {
         val template = template(plan)
-        val result = createFast(
-            CreateFast.Input(template.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), 57.0, null),
-        )
+        val lastMeal = LocalDateTime.of(2026, 10, 22, 18, 0).plusWeeks(weeksLater)
+        val result = createFast(CreateFast.Input(template.template.id, lastMeal, lastMeal.plusHours(4), 57.0, null))
         return (result as Outcome.Ok).value
     }
 

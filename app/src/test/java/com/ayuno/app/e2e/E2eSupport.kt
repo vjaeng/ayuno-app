@@ -106,11 +106,9 @@ fun seedTemplate(rules: List<Rule> = emptyList(), metrics: List<String> = listOf
     (app.container.saveTemplate(template) as Outcome.Ok).value
 }
 
-/** Ayuno planificado con la plantilla: última comida jueves 18:00, reloj 22:00. */
-fun seedPlannedFast(template: TemplateWithPlan): String = runBlocking {
-    val result = app.container.createFast(
-        CreateFast.Input(template.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), 57.0, null),
-    )
+/** Ayuno planificado con la plantilla: por defecto, última comida jueves 22 oct 18:00 y reloj 22:00. */
+fun seedPlannedFast(template: TemplateWithPlan, lastMeal: LocalDateTime = LocalDateTime.of(2026, 10, 22, 18, 0)): String = runBlocking {
+    val result = app.container.createFast(CreateFast.Input(template.template.id, lastMeal, lastMeal.plusHours(4), 57.0, null))
     (result as Outcome.Ok).value.fast.id
 }
 

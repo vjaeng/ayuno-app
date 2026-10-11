@@ -1,7 +1,7 @@
 # Flujo: Inicio y reloj
 
-**Historias que cubre:** H-005, H-006, H-041 (H-005 incluye registrar la última comida real)
-**Entrada:** apertura de la app, pestaña Inicio · **Salida:** Crear ayuno, Anotar, Seguridad, Terminar el ayuno
+**Historias que cubre:** H-005, H-006, H-041 (H-005 incluye registrar la última comida real, ahora en el detalle del planificado), H-046 (acceso a «Ver ›»)
+**Entrada:** apertura de la app, pestaña Inicio · **Salida:** Detalle del ayuno planificado, Planificados, Anotar, Seguridad, Terminar el ayuno
 
 ## Pantallas
 
@@ -11,34 +11,34 @@
 ┌──────────────────────────────────┐
 │ Próximo ayuno                    │
 │  Última comida: jueves 22 oct,   │
-│  18:00 · Reloj: 22:00            │
-│  Objetivo: 57 horas              │
-│  [ Registrar última comida ]     │
-│  [ Empieza el ayuno ahora ]      │  ← solo si hay uno planificado
+│  18:00                           │
+│  Reloj: 22:00 · Objetivo: 57 h   │
+│ [ Ver y preparar este ayuno ]    │  ← BotonSecundario al detalle
+│   [ Empieza el ayuno ahora ]     │  ← única acción principal
 │──────────────────────────────────│
 │ Último ayuno                     │
 │  domingo 25 oct · 57 h 10 min    │
 │  Objetivo cumplido               │
-│──────────────────────────────────│
-│        [ + Nuevo ayuno ]         │
 └──────────────────────────────────┘
 ```
 
 **Campos:**
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
+| Próximo ayuno (el planificado con la `fast.last_meal_planned` más cercana) | `fast.status`, `fast.last_meal_planned` | lectura |
 | Última comida prevista | `fast.last_meal_planned` | lectura |
 | Inicio previsto del reloj | `fast.clock_start_planned` | lectura |
 | Objetivo | `fast.target_hours` | lectura |
+| Botón «Ver y preparar este ayuno» (BotonSecundario) | — | acción → Detalle del ayuno planificado ([ayuno-planificados.md](ayuno-planificados.md)) |
 | Botón «Empieza el ayuno ahora» | `fast.clock_start_actual`, `fast.status` | acción → escritura |
 | Fecha del último ayuno | `fast.end_actual` | lectura |
 | Duración del último ayuno | duración final | derivado |
 | Motivo de fin del último | `fast.end_reason`, `fast.end_reason_detail` | lectura |
-| Botón «Registrar última comida» (ayuno planificado) | `fast.last_meal_actual` | escritura (default `fast.last_meal_planned`, editable) |
-| Botón «Nuevo ayuno» | — | acción → Crear ayuno |
 
-**Acciones:** «Empieza el ayuno ahora» (fija `clock_start_actual` con segundos, `status = in_progress`, recalcula derivados y reprograma recordatorios; rechazado si ya hay un ayuno `in_progress`). «Nuevo ayuno» → [ayuno-crear.md](ayuno-crear.md). Tocar el último ayuno → detalle en [historial-revisar.md](historial-revisar.md).
-**Estados:** vacío (sin ningún ayuno: texto «Crea tu primer ayuno: elige una plantilla y la hora de tu última comida» + «Nuevo ayuno») · cargando (esqueleto; el reloj debe estar en <1 s) · error (no se pudo leer el almacenamiento: mensaje llano y «Reintentar»; nunca se muestra un reloj inventado) · sin permisos (bloqueo activo → huella o PIN; notificaciones denegadas → franja persistente «Los recordatorios están desactivados en el teléfono» con botón a ajustes).
+**Acciones:** «Empieza el ayuno ahora» (fija `clock_start_actual` con segundos, `status = in_progress`, recalcula derivados y reprograma recordatorios; rechazado si ya hay un ayuno `in_progress`). «Ver y preparar este ayuno» → detalle del próximo, donde están la lista previa, «Registrar última comida», «Cambiar» y «Borrar» (EV-002). Tocar el último ayuno → detalle en [historial-revisar.md](historial-revisar.md). Planificar más ayunos → pestaña Planificados.
+**Estados:** vacío (sin planificados ni terminados: texto «Crea tu primer ayuno: elige una plantilla y la hora de tu última comida» + «Planificar ayuno»; sin planificados pero con un terminado: el último ayuno y el BotonSecundario «Planificar el siguiente ayuno», que abre la pestaña Planificados) · cargando (esqueleto; el reloj debe estar en <1 s) · error (no se pudo leer el almacenamiento: mensaje llano y «Reintentar»; nunca se muestra un reloj inventado) · sin permisos (bloqueo activo → huella o PIN; notificaciones denegadas → franja persistente «Los recordatorios están desactivados en el teléfono» con botón a ajustes).
+
+La sección de vuelta a comer (H-031) y las reintroducciones pendientes, cuando existen, siguen arriba de «Próximo ayuno», sin cambios.
 
 ### Pantalla: Inicio — ayuno en curso
 
@@ -84,7 +84,7 @@
 **Estados:** vacío (no aplica: hay ayuno) · cargando (reloj calculado en <1 s desde la hora guardada, aun tras reinicio) · error (fallo al leer: mensaje y reintento; el botón de seguridad sigue visible) · sin permisos (como arriba; además, si las notificaciones están denegadas, franja roja **no**: franja informativa persistente, porque no es una alerta de regla).
 
 ## Validación Laws of UX
-- **Hick:** sin ayuno, 1 acción principal (Nuevo ayuno; o Empieza el ayuno si hay planificado). En curso, 2 principales (Anotar, Seguridad). ✔
+- **Hick:** sin ayuno, 1 acción principal (Empieza el ayuno ahora; o Planificar ayuno si no hay planificado) y 1 secundaria (Ver y preparar este ayuno). Preparar, cambiar y planificar viven en la pestaña Planificados (EV-002). En curso, 2 principales (Anotar, Seguridad). ✔
 - **Jakob:** pantalla de estado con contador grande y botón de acción inferior, patrón de apps de ayuno y temporizadores. ✔
 - **Fitts:** «Anotar» ocupa el ancho inferior al alcance del pulgar; Seguridad arriba pero siempre visible y ≥48 pt. ✔
 - **Miller:** 4 bloques en curso (reloj, próximo, hoy, última). ✔
@@ -93,3 +93,5 @@
 
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - ¿«Empieza el ayuno ahora» en Inicio sin ayuno también si el planificado es para otro día? Propuesta: sí, con confirmación si faltan más de 2 horas para el inicio previsto.
+
+*Cambio EV-002 (2026-10-11):* la lista previa, «Registrar última comida», «Cambiar este ayuno» y «Nuevo ayuno» salen de Inicio hacia el detalle del planificado y la pestaña Planificados ([ayuno-planificados.md](ayuno-planificados.md)). Motivo: el humano encontró Inicio confuso con todas las opciones juntas. *Implementación:* «Ver ›» se construyó como BotonSecundario «Ver y preparar este ayuno», porque la guía no tiene un componente de enlace de texto y el botón mide 48 dp.

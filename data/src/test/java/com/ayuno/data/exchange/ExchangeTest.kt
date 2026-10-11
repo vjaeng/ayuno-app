@@ -33,7 +33,9 @@ import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.StageNotice
 import com.ayuno.domain.model.Template
 import com.ayuno.domain.model.TemplateWithPlan
+import com.ayuno.domain.usecase.ChangePlannedFast
 import com.ayuno.domain.usecase.CreateFast
+import com.ayuno.domain.usecase.DeleteFast
 import com.ayuno.domain.usecase.EndFast
 import com.ayuno.domain.usecase.ExportData
 import com.ayuno.domain.usecase.ExportNames
@@ -42,6 +44,7 @@ import com.ayuno.domain.usecase.RecordBloodPressure
 import com.ayuno.domain.usecase.RecordIntake
 import com.ayuno.domain.usecase.RecordMeal
 import com.ayuno.domain.usecase.RecordMeasurement
+import com.ayuno.domain.usecase.RecordResult
 import com.ayuno.domain.usecase.RecordNote
 import com.ayuno.domain.usecase.RecordProductLog
 import com.ayuno.domain.usecase.RecordSymptom
@@ -51,6 +54,7 @@ import com.ayuno.domain.usecase.SetRefeedCheck
 import com.ayuno.domain.usecase.TriggerManualAlert
 import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -368,5 +372,113 @@ class ExchangeTest {
         assertEquals(0, again.created)
         assertNotEquals(0, again.keptLocal)
         assertTrue(target.fasts.all().isEmpty())
+    }
+
+    // ---------- EV-001: H-045 borrar un ayuno para siempre ----------
+
+    private val fastOwnedLists = listOf(
+        "stages", "plan_metrics", "rules", "intake_goals", "checklist_items", "stage_notices", "plan_products", "refeed_steps",
+        "measurements", "blood_pressure_readings", "symptoms", "intakes", "product_logs", "alerts", "notes", "meals",
+    )
+
+    /** Identificadores de todo lo que cuelga del ayuno en una exportación completa, por lista. */
+    private fun belonging(doc: JsonObject, fastId: String): Map<String, Set<String>> {
+        fun rows(key: String) = doc[key]!!.jsonArray.map { it.jsonObject }
+        fun JsonObject.text(k: String) = (this[k] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.content
+        val result = mutableMapOf("fasts" to setOf(fastId))
+        fastOwnedLists.forEach { key -> result[key] = rows(key).filter { it.text("fast_id") == fastId }.mapNotNull { it.text("id") }.toSet() }
+        result["metric_schedules"] = rows("metric_schedules").filter { it.text("plan_metric_id") in result.getValue("plan_metrics") }.mapNotNull { it.text("id") }.toSet()
+        result["refeed_checks"] = rows("refeed_checks").filter { it.text("refeed_step_id") in result.getValue("refeed_steps") }.mapNotNull { it.text("id") }.toSet()
+        val all = result.values.flatten().toSet()
+        result["edit_logs"] = rows("edit_logs").filter { it.text("row_id") in all }.mapNotNull { it.text("id") }.toSet()
+        return result
+    }
+
+    private fun lists(doc: JsonObject): Map<String, List<JsonObject>> =
+        (doc.filterValues { it is JsonArray } + doc["catalogs"]!!.jsonObject).mapValues { (_, v) -> v.jsonArray.map { it.jsonObject } }
+
+    @Test
+    fun `H-045 borrar un ayuno elimina todo lo suyo, incluida la bitacora, y nada mas`() = runTest {
+        val w = world()
+        val s = w.seed()
+        val other = (w.createFast(CreateFast.Input(s.templateId, LocalDateTime.of(2026, 11, 5, 18, 0), LocalDateTime.of(2026, 11, 5, 22, 0), 36.0, null)) as Outcome.Ok).value
+        val before = parse((w.export()(null) as Outcome.Ok).value.json)
+        val owned = belonging(before, s.fastId)
+        // La semilla toca todas las tablas que cuelgan de un ayuno: la prueba cubre cada una.
+        owned.forEach { (key, ids) -> assertTrue("sin filas en $key", ids.isNotEmpty()) }
+
+        assertEquals(Outcome.Ok(Unit), DeleteFast(w.fasts, w.tx)(s.fastId))
+
+        val afterText = (w.export()(null) as Outcome.Ok).value.json
+        val ids = owned.values.flatten().toSet()
+        assertTrue(ids.none { afterText.contains(it) })
+        val after = lists(parse(afterText))
+        lists(before).forEach { (key, rows) ->
+            val kept = rows.filter { (it["id"] as? JsonPrimitive)?.content !in ids }
+            assertEquals(key, kept, after.getValue(key))
+        }
+        assertEquals(other, w.fasts.get(other.fast.id))
+        assertTrue(w.templates.get(s.templateId) != null)
+        assertTrue(schemaErrors(afterText).isEmpty())
+    }
+
+    @Test
+    fun `H-045 si el borrado falla a mitad no se borra nada`() = runTest {
+        val w = world()
+        val s = w.seed()
+        val before = (w.export()(null) as Outcome.Ok).value.json
+        val failure = runCatching {
+            w.tx.inTransaction {
+                w.fasts.deleteForever(s.fastId)
+                error("fallo simulado")
+            }
+        }
+        assertTrue(failure.isFailure)
+        assertEquals(before, (w.export()(null) as Outcome.Ok).value.json)
+    }
+
+    // ---------- EV-001: H-044 cambiar la plantilla de un ayuno planificado ----------
+
+    @Test
+    fun `H-044 cambiar la plantilla retira la copia anterior en blando, conserva la regla de sus alertas y el archivo sigue siendo valido`() = runTest {
+        val w = world()
+        val rule = Rule(
+            Ids.newId(), "Glucosa baja", true, RuleConditionKind.METRIC_BELOW, "glucose", null, 55.0, null, null, null, null,
+            emptyList(), false, null, RuleLevel.ALERT, "Mensaje", RuleAction.OFFER_END, null,
+        )
+        val first = TemplateWithPlan(
+            Template(Ids.newId(), "Con regla", 57.0, listOf(12.0)),
+            Plan(stages = listOf(Stage(Ids.newId(), StageKind.PREPARATION, 1.0, DurationUnit.DAYS)), metrics = emptyList(), rules = listOf(rule),
+                checklist = listOf(ChecklistItem(Ids.newId(), "Comprar sal", true))),
+        )
+        w.saveTemplate(first)
+        val second = w.templates.observeTemplates().first().single { it.name == "Ejemplo (sin valores clínicos)" }
+        val fast = (w.createFast(CreateFast.Input(first.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 23, 22, 0), 57.0, null)) as Outcome.Ok).value
+        val saved = w.recordMeasurement(RecordMeasurement.Input(fast.fast.id, "glucose", LocalDateTime.of(2026, 10, 22, 17, 0), null, 50.0, "mg/dL", source = GlucoseSource.GLUCOMETER))
+        val alert = ((saved as Outcome.Ok).value as RecordResult.Saved).alerts.single()
+        val oldRuleId = fast.plan.rules.single().id
+
+        val change = ChangePlannedFast(w.templates, w.fasts, w.audit, w.tx, w.clock)
+        val f = fast.fast
+        val changed = (change(ChangePlannedFast.Input(f.id, second.id, f.lastMealPlanned, f.clockStartPlanned, f.targetHours, "nuevo plan")) as Outcome.Ok).value
+
+        assertEquals(second.id, changed.fast.templateId)
+        assertEquals(w.templates.get(second.id)!!.plan.metrics.map { it.metricTypeCode }, changed.plan.metrics.map { it.metricTypeCode })
+        assertTrue(changed.plan.rules.none { it.id == oldRuleId })
+        assertEquals("Glucosa baja", changed.ruleById(alert.ruleId)!!.name)
+        assertEquals(changed, w.fasts.get(f.id))
+        assertEquals(setOf("template_id", "milestone_hours", "notes"), w.audit.entriesFor(f.id).map { it.field }.toSet())
+
+        val json = (w.export()(f.id) as Outcome.Ok).value.json
+        val doc = parse(json)
+        val oldRule = doc["rules"]!!.jsonArray.map { it.jsonObject }.single { it["id"]!!.jsonPrimitive.content == oldRuleId }
+        assertTrue(oldRule["deleted_at"] !is JsonNull)
+        val oldChecklist = doc["checklist_items"]!!.jsonArray.map { it.jsonObject }.filter { it["fast_id"]!!.jsonPrimitive.content == f.id }
+        assertTrue(oldChecklist.all { it["deleted_at"] !is JsonNull })
+        assertTrue(schemaErrors(json).isEmpty())
+
+        val fresh = world()
+        assertTrue(fresh.exporter().import(json.toByteArray()) is ImportCheck.Ok)
+        assertEquals("Glucosa baja", fresh.fasts.get(f.id)!!.ruleById(alert.ruleId)!!.name)
     }
 }

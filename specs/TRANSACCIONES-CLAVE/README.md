@@ -12,6 +12,8 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 | Terminar el ayuno | [terminar-ayuno.md](terminar-ayuno.md) | H-030, H-031 | construida |
 | Exportar | [exportar.md](exportar.md) | H-036, H-037, H-038 | construida |
 | Importar o restaurar | [importar.md](importar.md) | H-039, H-040 | construida |
+| Cambiar un ayuno planificado | [cambiar-ayuno.md](cambiar-ayuno.md) | H-044 | construida |
+| Borrar un ayuno para siempre | [borrar-ayuno.md](borrar-ayuno.md) | H-045 | construida |
 
 Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, corregir o borrar entradas (H-034), copia cifrada.
 

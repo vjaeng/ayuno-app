@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
@@ -42,11 +43,14 @@ import com.ayuno.app.ui.record.IntakeFormScreen
 import com.ayuno.app.ui.record.NoteFormScreen
 import com.ayuno.app.ui.record.ProductFormScreen
 import com.ayuno.app.ui.record.SymptomFormScreen
+import com.ayuno.app.ui.fast.ChangeFastScreen
 import com.ayuno.app.ui.fast.CreateFastScreen
 import com.ayuno.app.ui.fast.EndFastScreen
 import com.ayuno.app.ui.home.HomeActions
 import com.ayuno.app.ui.home.HomeScreen
 import com.ayuno.app.ui.more.MoreScreen
+import com.ayuno.app.ui.planned.PlannedDetailScreen
+import com.ayuno.app.ui.planned.PlannedListScreen
 import com.ayuno.app.ui.plan.TemplateEditorScreen
 import com.ayuno.app.ui.plan.TemplateListScreen
 import com.ayuno.app.ui.record.BloodPressureFormScreen
@@ -71,6 +75,7 @@ import java.time.LocalDateTime
 /** Pestañas de la navegación global (`specs/UX-UI/README.md`). */
 enum class TopLevelDestination(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     HOME("home", R.string.tab_home, Icons.Filled.Home),
+    PLANNED("planned", R.string.tab_planned, Icons.Filled.Edit),
     TODAY("today", R.string.tab_today, Icons.Filled.DateRange),
     HISTORY("history", R.string.tab_history, Icons.AutoMirrored.Filled.List),
     MORE("more", R.string.tab_more, Icons.Filled.Menu),
@@ -86,6 +91,7 @@ sealed interface DeepLink {
 
 private object Routes {
     const val NEW_FAST = "fast/new"
+    const val CHANGE_FAST = "fast/change/{fastId}"
     const val RECORD = "record/{fastId}"
     const val MEASURE = "measure/{fastId}/{metric}?scheduledFor={scheduledFor}&notDone={notDone}"
     const val ALERT = "alert/{alertId}"
@@ -99,6 +105,7 @@ private object Routes {
     const val REFEED = "refeed/{fastId}"
     const val MEAL = "meal/{fastId}"
     const val FAST_DETAIL = "history/{fastId}"
+    const val PLANNED_DETAIL = "planned/{fastId}"
     const val DATA = "data"
     const val EXPORT_FAST = "export/{fastId}"
     const val PERSONAL_DATA = "settings/person"
@@ -115,6 +122,7 @@ private object Routes {
     const val METRIC = "catalog/metric?code={code}"
 
     fun record(fastId: String) = "record/$fastId"
+    fun changeFast(fastId: String) = "fast/change/$fastId"
     fun measure(fastId: String, metric: String, scheduledFor: LocalDateTime?, notDone: Boolean = false) =
         "measure/$fastId/$metric?" + listOfNotNull(
             scheduledFor?.let { "scheduledFor=" + Uri.encode(LocalTimes.format(it)) },
@@ -124,6 +132,7 @@ private object Routes {
     fun refeed(fastId: String) = "refeed/$fastId"
     fun meal(fastId: String) = "meal/$fastId"
     fun fastDetail(fastId: String) = "history/$fastId"
+    fun plannedDetail(fastId: String) = "planned/$fastId"
     fun exportFast(fastId: String) = "export/$fastId"
     fun end(fastId: String, ruleId: String? = null, endAt: LocalDateTime? = null) = "end/$fastId?" +
         listOfNotNull(ruleId?.let { "ruleId=$it" }, endAt?.let { "endAt=" + Uri.encode(LocalTimes.format(it)) }).joinToString("&")
@@ -188,6 +197,8 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                 HomeScreen(
                     HomeActions(
                         onNewFast = { navController.navigate(Routes.NEW_FAST) },
+                        onOpenPlanned = { navController.navigate(Routes.plannedDetail(it)) },
+                        onPlannedTab = { navController.navigateToTab(TopLevelDestination.PLANNED) },
                         onRecord = { navController.navigate(Routes.record(it)) },
                         onRecordMetric = { fastId, metric, at -> navController.navigate(Routes.measure(fastId, metric, at)) },
                         onRecordProduct = { fastId, at -> navController.navigate(Routes.product(fastId, at)) },
@@ -197,6 +208,18 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                         onRefeed = { navController.navigate(Routes.refeed(it)) },
                         onMeal = { navController.navigate(Routes.meal(it)) },
                     ),
+                )
+            }
+            composable(TopLevelDestination.PLANNED.route) {
+                PlannedListScreen(onOpen = { navController.navigate(Routes.plannedDetail(it)) }, onNew = { navController.navigate(Routes.NEW_FAST) })
+            }
+            composable(Routes.PLANNED_DETAIL) { entry ->
+                val fastId = entry.arguments?.getString("fastId")!!
+                PlannedDetailScreen(
+                    fastId,
+                    onBack = { navController.popBackStack() },
+                    onChange = { navController.navigate(Routes.changeFast(fastId)) },
+                    onStarted = backHome,
                 )
             }
             composable(TopLevelDestination.TODAY.route) {
@@ -212,11 +235,15 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                 com.ayuno.app.ui.settings.SettingsScreen(onBack = { navController.popBackStack() }, onPersonalData = { navController.navigate(Routes.PERSONAL_DATA) })
             }
             composable(TopLevelDestination.HISTORY.route) {
-                HistoryScreen(onOpen = { navController.navigate(Routes.fastDetail(it)) }, onNewFast = { navController.navigate(Routes.NEW_FAST) })
+                HistoryScreen(onOpen = { navController.navigate(Routes.fastDetail(it)) }, onPlanned = { navController.navigateToTab(TopLevelDestination.PLANNED) })
             }
             composable(Routes.FAST_DETAIL) { entry ->
                 val fastId = entry.arguments?.getString("fastId")!!
-                FastDetailScreen(fastId, onBack = { navController.popBackStack() }, onExport = { navController.navigate(Routes.exportFast(fastId)) })
+                FastDetailScreen(
+                    fastId,
+                    onBack = { navController.popBackStack() },
+                    onExport = { navController.navigate(Routes.exportFast(fastId)) },
+                )
             }
             composable(Routes.EXPORT_FAST) { entry -> ExportFastScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }) }
             composable(Routes.DATA) { DataScreen(onBack = { navController.popBackStack() }, onPersonalData = { navController.navigate(Routes.PERSONAL_DATA) }) }
@@ -237,7 +264,11 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                 )
             }
             composable(Routes.NEW_FAST) {
-                CreateFastScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack() })
+                // Al crear se vuelve a Planificados, con el nuevo en su lugar (H-046).
+                CreateFastScreen(onBack = { navController.popBackStack() }, onCreated = { navController.popBackStack(); navController.navigateToTab(TopLevelDestination.PLANNED) })
+            }
+            composable(Routes.CHANGE_FAST) { entry ->
+                ChangeFastScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }, onSaved = { navController.popBackStack() })
             }
             composable(Routes.RECORD) { entry ->
                 val fastId = entry.arguments?.getString("fastId")!!

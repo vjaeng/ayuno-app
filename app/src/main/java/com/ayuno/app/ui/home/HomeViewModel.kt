@@ -15,7 +15,6 @@ import com.ayuno.domain.derived.PendingState
 import com.ayuno.domain.derived.RefeedSchedule
 import com.ayuno.domain.model.RefeedCheck
 import com.ayuno.domain.derived.StageWindows
-import com.ayuno.domain.model.ChecklistItem
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.MetricType
@@ -48,13 +47,12 @@ sealed interface HomeUiState {
     data object Error : HomeUiState
 
     /**
-     * Sin ayuno en curso: el próximo planificado (con su lista previa) y el último terminado. Mientras dura su
+     * Sin ayuno en curso: el próximo planificado (el de última comida más cercana) y el último terminado. Mientras dura su
      * etapa de vuelta a comer, [refeedFastId] (Inicio muestra la vuelta a comer); después, la reintroducción que
      * falta por marcar como recordatorio (H-031).
      */
     data class Idle(
         val planned: Fast?,
-        val checklist: List<ChecklistItem>,
         val lastFinished: Fast?,
         val refeedFastId: String? = null,
         val pendingReintroduction: List<Pair<LocalDateTime, String>> = emptyList(),
@@ -82,18 +80,17 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
     private val _errors = MutableStateFlow<List<ValidationError>>(emptyList())
     val errors: StateFlow<List<ValidationError>> = _errors.asStateFlow()
 
-    /** La lista previa vive en otra tabla: se fuerza el recálculo tras cada acción. */
+    /** Algunas acciones no cambian la tabla de ayunos observada: se fuerza el recálculo tras cada una. */
     private val refresh = MutableStateFlow(0)
 
     val state: StateFlow<HomeUiState> = combine(container.fasts.observeFasts(), refresh) { fasts, _ -> fasts }
         .flatMapLatest { fasts ->
             val current = fasts.firstOrNull { it.status == FastStatus.IN_PROGRESS }
             if (current == null) {
-                val planned = fasts.filter { it.status == FastStatus.PLANNED }.minByOrNull { it.clockStartPlanned }
+                val planned = fasts.filter { it.status == FastStatus.PLANNED }.minByOrNull { it.lastMealPlanned }
                 val last = fasts.filter { it.status == FastStatus.FINISHED }.maxByOrNull { it.endActual ?: it.clockStartPlanned }
                 val checks = last?.let { container.refeed.observeChecks(it.id) } ?: flow { emit(emptyList()) }
                 checks.map<List<RefeedCheck>, HomeUiState> { lastChecks ->
-                    val checklist = planned?.let { container.fasts.get(it.id)?.plan?.checklist }.orEmpty()
                     val source = last?.let { container.fasts.get(it.id) }
                     val now = LocalTimes.now(container.clock)
                     val inRefeed = source != null && RefeedSchedule.inRefeedStage(source, now)
@@ -101,7 +98,7 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
                     val reintroduction = if (inRefeed) emptyList() else lastChecks
                         .filter { it.doneAt == null && RefeedSchedule.isReintroduction(steps[it.refeedStepId]) }
                         .map { it.scheduledAt to steps[it.refeedStepId]?.description.orEmpty() }
-                    HomeUiState.Idle(planned, checklist, last, source?.fast?.id?.takeIf { inRefeed }, reintroduction)
+                    HomeUiState.Idle(planned, last, source?.fast?.id?.takeIf { inRefeed }, reintroduction)
                 }
             } else {
                 // Cualquier cambio en el registro del ayuno o el paso del tiempo recalcula el estado.
@@ -171,8 +168,6 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
 
     fun correctClockStart(fastId: String, at: LocalDateTime, reason: String, onDone: () -> Unit) =
         execute(onDone) { container.correctClockStart(fastId, at, reason) }
-
-    fun setChecklistItem(fastId: String, itemId: String, checked: Boolean) = execute { container.setChecklistItem(fastId, itemId, checked) }
 
     fun clearErrors() { _errors.value = emptyList() }
 

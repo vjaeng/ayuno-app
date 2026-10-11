@@ -133,7 +133,7 @@ class TemplateAndFastUseCasesTest {
     fun `H-005 solo puede haber un ayuno en curso`() = runTest {
         val w = TestWorld()
         w.startedFast()
-        val second = w.plannedFast()
+        val second = w.plannedFast(weeksLater = 2)
         assertEquals(listOf(ValidationError.ANOTHER_FAST_IN_PROGRESS), (w.startFast(second.fast.id) as Outcome.Invalid).errors)
     }
 

@@ -83,9 +83,8 @@ object Pending {
 
     /** H-026: recordatorios programados por reglas con acción «medir de nuevo en N minutos». */
     fun ruleFollowUps(source: FastWithPlan, alerts: List<Alert>): List<PendingItem> {
-        val rules = source.plan.rules.associateBy { it.id }
         return alerts.mapNotNull { alert ->
-            val rule = rules[alert.ruleId] ?: return@mapNotNull null
+            val rule = source.ruleById(alert.ruleId) ?: return@mapNotNull null
             val code = rule.metricTypeCode ?: return@mapNotNull null
             val minutes = rule.actionMinutes ?: return@mapNotNull null
             if (rule.action != RuleAction.SCHEDULE_MEASUREMENT) return@mapNotNull null

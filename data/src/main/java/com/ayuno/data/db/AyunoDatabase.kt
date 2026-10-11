@@ -58,6 +58,7 @@ abstract class AyunoDatabase : RoomDatabase() {
     abstract fun record2Dao(): Record2Dao
     abstract fun refeedDao(): RefeedDao
     abstract fun personProfileDao(): PersonProfileDao
+    abstract fun fastLifecycleDao(): FastLifecycleDao
 
     companion object {
         /** Configuración común a la base real y a la de pruebas: integridad y datos iniciales. */

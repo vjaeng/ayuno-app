@@ -86,13 +86,15 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 | **FranjaInformativa** | Avisos persistentes no clínicos (permiso de notificaciones denegado, recordatorios no aceptados) | Alertas de reglas | `surface_variant`, icono ⓘ, texto + botón de texto |
 | **AvisoAmarillo** | Regla con `rule.level = notice` | Errores de formulario | Hoja inferior `notice_container`, borde izquierdo `notice_accent` 4 dp, icono ▲, mensaje en `headline` |
 | **AlertaRoja** | Regla con `rule.level = alert` | Cualquier otra cosa | Pantalla completa `alert`/`on_alert`, mensaje en `headline`, botones de 56 dp en blanco con texto `alert`; no se cierra sin decidir |
+| **MenuAcciones** | Acciones raras o destructivas de una pantalla o fila (duplicar, cambiar, borrar) | La acción principal o frecuente | Icono ⋮ de 48×48 dp en la barra superior o al final de la fila, con descripción para el lector de pantalla; menú desplegable de Material 3 con textos, sin rojo; las destructivas abren un DialogoConfirmacion |
 | **DialogoConfirmacion** | Confirmar fuera de rango, borrar, descartar cambios, «¿estás terminando el ayuno?» | Confirmaciones triviales | Diálogo Material 3, dos botones, la acción segura a la derecha |
 | **Snackbar** | Confirmar un guardado («Glucosa guardada») | Errores que exigen acción | 4 s, `body`, sin acciones salvo «Deshacer» si aplica |
 | **EstadoVacio** | Listas sin elementos | — | Texto en `body` que dice qué hacer + un BotonSecundario |
 | **EstadoCargando** | Lectura en curso | Escrituras (usar botón deshabilitado con indicador) | Esqueleto de la estructura; nunca valores inventados |
 | **EstadoError** | Fallo de lectura o escritura | Validación de campo (va en el campo) | Texto «qué pasó + qué hacer» + «Reintentar» |
 | **EstadoSinPermisos** | Bloqueo activo; permiso del sistema denegado | — | Pantalla de desbloqueo (BiometricPrompt) o FranjaInformativa con botón a ajustes del teléfono |
-| **BarraNavegacion** | Pestañas Inicio, Hoy, Historial, Más | Dentro de flujos modales | Navigation bar de Material 3, 4 destinos, icono + etiqueta |
+| **FilaLista** | Elemento tocable de una lista que abre un detalle (ayunos planificados, historial, plantillas) | Acciones directas (usar botón) | `ListRow`: fila de `rowMinHeight` (56 dp) mín., texto principal en `body` y secundario en `body` atenuado (`on_surface_variant`), chevron › al final cuando abre un detalle; toda la fila es el objetivo táctil |
+| **BarraNavegacion** | Pestañas Inicio, Planificados, Hoy, Historial, Más | Dentro de flujos modales | Navigation bar de Material 3, 5 destinos (máximo de Material), icono + etiqueta |
 
 ## 3. Modo claro y oscuro
 

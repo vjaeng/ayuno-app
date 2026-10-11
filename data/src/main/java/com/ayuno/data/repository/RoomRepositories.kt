@@ -204,7 +204,8 @@ class RoomFastRepository(private val database: AyunoDatabase, private val clock:
 
     override suspend fun get(id: String): FastWithPlan? {
         val fast = dao.fast(id) ?: return null
-        return FastWithPlan(fast.toDomain(), plans.load(PlanOwner.OfFast(id)))
+        val replaced = database.fastLifecycleDao().replacedRules(id).map { it.toDomain() }
+        return FastWithPlan(fast.toDomain(), plans.load(PlanOwner.OfFast(id)), replaced)
     }
 
     override suspend fun insert(fast: FastWithPlan) {
@@ -219,6 +220,46 @@ class RoomFastRepository(private val database: AyunoDatabase, private val clock:
 
     /** Solo añade o modifica (lista previa marcada, regla manual creada al vuelo); no borra partes del plan copiado. */
     override suspend fun updatePlan(fastId: String, plan: Plan) = plans.save(PlanOwner.OfFast(fastId), plan)
+
+    override suspend fun replacePlan(fastId: String, plan: Plan) {
+        val now = clock.stamp()
+        with(database.fastLifecycleDao()) {
+            retireSchedules(fastId, now)
+            retireStages(fastId, now)
+            retirePlanMetrics(fastId, now)
+            retireRules(fastId, now)
+            retireGoals(fastId, now)
+            retireChecklist(fastId, now)
+            retireNotices(fastId, now)
+            retirePlanProducts(fastId, now)
+            retireRefeedSteps(fastId, now)
+        }
+        plans.save(PlanOwner.OfFast(fastId), plan)
+    }
+
+    /** De las hojas a la raíz: la bitácora y las filas que dependen de otras se borran antes que aquello de lo que cuelgan. */
+    override suspend fun deleteForever(fastId: String) = with(database.fastLifecycleDao()) {
+        deleteEditLog(fastId)
+        deleteSchedules(fastId)
+        deleteRefeedChecks(fastId)
+        deleteMeasurements(fastId)
+        deleteBloodPressure(fastId)
+        deleteSymptoms(fastId)
+        deleteIntakes(fastId)
+        deleteProductLogs(fastId)
+        deleteAlerts(fastId)
+        deleteNotes(fastId)
+        deleteMeals(fastId)
+        deleteStages(fastId)
+        deletePlanMetrics(fastId)
+        deleteRules(fastId)
+        deleteGoals(fastId)
+        deleteChecklist(fastId)
+        deleteNotices(fastId)
+        deletePlanProducts(fastId)
+        deleteRefeedSteps(fastId)
+        deleteFast(fastId)
+    }
 }
 
 class RoomRecordRepository(private val database: AyunoDatabase, private val clock: Clock) : RecordRepository {

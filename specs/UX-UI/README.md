@@ -14,8 +14,9 @@ Flujos y pantallas de la app móvil. Cada flujo cita sus historias (`specs/HISTO
 
 | Flujo | Archivo | Historias |
 |---|---|---|
-| Inicio y reloj | [ayuno-inicio.md](ayuno-inicio.md) | H-005, H-006, H-041 |
-| Crear un ayuno | [ayuno-crear.md](ayuno-crear.md) | H-004 |
+| Inicio y reloj | [ayuno-inicio.md](ayuno-inicio.md) | H-005, H-006, H-041, H-046 |
+| Ayunos planificados | [ayuno-planificados.md](ayuno-planificados.md) | H-046, H-005, H-044, H-045 |
+| Crear o cambiar un ayuno | [ayuno-crear.md](ayuno-crear.md) | H-004, H-044 |
 | Anotar | [registro-anotar.md](registro-anotar.md) | H-008, H-009, H-010, H-012, H-013, H-015, H-035 |
 | Recordatorios y Hoy | [recordatorios-hoy.md](recordatorios-hoy.md) | H-015, H-016, H-017, H-018 |
 | Seguridad y alertas | [seguridad-alertas.md](seguridad-alertas.md) | H-023, H-025, H-026, H-027, H-028, H-029 |
@@ -23,7 +24,7 @@ Flujos y pantallas de la app móvil. Cada flujo cita sus historias (`specs/HISTO
 | Vuelta a comer | [vuelta-a-comer.md](vuelta-a-comer.md) | H-031, H-032 |
 | Plantillas | [plantillas-editar.md](plantillas-editar.md) | H-001, H-002, H-003, H-014, H-031 |
 | Reglas de alerta | [reglas-editar.md](reglas-editar.md) | H-019, H-020, H-021, H-022, H-023, H-024, H-025, H-026 |
-| Historial | [historial-revisar.md](historial-revisar.md) | H-033, H-034, H-035 |
+| Historial | [historial-revisar.md](historial-revisar.md) | H-033, H-034, H-035, H-045 |
 | Catálogos | [ajustes-catalogos.md](ajustes-catalogos.md) | H-007, H-010, H-011, H-013 |
 | Ajustes generales | [ajustes-generales.md](ajustes-generales.md) | H-017, H-029, H-038, H-042, H-043 |
 | Exportar e importar | [datos-exportar-importar.md](datos-exportar-importar.md) | H-036, H-037, H-038, H-039, H-040 |
@@ -32,19 +33,24 @@ H-041 (sin conexión ni cuenta) es transversal: ningún flujo pide conexión ni 
 
 ## Navegación global
 
-Barra inferior con 4 pestañas (patrón estándar de app móvil): **Inicio**, **Hoy**, **Historial**, **Más** (plantillas, catálogos, ajustes, exportar). Durante un ayuno en curso, «Anotar» y el botón de seguridad flotan sobre Inicio y Hoy.
+Barra inferior con 5 pestañas (patrón estándar de app móvil): **Inicio**, **Planificados** (EV-002), **Hoy**, **Historial**, **Más** (plantillas, catálogos, ajustes, exportar). Durante un ayuno en curso, «Anotar» y el botón de seguridad flotan sobre Inicio y Hoy.
 
 ```mermaid
 flowchart TD
     subgraph Pestañas
         INI[Inicio]
+        PLA[Planificados]
         HOY[Hoy]
         HIS[Historial]
         MAS[Más]
     end
     NOTIF([Notificación]) -->|acción directa| FORM
-    INI -->|Nuevo ayuno| CREAR[Crear ayuno]
-    CREAR --> INI
+    PLA -->|Planificar ayuno| CREAR[Crear ayuno]
+    CREAR --> PLA
+    PLA -->|tocar un ayuno| DET[Detalle del planificado]
+    INI -->|Ver| DET
+    DET -->|Cambiar| CREAR
+    DET -->|Empieza el ayuno ahora| INI
     INI -->|Empieza el ayuno ahora| INI
     INI -->|Anotar| REJ[Rejilla Anotar]
     HOY -->|tocar pendiente| FORM[Formulario de registro]

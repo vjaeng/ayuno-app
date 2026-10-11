@@ -66,6 +66,7 @@ fun ScreenScaffold(
     title: String,
     onBack: (() -> Unit)?,
     bottomBar: @Composable () -> Unit = {},
+    actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -79,6 +80,7 @@ fun ScreenScaffold(
                         }
                     }
                 },
+                actions = actions,
             )
         },
         bottomBar = bottomBar,

@@ -61,7 +61,7 @@ class Batch2UseCasesTest {
         val fast = w.plannedFast(w.plan57h().copy(checklist = listOf(ChecklistItem(Ids.newId(), "Comprar sal", false))))
         w.setChecklistItem(fast.fast.id, fast.plan.checklist.single().id, true)
         assertTrue(w.fasts.get(fast.fast.id)!!.plan.checklist.single().isChecked)
-        val other = w.plannedFast(w.plan57h().copy(checklist = listOf(ChecklistItem(Ids.newId(), "Sin marcar", false))))
+        val other = w.plannedFast(w.plan57h().copy(checklist = listOf(ChecklistItem(Ids.newId(), "Sin marcar", false))), weeksLater = 2)
         assertTrue(w.startFast(other.fast.id) is Outcome.Ok)
     }
 

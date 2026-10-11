@@ -22,8 +22,8 @@ class NavigationShellE2eTest {
     val compose = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun `las cuatro pestanas estan disponibles e Inicio es la inicial`() {
-        listOf("Inicio", "Hoy", "Historial", "Más").forEach { compose.onNodeWithText(it).assertExists() }
+    fun `las cinco pestanas estan disponibles e Inicio es la inicial`() {
+        listOf("Inicio", "Planificados", "Hoy", "Historial", "Más").forEach { compose.onNodeWithText(it).assertExists() }
         compose.onNodeWithText("Inicio").assertIsSelected()
     }
 

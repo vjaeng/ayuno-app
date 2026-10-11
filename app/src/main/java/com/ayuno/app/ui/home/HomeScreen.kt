@@ -77,6 +77,8 @@ data class HomeActions(
     val onAlert: (alertId: String) -> Unit,
     val onRefeed: (fastId: String) -> Unit = {},
     val onMeal: (fastId: String) -> Unit = {},
+    val onOpenPlanned: (fastId: String) -> Unit = {},
+    val onPlannedTab: () -> Unit = {},
 )
 
 @Composable
@@ -137,18 +139,17 @@ private fun IdleContent(state: HomeUiState.Idle, viewModel: HomeViewModel, actio
         state.lastFinished?.let { fast -> SecondaryButton(stringResource(R.string.home_open_refeed), onClick = { actions.onRefeed(fast.id) }) }
     }
     if (state.planned == null && state.lastFinished == null) {
-        EmptyState(stringResource(R.string.home_empty), stringResource(R.string.home_new_fast), actions.onNewFast)
+        EmptyState(stringResource(R.string.home_empty), stringResource(R.string.planned_new), actions.onNewFast)
         return
     }
+    // H-006 (EV-002): del próximo, solo lo necesario para empezar; prepararlo, cambiarlo o borrarlo va en su detalle.
     state.planned?.let { fast ->
         SectionTitle(stringResource(R.string.home_next_fast))
         Text(stringResource(R.string.home_last_meal_planned, Formats.dateTime(fast.lastMealPlanned)), style = MaterialTheme.typography.bodyLarge)
-        fast.lastMealActual?.let { Text(stringResource(R.string.home_last_meal_actual, Formats.dateTime(it)), style = MaterialTheme.typography.bodyLarge) }
         Text(stringResource(R.string.home_clock_planned, Formats.dateTime(fast.clockStartPlanned)), style = MaterialTheme.typography.bodyLarge)
         Text(stringResource(R.string.home_planned_end, Formats.dateTime(com.ayuno.domain.derived.FastClock.plannedEnd(fast))), style = MaterialTheme.typography.bodyLarge)
         Text(stringResource(R.string.home_target, Formats.number(fast.targetHours, 2)), style = MaterialTheme.typography.bodyLarge)
-        if (state.checklist.isNotEmpty()) Checklist(fast.id, state.checklist, viewModel)
-        LastMealButton(fast, viewModel)
+        SecondaryButton(stringResource(R.string.home_view_planned), onClick = { actions.onOpenPlanned(fast.id) })
         PrimaryButton(stringResource(R.string.home_start_now), onClick = { viewModel.startFast(fast.id) })
     }
     state.lastFinished?.let { fast ->
@@ -157,7 +158,7 @@ private fun IdleContent(state: HomeUiState.Idle, viewModel: HomeViewModel, actio
         com.ayuno.domain.derived.FastClock.finalDuration(fast)?.let { Text(Formats.duration(it), style = MaterialTheme.typography.bodyLarge) }
         fast.endReason?.let { Text(endReasonText(it, fast.endReasonDetail), style = MaterialTheme.typography.bodyLarge) }
     }
-    SecondaryButton(stringResource(R.string.home_new_fast), actions.onNewFast)
+    if (state.planned == null) SecondaryButton(stringResource(R.string.home_plan_next), actions.onPlannedTab)
 }
 
 @Composable
@@ -306,14 +307,6 @@ fun totalText(total: com.ayuno.domain.derived.DailyTotal): String {
         stringResource(R.string.total_without_goal, type.name, Formats.number(total.amount, 2), type.unit)
     }
     return total.sodium?.let { main + stringResource(R.string.total_sodium, Formats.number(it, 2)) } ?: main
-}
-
-@Composable
-private fun Checklist(fastId: String, items: List<com.ayuno.domain.model.ChecklistItem>, viewModel: HomeViewModel) {
-    SectionTitle(stringResource(R.string.home_checklist, items.count { it.isChecked }, items.size))
-    items.forEach { item ->
-        com.ayuno.app.ui.components.CheckRow(item.text, item.isChecked) { viewModel.setChecklistItem(fastId, item.id, it) }
-    }
 }
 
 @Composable

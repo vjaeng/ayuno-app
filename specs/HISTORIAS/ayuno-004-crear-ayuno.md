@@ -13,22 +13,27 @@
 - [ ] También puedo crear un ayuno desde cero, sin plantilla.
 - [ ] El ayuno guarda una copia del plan de la plantilla: cambios posteriores a la plantilla no lo alteran.
 - [ ] Un ayuno recién creado queda como planificado, no en curso.
+- [ ] Puedo crear un ayuno aunque haya otro en curso (EV-002).
+- [ ] Entre el fin de cualquier otro ayuno (planificado, en curso o terminado) y la última comida prevista del nuevo, y entre el fin del nuevo y la última comida prevista del siguiente, deben pasar al menos 7 días; si no, la app dice con qué ayuno choca y desde cuándo puedo planificarlo, y no lo guarda (EV-002).
 - [ ] Cada hito (última comida, inicio del reloj, fin) guarda hora planificada y hora real por separado; registrar la real no borra la planificada.
 - [ ] Si difieren, se muestran las dos juntas (p. ej. «previsto 22:00 · real 22:10»); un hito que no ha ocurrido muestra solo la planificada.
 - [ ] Puedo escribir y editar unas notas generales del ayuno, sin hora, distintas de las notas libres con hora de la línea de tiempo.
 
+*Cambiar un ayuno planificado (horas, notas y plantilla) → H-044 (EV-001). Ver y elegir entre los planificados → H-046 (EV-002).*
+
 ### Consideraciones de Seguridad
 Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exportación explícita.
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | plantilla elegida (o desde cero) | `fast.template_id` | ✓ |  |  |  |
 | fecha y hora de la última comida (planificada) | `fast.last_meal_planned` | ✓ | ✓ |  |  |
 | hora prevista de inicio del reloj | `fast.clock_start_planned` | ✓ | ✓ |  |  |
-| hora real de la última comida | `fast.last_meal_actual` |  | ✓ |  |  |
-| hora real de inicio del reloj | `fast.clock_start_actual` |  | ✓ |  |  |
-| hora real de fin | `fast.end_actual` |  | ✓ |  |  |
+| hora real de la última comida (también franja de otros ayunos, D-17) | `fast.last_meal_actual` |  | ✓ |  |  |
+| hora real de inicio del reloj (también franja del ayuno en curso) | `fast.clock_start_actual` |  | ✓ |  |  |
+| hora real de fin (franja de un terminado, D-17) | `fast.end_actual` |  | ✓ |  |  |
+| otros ayunos planificados, en curso o terminados (semana de separación) | `fast.status` |  | ✓ |  |  |
 | objetivo calculado entre inicio y fin previstos | `fast.target_hours` | ✓ | ✓ |  |  |
 | hitos copiados | `fast.milestone_hours` | ✓ |  |  |  |
 | ayuno recién creado queda planificado | `fast.status` | ✓ |  |  |  |

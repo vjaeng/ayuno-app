@@ -70,7 +70,7 @@ erDiagram
 
 *Justificación:* H-001 (nombre, duración, hitos), H-003 (duplicar, borrar y restaurar, plantilla de ejemplo), H-039/H-040 (importar y restaurar plantillas). Borrar es borrado blando (control `deleted_at`) para poder restaurar.
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | C, R, U | todos |
@@ -80,17 +80,19 @@ erDiagram
 | H-039 | C, R | todos |
 | H-040 | C | todos |
 | H-041 | C | name |
+| H-044 | R | target_hours, milestone_hours |
+| H-046 | R | name |
 
 #### FAST (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
 |---|---|---|---|---|
-| template_id | UUID | nulo si se creó desde cero | Público | plantilla de origen; el plan vive en la copia propia del ayuno |
+| template_id | UUID | nulo si se creó desde cero | Público | plantilla de origen; el plan vive en la copia propia del ayuno; cambiarla mientras `planned` vuelve a copiar el plan (D-16) |
 | status | ENUM(planned, in_progress, finished) | no nulo, default `planned` | Sensible | solo un ayuno `in_progress` a la vez; `finished` no vuelve a `in_progress` |
-| target_hours | DECIMAL | no nulo, > 0 | Sensible | copiado de la plantilla |
-| milestone_hours | LIST<DECIMAL> | cada valor > 0 | Público | copiado de la plantilla |
-| last_meal_planned | LOCAL_DATETIME | no nulo | Crítico | dato pedido al crear el ayuno |
+| target_hours | DECIMAL | no nulo, > 0 | Sensible | calculado entre el inicio y el fin previstos; modificable solo mientras `planned`; entra en la franja del ayuno (D-17) |
+| milestone_hours | LIST<DECIMAL> | cada valor > 0 | Público | copiado de la plantilla; se vuelve a copiar si cambia `template_id` |
+| last_meal_planned | LOCAL_DATETIME | no nulo | Crítico | dato pedido al crear el ayuno; modificable solo mientras `planned`, con rastro en `edit_log`; al crear o cambiar, al menos 7 días entre la franja del ayuno y la de cualquier otro (D-17) |
 | last_meal_actual | LOCAL_DATETIME | nulo hasta registrarla | Crítico | no sustituye a la planificada |
-| clock_start_planned | LOCAL_DATETIME | no nulo | Crítico | dato pedido al crear el ayuno |
+| clock_start_planned | LOCAL_DATETIME | no nulo | Crítico | dato pedido al crear el ayuno; modificable solo mientras `planned`, con rastro en `edit_log`; entra en la franja del ayuno (D-17) |
 | clock_start_actual | LOCAL_DATETIME | nulo hasta «Empieza el ayuno ahora» | Crítico | corregible solo con motivo (queda en `edit_log`) |
 | end_actual | LOCAL_DATETIME | nulo hasta terminar; ≥ `clock_start_actual` | Crítico | fijado por «Terminar el ayuno» |
 | end_reason | ENUM(goal_met, alert_rule, personal_decision, other) | obligatorio si `status = finished` | Crítico | sin connotación de éxito o fracaso |
@@ -99,15 +101,15 @@ erDiagram
 | tz_offset | TEXT (`±HH:MM`) | no nulo | Sensible | desfase del dispositivo al iniciar el reloj; va una vez en la cabecera de la exportación |
 | notes | TEXT | opcional | Crítico | notas generales del ayuno, sin hora; distintas de `note` (con hora, en la línea de tiempo) |
 
-*Justificación:* H-004 (creación desde plantilla o desde cero, hitos planificado/real, estado planificado, notas generales), H-005 (inicio real, corrección con motivo, un solo ayuno en curso), H-006 (reloj calculado desde la hora de inicio), H-030 (fin, motivo, regla, sin reanudar), H-033 (lista con duración, objetivo y motivo), H-036 (nombre del archivo, desfase en cabecera).
+*Justificación:* H-004 (creación desde plantilla o desde cero, hitos planificado/real, estado planificado, notas generales), H-005 (inicio real, corrección con motivo, un solo ayuno en curso), H-006 (reloj calculado desde la hora de inicio), H-030 (fin, motivo, regla, sin reanudar), H-033 (lista con duración, objetivo y motivo), H-036 (nombre del archivo, desfase en cabecera), H-044 (cambiar horas previstas, notas y plantilla mientras está planificado), H-045 (borrar el ayuno para siempre con todos sus datos, D-15), H-046 (lista y detalle de los planificados; semana de separación, D-17).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-003 | R | template_id |
 | H-004 | C, R, U | template_id, status, target_hours, milestone_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, end_actual, notes |
 | H-005 | C, R, U | status, target_hours, milestone_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, tz_offset |
-| H-006 | R | status, target_hours, milestone_hours, clock_start_planned, clock_start_actual, end_actual, end_reason |
+| H-006 | R, U | status, target_hours, milestone_hours, last_meal_planned, clock_start_planned, clock_start_actual, end_actual, end_reason |
 | H-012 | R | status |
 | H-018 | R | clock_start_actual |
 | H-030 | C, R, U | status, clock_start_actual, end_actual, end_reason, end_reason_detail, end_rule_id |
@@ -117,6 +119,9 @@ erDiagram
 | H-037 | R | todos |
 | H-040 | C | todos |
 | H-041 | C | template_id, clock_start_actual |
+| H-044 | R, U | status, template_id, target_hours, milestone_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, end_actual, notes |
+| H-045 | R, D | todos |
+| H-046 | R, U, D | status, template_id, target_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, notes; D: todo el ayuno (vía H-045) |
 
 #### STAGE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -127,7 +132,7 @@ erDiagram
 
 *Justificación:* H-001 (etapas y su duración), H-004 (fechas de etapas calculadas), H-002 y H-024 (avisos y filtros por etapa).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | C, R, U, D | todos |
@@ -137,6 +142,8 @@ erDiagram
 | H-024 | R | kind |
 | H-030 | R | kind |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### PLAN_METRIC (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -145,7 +152,7 @@ erDiagram
 
 *Justificación:* H-001 (activar o desactivar mediciones por plantilla; una desactivada no aparece en la rejilla ni genera recordatorios), H-008 (rejilla con mediciones activas).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | C, R, D | metric_type_code |
@@ -153,6 +160,8 @@ erDiagram
 | H-004 | C | metric_type_code |
 | H-008 | R | metric_type_code |
 | H-036 | R | metric_type_code |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### METRIC_SCHEDULE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -162,7 +171,7 @@ erDiagram
 
 *Justificación:* H-001 (horarios de recordatorio por etapa), H-016/H-017/H-018 (recordatorios y pendientes del día).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | C, R, U, D | todos |
@@ -172,6 +181,8 @@ erDiagram
 | H-018 | R | time_of_day |
 | H-019 | R | time_of_day |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### INTAKE_GOAL (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -182,7 +193,7 @@ erDiagram
 
 *Justificación:* H-002 (metas por tipo de ingesta), H-006 y H-012 (totales frente a la meta), H-022 (regla de ingesta bajo la meta).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-002 | C, R, U, D | todos |
@@ -191,6 +202,8 @@ erDiagram
 | H-012 | R | daily_amount |
 | H-022 | R | daily_amount |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### CHECKLIST_ITEM (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -198,14 +211,17 @@ erDiagram
 | text | TEXT | no nulo | Sensible | texto libre (p. ej. «comprar sal») |
 | is_checked | BOOLEAN | default false | Público | solo informa; nunca bloquea empezar el ayuno |
 
-*Justificación:* H-002 (lista previa marcable que no bloquea).
+*Justificación:* H-002 (lista previa marcable que no bloquea); H-046 (se marca desde el detalle del planificado).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-002 | C, R, U, D | todos |
 | H-004 | C | text |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
+| H-046 | R, U | text (R), is_checked (R, U) |
 
 #### STAGE_NOTICE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -215,12 +231,14 @@ erDiagram
 
 *Justificación:* H-002 (avisos fijos por etapa).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-002 | C, R, U, D | todos |
 | H-004 | C | text |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### PLAN_PRODUCT (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -232,13 +250,15 @@ erDiagram
 
 *Justificación:* H-014 (sigue / sale / opcional con motivo; recordatorio solo de los que siguen y de los opcionales activados).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-004 | C | during_fast |
 | H-014 | C, R, U | todos |
 | H-016 | R | during_fast |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### RULE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -263,7 +283,7 @@ erDiagram
 
 *Justificación:* H-019 (umbral, campos comunes, pertenece a la plantilla y se copia al ayuno, sin umbrales precargados), H-020 (sostenida), H-021 (síntoma de alarma concreto o cualquiera), H-022 (ingesta bajo meta a una hora), H-023 (regla manual), H-024 (filtros), H-025 (nivel y mensaje), H-026 (acción), H-028 (reglas activas en lenguaje llano). Clasificadas *Sensible*: alterarlas puede suprimir una alerta de seguridad.
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-003 | C | condition_kind |
@@ -280,6 +300,8 @@ erDiagram
 | H-027 | R | name, message |
 | H-028 | R | name, active, condition_kind, metric_type_code, bp_component, threshold, sustained_minutes, symptom_type_code, intake_type_code, check_time, filter_stage_kinds, filter_on_waking, filter_position, level, action |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 #### REFEED_STEP (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -293,12 +315,14 @@ erDiagram
 
 *Justificación:* H-031 (pasos con hora relativa o repetición, reintroducción por día, horas calculadas desde el fin real), H-030 (la vuelta a comer empieza al terminar si la plantilla la usa).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-004 | C | description |
 | H-031 | C, R, U | todos |
 | H-036 | R | todos |
+| H-044 | C, D | todos |
+| H-045 | D | todos |
 
 ### 2.2 Catálogos
 
@@ -418,7 +442,7 @@ erDiagram
 
 *Justificación:* H-008 (anotar con fecha y hora editable, nota, origen y tendencia de la glucosa, unidad tecleada y equivalente, fuera de rango tal cual), H-017 (no se hizo con motivo, hora programada), H-020 y H-024 (lecturas para reglas sostenidas y al despertar). La presión arterial **no** se guarda aquí: tiene entidad propia (D-09).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | metric_type_code, taken_at, value_entered, unit_entered |
@@ -436,6 +460,7 @@ erDiagram
 | H-040 | C | todos |
 | H-041 | C | value_entered |
 | H-043 | R | unit_entered |
+| H-045 | R, D | todos |
 
 #### BLOOD_PRESSURE_READING (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -453,7 +478,7 @@ erDiagram
 
 *Justificación:* H-009 (sistólica, diastólica, pulso y posición; tras la sentada se ofrece la de pie; ambas vinculadas; diferencia calculada; se puede guardar solo la sentada), H-008 (hora editable, nota, rango válido), H-017 (no se hizo), H-019 y H-024 (reglas por componente y por posición). Activación y horarios siguen en `metric_type` / `plan_metric` con el tipo «presión arterial».
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-008 | C | on_waking, note |
@@ -465,6 +490,7 @@ erDiagram
 | H-033 | R | todos |
 | H-034 | U, D | todos |
 | H-036 | R | todos |
+| H-045 | R, D | todos |
 
 #### SYMPTOM (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -476,7 +502,7 @@ erDiagram
 
 *Justificación:* H-010 (registro con hora, intensidad y nota; un síntoma de alarma evalúa reglas).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-010 | C, R | todos |
@@ -485,6 +511,7 @@ erDiagram
 | H-034 | U, D | todos |
 | H-036 | R | todos |
 | H-041 | C | symptom_type_code |
+| H-045 | R, D | todos |
 
 #### INTAKE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -497,7 +524,7 @@ erDiagram
 
 *Justificación:* H-012 (hora, tipo, cantidad, unidad y nota; se guarda aunque se responda que no se termina el ayuno), H-022 (totales del día para reglas).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | amount |
@@ -507,6 +534,7 @@ erDiagram
 | H-034 | U, D | todos |
 | H-036 | R | todos |
 | H-041 | C | amount |
+| H-045 | R, D | todos |
 
 #### PRODUCT_LOG (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -522,7 +550,7 @@ erDiagram
 
 *Justificación:* H-015 (tomado con hora real, no tomado con motivo, dosis cambiada sin borrar la planificada, pendientes del día), H-013 (aviso al anotar un producto a evitar; la toma se registra igual).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-013 | C | product_code |
@@ -533,11 +561,12 @@ erDiagram
 | H-034 | U, D | todos |
 | H-036 | R | todos |
 | H-041 | C | status |
+| H-045 | R, D | todos |
 
 #### ALERT (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
 |---|---|---|---|---|
-| rule_id | UUID → RULE | no nulo | Crítico | regla del plan del ayuno que se cumplió |
+| rule_id | UUID → RULE | no nulo | Crítico | regla del plan del ayuno que se cumplió; se resuelve aunque esa regla se haya sustituido al cambiar la plantilla (D-16) |
 | fired_at | LOCAL_DATETIME | no nulo | Crítico | — |
 | trigger_entry_ids | LIST<UUID> | vacío solo en regla `manual` | Crítico | lecturas, síntomas o ingestas que la dispararon |
 | user_choice | ENUM(end_fast, continue) | nulo hasta que la persona decide | Crítico | la app nunca termina el ayuno por su cuenta |
@@ -545,7 +574,7 @@ erDiagram
 
 *Justificación:* H-027 (decisión obligatoria, motivo al seguir, registro con hora, regla, lecturas y decisión), H-023 (la alerta manual queda registrada igual), H-026 (punto de partida del recordatorio programado). Es un registro de seguridad: no se edita sin rastro (S8).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-019 | C | rule_id, fired_at, trigger_entry_ids |
@@ -557,6 +586,7 @@ erDiagram
 | H-027 | C, R | todos |
 | H-033 | R | todos |
 | H-036 | R | todos |
+| H-045 | R, D | todos |
 
 #### REFEED_CHECK (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -567,7 +597,7 @@ erDiagram
 
 *Justificación:* H-031 (recordatorio de cada paso y casilla que guarda la hora real; un paso repetido genera varias ocurrencias).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-016 | R | scheduled_at |
@@ -575,6 +605,7 @@ erDiagram
 | H-031 | C, R, U | todos |
 | H-033 | R | todos |
 | H-036 | R | todos |
+| H-045 | D | todos |
 
 #### MEAL (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -587,12 +618,13 @@ erDiagram
 
 *Justificación:* H-032 (comida con hora, descripción, cantidad aproximada y cómo cayó; «otro» con texto).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-032 | C | todos |
 | H-034 | U, D | todos |
 | H-036 | R | todos |
+| H-045 | R, D | todos |
 
 #### NOTE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -602,13 +634,14 @@ erDiagram
 
 *Justificación:* H-035 (nota libre con hora, en la línea de tiempo).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-033 | R | todos |
 | H-034 | U, D | todos |
 | H-035 | C, U | todos |
 | H-036 | R | todos |
+| H-045 | R, D | todos |
 
 #### EDIT_LOG (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -624,12 +657,14 @@ erDiagram
 
 *Justificación:* H-034 (bitácora con valor anterior, nuevo, hora y motivo; borrar y restaurar quedan registrados), H-005 (corrección de la hora de inicio con motivo). Es dominio, no control: las historias la piden expresamente (S8).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-005 | C | todos |
 | H-034 | C, R | todos |
 | H-036 | R | todos |
+| H-044 | C | todos |
+| H-045 | D | todos |
 
 ### 2.4 Configuración y datos personales
 
@@ -691,6 +726,8 @@ erDiagram
 | Totales del día | suma de `intake.amount` por tipo y día | H-006, H-012, H-022, H-033 |
 | Diferencia sentado / de pie | entre una lectura `standing` y su `paired_reading_id` | H-009 |
 | Pendientes del día y su estado (hecho, pendiente, atrasado, no hecho) | `metric_schedule`, `product_schedule` + `plan_product`, `refeed_check`, recordatorios de reglas, cruzados con los registros | H-016, H-017, H-018 |
+| Recuento de registros del ayuno | número de filas visibles de `measurement`, `blood_pressure_reading`, `symptom`, `intake`, `product_log`, `alert`, `note` y `meal` con su `fast_id` | H-045 |
+| Franja del ayuno | planificado: de `last_meal_planned` al fin previsto · en curso: de `last_meal_actual` (o `last_meal_planned`) al mayor entre el fin previsto y ahora · terminado: de `last_meal_actual` (o `last_meal_planned`) a `end_actual` | H-004, H-044 |
 | Hora del ayuno («hora 33») | ahora o la hora de la entrada − `clock_start_actual` | H-018 |
 
 ## 3. Estructuras de control
@@ -703,7 +740,7 @@ Exentas de trazabilidad (P4). Se declaran una vez y aplican a todas las entidade
 | `code` | metric_type, symptom_type, intake_type | TEXT | llave del catálogo; minúsculas y `_`; inmutable |
 | `created_at` | todas | LOCAL_DATETIME | — |
 | `updated_at` | todas | LOCAL_DATETIME | nulo hasta la primera edición |
-| `deleted_at` | todas salvo `edit_log` | LOCAL_DATETIME | borrado blando: se restaura vaciándolo; se exporta |
+| `deleted_at` | todas salvo `edit_log` | LOCAL_DATETIME | borrado blando: se restaura vaciándolo; se exporta. Excepción: borrar un `fast` es definitivo y elimina todo lo que cuelga de él (D-15, ADR-SEG-007) |
 | `template_id` / `fast_id` (propietario) | entidades *(plan)* | UUID | exactamente uno de los dos no nulo |
 | `fast_id` | measurement, blood_pressure_reading, symptom, intake, product_log, alert, meal, note | UUID → FAST | toda entrada cuelga de un ayuno |
 | `plan_metric_id` | metric_schedule | UUID → PLAN_METRIC | — |
@@ -716,6 +753,10 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 |---|---|---|
 | Plantilla | `template` | plan reutilizable |
 | Ayuno | `fast` | — |
+| Ayunos planificados / Planificados | `fast` con `status = planned`, ordenados por `last_meal_planned` | pestaña propia (H-046) |
+| Semana de separación | 7 días entre franjas de ayunos (D-17) | «no se puede planificar a menos de una semana del anterior» |
+| Cambiar un ayuno / editar el ayuno | actualizar `fast.last_meal_planned`, `fast.clock_start_planned`, `fast.target_hours`, `fast.notes`, `fast.template_id` mientras `status = planned` | distinto de «corregir la hora de inicio» (`fast.clock_start_actual`, con motivo) |
+| Borrar un ayuno | eliminación física de `fast` y de todo lo que cuelga de él (D-15) | definitivo, sin restaurar; distinto de borrar una entrada (H-034, blando y restaurable) |
 | Inicio del reloj / «Empieza el ayuno ahora» | `fast.clock_start_actual` | «inicio del ayuno» es el mismo hito; distinto de la última comida (`fast.last_meal_*`) |
 | Fin / terminar / ruptura | `fast.end_actual` | «fin previsto» es derivado; «terminar» es la acción con `end_reason` |
 | Objetivo / duración objetivo | `fast.target_hours` | — |
@@ -758,6 +799,9 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-12 | 2026-10-08 | Tejido: se retiran `checklist_item.position` y `alert.decided_at` (nudos N2) | Ninguna historia los pide: la lista previa se ordena por creación y la hora de la alerta (`alert.fired_at`) basta. Decisión del humano. |
 | D-13 | 2026-10-08 | Tejido: `fast.last_meal_actual` y `*.on_waking` quedan justificados por criterios nuevos en H-005 y H-008 (nudos N4) | Se leían sin que ninguna historia los escribiera. Decisión del humano. |
 | D-14 | 2026-10-10 | Construcción (H-031): reglas de cálculo de `refeed_check.scheduled_at`. Un paso repetido suena al empezar y cada intervalo mientras quede ventana (`repeat_for_minutes` excluye su final: «cada 60 minutos durante 4 horas» = 4 casillas). La reintroducción del día N cae a las 00:00 de ese día: no suena y no cuenta como atrasada hasta que acaba su día. Los pasos exigen la etapa `refeed` en el plan. | Los criterios no fijaban el borde de la ventana ni la hora de un paso «por día»; se elige lo que no produce una taza de más ni un aviso de madrugada. Sin cambios de esquema. |
+| D-15 | 2026-10-10 | EV-001 (H-045): borrar un ayuno es **definitivo**. En una transacción se eliminan físicamente el `fast`, toda fila con su `fast_id` (registros, alertas y plan copiado, incluidas las ya borradas en blando), los `metric_schedule` de sus `plan_metric`, los `refeed_check` de sus `refeed_step` y las filas de `edit_log` cuyo `row_id` sea cualquiera de ellas. No queda traza del borrado. | Decisión del humano: poder eliminar del teléfono sus propios datos de salud prevalece sobre la trazabilidad; excepción a S8 registrada en ADR-SEG-007. Sin claves foráneas, el borrado se hace tabla a tabla. Sin cambios de esquema. |
+| D-16 | 2026-10-10 | EV-001 (H-044): cambiar `fast.template_id` de un ayuno `planned` marca con `deleted_at` la copia anterior del plan y crea una copia nueva con identificadores nuevos (o ninguna, si pasa a «desde cero»); `milestone_hours` se copia de la nueva plantilla. Cada campo de `fast` cambiado escribe una fila en `edit_log` (motivo opcional). | Mantiene D-03 (el plan vive en la copia del ayuno) sin borrar nada físicamente (S8). Las marcas de la lista previa se pierden con la copia anterior: la UI lo avisa. Nudo EV1-01 (decisión del humano): las alertas ya registradas conservan su regla — se leen también las reglas sustituidas del ayuno para mostrar la alerta y para sus recordatorios de «medir de nuevo» pendientes; el motor de reglas solo evalúa las vigentes. |
+| D-17 | 2026-10-11 | EV-002 (H-004, H-044, H-046): entre la franja de un ayuno que se crea o cuyas horas se cambian y la franja de cualquier otro ayuno (planificado, en curso o terminado) debe haber al menos **7 días**, antes y después. Se comprueba al crear y al cambiar las horas; no al empezar, terminar, cambiar solo notas o plantilla, ni al importar. Los 7 días son fijos en el código. Varios ayunos `planned` a la vez siguen permitidos. | Decisión del humano: «no se pueden planificar ayunos que inicien en menos de 1 semana del anterior», contada desde el fin y también contra los terminados. Tensión aceptada con el requisito transversal «Todo configurable» (HISTORIAS/README): hacerlo ajustable sería otra evolución. Empezar antes de tiempo no se bloquea (regla de planificación, no de ejecución). Sin cambio de esquema. |
 
 ## 6. Preguntas para el humano
 

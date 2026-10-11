@@ -81,6 +81,8 @@ class AppContainer(
     val triggerManualAlert by lazy { com.ayuno.domain.usecase.TriggerManualAlert(fasts, alerts, transactions, clock) }
     val evaluateRules by lazy { com.ayuno.domain.usecase.EvaluateRules(catalog, fasts, records, alerts, transactions, clock) }
     val setChecklistItem by lazy { com.ayuno.domain.usecase.SetChecklistItem(fasts) }
+    val changePlannedFast by lazy { com.ayuno.domain.usecase.ChangePlannedFast(templates, fasts, audit, transactions, clock) }
+    val deleteFast by lazy { com.ayuno.domain.usecase.DeleteFast(fasts, transactions) }
 
     val settings: com.ayuno.domain.port.SettingsRepository by lazy { com.ayuno.data.repository.RoomSettingsRepository(database) }
     val saveQuietHours by lazy { com.ayuno.domain.usecase.SaveQuietHours(settings) }

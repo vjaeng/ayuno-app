@@ -108,6 +108,11 @@ class FakeFasts : FastRepository {
         val current = items.value.getValue(fastId)
         items.value = items.value + (fastId to current.copy(plan = plan))
     }
+    override suspend fun replacePlan(fastId: String, plan: Plan) {
+        val current = items.value.getValue(fastId)
+        items.value = items.value + (fastId to current.copy(plan = plan, replacedRules = current.replacedRules + current.plan.rules))
+    }
+    override suspend fun deleteForever(fastId: String) { items.value = items.value - fastId }
 }
 
 class FakeRecords : RecordRepository {

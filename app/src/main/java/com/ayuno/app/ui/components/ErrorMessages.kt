@@ -21,6 +21,7 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.FAST_NOT_PLANNED -> R.string.error_fast_not_planned
     ValidationError.FAST_NOT_IN_PROGRESS -> R.string.error_fast_not_in_progress
     ValidationError.ANOTHER_FAST_IN_PROGRESS -> R.string.error_another_in_progress
+    ValidationError.FAST_TOO_CLOSE -> R.string.error_fast_too_close
     ValidationError.FAST_NOT_STARTED -> R.string.error_fast_not_started
     ValidationError.REASON_REQUIRED -> R.string.error_reason_required
     ValidationError.END_BEFORE_START -> R.string.error_end_before_start

@@ -74,6 +74,12 @@ interface FastRepository {
 
     /** Actualiza el plan copiado del ayuno (lista previa marcada, regla manual creada al vuelo). */
     suspend fun updatePlan(fastId: String, plan: Plan)
+
+    /** H-044 (D-16): retira (borrado blando) la copia actual del plan y escribe [plan] en su lugar. */
+    suspend fun replacePlan(fastId: String, plan: Plan)
+
+    /** H-045 (D-15): elimina el ayuno y todo lo que cuelga de él, incluida su bitácora. */
+    suspend fun deleteForever(fastId: String)
 }
 
 interface RecordRepository {

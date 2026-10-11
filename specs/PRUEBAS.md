@@ -35,9 +35,9 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-001 | Crear una plantilla con qué medir y cuándo | alta | 7 | 10 | U + I + E2E | en verde |
 | H-002 | Completar la plantilla con metas, lista previa y avisos | media | 4 | 8 | U + I | en verde |
 | H-003 | Duplicar, borrar y partir de una plantilla de ejemplo | media | 4 | 8 | U + I | en verde |
-| H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 7 | 23 | U + I + E2E | en verde |
+| H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 9 | 24 | U + I + E2E | en verde |
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
-| H-006 | Ver de un vistazo dónde estoy | alta | 7 | 14 | U + E2E | en verde (parcial) |
+| H-006 | Ver de un vistazo dónde estoy | alta | 8 | 16 | U + E2E | en verde (parcial) |
 | H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 4 | 9 | U + I + E2E | en verde |
 | H-008 | Anotar una medición en tres toques | alta | 8 | 20 | U + I + E2E | en verde |
 | H-009 | Anotar la presión sentado y de pie | alta | 4 | 6 | U + I + E2E | en verde |
@@ -75,6 +75,9 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-041 | Usar la app entera sin internet ni cuenta | alta | 3 | 7 | U + I + E2E | pendiente |
 | H-042 | Proteger mis datos en el teléfono y en copias | media | 4 | 1 | U + I | pendiente |
 | H-043 | Elegir mis unidades por defecto | media | 2 | 3 | U + I | pendiente |
+| H-044 | Cambiar un ayuno que aún no ha empezado | media | 9 | 27 | U + I (+ E2E de acceso) | en verde |
+| H-045 | Borrar un ayuno para siempre con todos sus datos | alta | 7 | 22 | U + I + E2E | en verde (parcial: caso D) |
+| H-046 | Ver mis ayunos planificados y elegir uno | alta | 8 | 12 | U + E2E | en verde |
 
 ## 4. Casos transversales
 
@@ -151,6 +154,7 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 | Captura de pantalla bloqueada (`FLAG_SECURE`) | ADR-SEG-002 |
 | Reloj visible en < 1 s en arranque en frío | H-006 |
 | Prueba manual de 3 días de recordatorios | H-016 |
+| Las notificaciones visibles de un ayuno borrado desaparecen | H-045 |
 
 **Verificaciones manuales registradas:**
 
@@ -158,7 +162,7 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 |---|---|---|---|
 | 2026-10-08 | Teléfono de la persona, Android 16 (APK `ayuno-0.1.0-debug`) | La app abre (base cifrada con SQLCipher y clave en Keystore) y permite registrar un ayuno | Correcto. Sin verificar aún: alarmas con la app cerrada, reinicio real, 3 días, `FLAG_SECURE`, arranque < 1 s |
 
-**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017 y H-042.
+**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017, H-042 y H-045.
 
 ## 5. Excepciones registradas
 

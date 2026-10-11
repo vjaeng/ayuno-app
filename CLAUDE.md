@@ -104,12 +104,14 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas (33 historias entregadas, 3 en construcción; ver `specs/HISTORIAS/README.md`). Pendiente: verificación en dispositivo y siguientes tandas.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación) cerrada. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
 
 ## Decisiones Técnicas
 
 | Fecha | Decisión | Razón |
 |---|---|---|
+| 2026-10-11 | Navegación con 5 pestañas (Inicio, Planificados, Hoy, Historial, Más); los ayunos planificados se gestionan en su pestaña, no en Inicio | EV-002: Inicio confuso con todas las opciones; elegir qué ayuno cambiar |
+| 2026-10-11 | Al menos 7 días entre ayunos, fijos en el código (D-17) | Decisión del humano (EV-002); configurable solo con otra evolución |
 | 2026-10-08 | Nombres canónicos en inglés y `snake_case` | Coinciden con las claves del archivo de exportación (MODELO-DATOS D-01) |
 | 2026-10-08 | Sin API: `specs/CONTRATO-API/` no aplica | App sin servidor; el formato del archivo se especifica en Diseño |
 | 2026-10-08 | Soporte desde Android 10 (API 29); `compileSdk`/`targetSdk` 35 | Decisión del humano: mínimo Android 10; se compila con la plataforma instalada (`android-35`, build-tools 35.0.0); la app corre en su teléfono con Android 16 |

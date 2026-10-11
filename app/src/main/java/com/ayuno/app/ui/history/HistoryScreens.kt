@@ -1,5 +1,25 @@
 package com.ayuno.app.ui.history
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.window.DialogProperties
+import com.ayuno.app.ui.components.FieldError
+import com.ayuno.domain.usecase.Outcome
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -60,15 +80,15 @@ sealed interface HistoryState {
     data class Loaded(val items: List<HistoryItem>) : HistoryState
 }
 
-/** H-033: en curso primero, luego los terminados del más reciente al más antiguo y al final los planificados. */
+/** H-033: en curso primero y luego los terminados del más reciente al más antiguo; los planificados viven en su pestaña (EV-002). */
 class HistoryViewModel(private val container: AppContainer) : ViewModel() {
     val state: StateFlow<HistoryState> = container.fasts.observeFasts()
         .map { fasts ->
-            val order = compareBy<Fast>({ listOf(FastStatus.IN_PROGRESS, FastStatus.FINISHED, FastStatus.PLANNED).indexOf(it.status) })
+            val order = compareBy<Fast>({ listOf(FastStatus.IN_PROGRESS, FastStatus.FINISHED).indexOf(it.status) })
                 .thenByDescending { FastClock.effectiveStart(it) }
             HistoryState.Loaded(
-                fasts.sortedWith(order).map { fast ->
-                    val rule = fast.endRuleId?.let { id -> container.fasts.get(fast.id)?.plan?.rules?.firstOrNull { it.id == id }?.name }
+                fasts.filter { it.status != FastStatus.PLANNED }.sortedWith(order).map { fast ->
+                    val rule = fast.endRuleId?.let { id -> container.fasts.get(fast.id)?.ruleById(id)?.name }
                     HistoryItem(fast, rule)
                 },
             ) as HistoryState
@@ -78,7 +98,7 @@ class HistoryViewModel(private val container: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun HistoryScreen(onOpen: (fastId: String) -> Unit, onNewFast: () -> Unit) {
+fun HistoryScreen(onOpen: (fastId: String) -> Unit, onPlanned: () -> Unit) {
     val viewModel: HistoryViewModel = viewModel(factory = containerFactory { HistoryViewModel(it) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     ScreenScaffold(stringResource(R.string.tab_history), onBack = null) {
@@ -86,7 +106,7 @@ fun HistoryScreen(onOpen: (fastId: String) -> Unit, onNewFast: () -> Unit) {
             HistoryState.Loading -> LoadingState()
             HistoryState.Error -> ErrorState(stringResource(R.string.error_load)) { }
             is HistoryState.Loaded -> {
-                if (s.items.isEmpty()) EmptyState(stringResource(R.string.history_empty), stringResource(R.string.home_new_fast), onNewFast)
+                if (s.items.isEmpty()) EmptyState(stringResource(R.string.history_empty), stringResource(R.string.planned_open_tab), onPlanned)
                 s.items.forEach { item -> ListRow(historyTitle(item.fast), historySupporting(item), onClick = { onOpen(item.fast.id) }) }
             }
         }
@@ -96,7 +116,7 @@ fun HistoryScreen(onOpen: (fastId: String) -> Unit, onNewFast: () -> Unit) {
 @Composable
 private fun historyTitle(fast: Fast): String = when (fast.status) {
     FastStatus.IN_PROGRESS -> stringResource(R.string.history_in_progress, Formats.date(FastClock.effectiveStart(fast)))
-    FastStatus.PLANNED -> stringResource(R.string.history_planned, Formats.date(fast.clockStartPlanned))
+    FastStatus.PLANNED -> Formats.date(fast.lastMealPlanned)
     FastStatus.FINISHED -> Formats.date(FastClock.effectiveStart(fast)) + (FastClock.finalDuration(fast)?.let { " · " + Formats.duration(it) } ?: "")
 }
 
@@ -122,6 +142,8 @@ data class FastDetail(
     val symptomNames: Map<String, String>,
     val intakeNames: Map<String, String>,
     val productNames: Map<String, String>,
+    /** Derivado «recuento de registros del ayuno» (MODELO-DATOS §2.5) para la confirmación de borrado (H-045). */
+    val recordCount: Int,
 )
 
 /** H-033: línea de tiempo del ayuno por días (H-027 alertas, H-035 notas, H-031/H-032 vuelta a comer). */
@@ -149,28 +171,46 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
         }
         return FastDetail(
             source = source,
-            endRuleName = source.fast.endRuleId?.let { id -> source.plan.rules.firstOrNull { it.id == id }?.name },
+            endRuleName = source.ruleById(source.fast.endRuleId)?.name,
             days = days,
             metricNames = c.catalog.metricTypes().associate { it.code to it.name },
             symptomNames = c.catalog.symptomTypes().associate { it.code to it.name },
             intakeNames = intakeTypes.associate { it.code to it.name },
             productNames = c.catalog.products().associate { it.code to it.name },
+            recordCount = records.count(),
         )
+    }
+
+    private val _deleteFailed = MutableStateFlow(false)
+    val deleteFailed: StateFlow<Boolean> = _deleteFailed.asStateFlow()
+
+    /** H-045: borrado definitivo; después se retiran sus avisos y se recalculan los recordatorios. */
+    fun delete(onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            if (container.deleteFastAndReminders(fastId)) onDeleted() else _deleteFailed.value = true
+        }
     }
 }
 
 @Composable
-fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = {}) {
+fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = {}, onDeleted: () -> Unit = onBack) {
     val viewModel: FastDetailViewModel = viewModel(key = "detail-$fastId", factory = containerFactory { FastDetailViewModel(it, fastId) })
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ScreenScaffold(stringResource(R.string.history_detail_title), onBack) {
+    val deleteFailed by viewModel.deleteFailed.collectAsStateWithLifecycle()
+    var confirmingDelete by remember { mutableStateOf(false) }
+    ScreenScaffold(
+        stringResource(R.string.history_detail_title),
+        onBack,
+        actions = {
+            if (state != null) FastMenu(onChange = null, onDelete = { confirmingDelete = true })
+        },
+    ) {
         val d = state ?: run { LoadingState(); return@ScreenScaffold }
         val fast = d.source.fast
         val start = FastClock.effectiveStart(fast)
-        Text(
-            fast.endActual?.let { stringResource(R.string.history_range, Formats.date(start), Formats.date(it)) } ?: Formats.date(start),
-            style = MaterialTheme.typography.titleLarge,
-        )
+        val range = fast.endActual?.let { stringResource(R.string.history_range, Formats.date(start), Formats.date(it)) } ?: Formats.date(start)
+        Text(range, style = MaterialTheme.typography.titleLarge)
+        if (deleteFailed) FieldError(stringResource(R.string.error_delete_fast))
         val summary = listOfNotNull(
             FastClock.finalDuration(fast)?.let { Formats.duration(it) },
             stringResource(R.string.history_target, Formats.number(fast.targetHours, 2)),
@@ -186,6 +226,74 @@ fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = 
                 Text(stringResource(R.string.history_totals, day.totals.map { totalText(it) }.joinToString(" · ")), style = MaterialTheme.typography.bodyLarge)
             }
             day.entries.forEach { TimelineItem(fast, it, d) }
+        }
+    }
+
+    val d = state
+    if (confirmingDelete && d != null) {
+        DeleteFastDialog(d.source.fast, d.recordCount, onDismiss = { confirmingDelete = false }, onConfirm = { confirmingDelete = false; viewModel.delete(onDeleted) })
+    }
+}
+
+/** H-045: confirmación «Borrar para siempre» con el recuento de registros; sin rojo (GUIA-ESTILO §2). */
+@Composable
+fun DeleteFastDialog(fast: Fast, recordCount: Int, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    val start = FastClock.effectiveStart(fast)
+    val range = fast.endActual?.let { stringResource(R.string.history_range, Formats.date(start), Formats.date(it)) } ?: Formats.date(start)
+    val question = if (recordCount == 0) {
+        stringResource(R.string.fast_delete_question_empty, range)
+    } else {
+        pluralStringResource(R.plurals.fast_delete_question, recordCount, range, recordCount)
+    }
+    // DialogoConfirmacion: la acción segura (Cancelar) a la derecha.
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        title = { Text(stringResource(R.string.fast_delete_title)) },
+        text = {
+            Text(question + if (fast.status == FastStatus.IN_PROGRESS) "\n" + stringResource(R.string.fast_delete_in_progress) else "")
+        },
+        dismissButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.fast_delete_confirm)) } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+/** H-045: borra el ayuno, retira sus avisos y recalcula los recordatorios; `false` si no se pudo borrar. */
+suspend fun AppContainer.deleteFastAndReminders(fastId: String): Boolean {
+    val result = runCatching { deleteFast(fastId) }.getOrNull()
+    if (result !is Outcome.Ok) return false
+    reminders.cancelNotificationsFor(fastId)
+    reminders.reschedule()
+    return true
+}
+
+/** Derivado «recuento de registros del ayuno» (MODELO-DATOS §2.5). */
+fun FastRecords.count(): Int = measurements.size + readings.size + symptoms.size + intakes.size + productLogs.size + alerts.size + notes.size + meals.size
+
+/** Registros del ayuno que cuentan para la confirmación de borrado (H-045). */
+suspend fun AppContainer.recordCount(fastId: String): Int = FastRecords(
+    measurements = records.measurements(fastId),
+    readings = records.bloodPressure(fastId),
+    symptoms = records.symptoms(fastId),
+    intakes = records.intakes(fastId),
+    productLogs = records.productLogs(fastId),
+    alerts = alerts.alerts(fastId),
+    notes = records.notes(fastId),
+    refeedChecks = emptyList(),
+    meals = refeed.meals(fastId),
+).count()
+
+/** MenuAcciones del detalle: «Cambiar» (H-044, solo con [onChange]) y «Borrar ayuno» (H-045). */
+@Composable
+fun FastMenu(onChange: (() -> Unit)?, onDelete: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }, modifier = Modifier.size(Dimens.touchMin)) {
+            Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.fast_menu))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            if (onChange != null) DropdownMenuItem(text = { Text(stringResource(R.string.fast_change)) }, onClick = { open = false; onChange() })
+            DropdownMenuItem(text = { Text(stringResource(R.string.fast_delete)) }, onClick = { open = false; onDelete() })
         }
     }
 }
@@ -228,7 +336,7 @@ private fun entryText(entry: TimelineEntry, d: FastDetail): String {
             }
         }
         is TimelineEntry.OfAlert -> {
-            val rule = d.source.plan.rules.firstOrNull { it.id == entry.value.ruleId }
+            val rule = d.source.ruleById(entry.value.ruleId)
             val level = stringResource(if (rule?.level == RuleLevel.NOTICE) R.string.level_notice else R.string.level_alert)
             val choice = when (entry.value.userChoice) {
                 UserChoice.END_FAST -> stringResource(R.string.alert_end_fast)

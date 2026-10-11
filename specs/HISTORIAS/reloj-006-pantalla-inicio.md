@@ -1,7 +1,7 @@
 ## H-006: Ver de un vistazo dónde estoy
 
 **Como** persona que ayuna,
-**quiero** una pantalla de inicio que, durante el ayuno, muestre el tiempo transcurrido, el restante al objetivo, la hora prevista de fin, el próximo pendiente, los hitos, los totales del día frente a las metas y la última medición; y que, sin ayuno en curso, muestre el próximo ayuno planificado, el último y un botón «Nuevo ayuno»,
+**quiero** una pantalla de inicio que, durante el ayuno, muestre el tiempo transcurrido, el restante al objetivo, la hora prevista de fin, el próximo pendiente, los hitos, los totales del día frente a las metas y la última medición; y que, sin ayuno en curso, muestre solo el próximo ayuno planificado, con un único botón para empezarlo, y el último terminado,
 **para** saber en todo momento dónde estoy sin hacer cuentas.
 
 **Prioridad:** alta · **Estimación:** M
@@ -12,20 +12,23 @@
 - [ ] Tras forzar el cierre de la app y reiniciar el teléfono, el tiempo transcurrido es el correcto (se calcula desde la hora de inicio guardada).
 - [ ] La pantalla aparece en menos de 1 segundo al abrir la app.
 - [ ] Durante el ayuno, los botones «Anotar» y de seguridad están siempre visibles.
-- [ ] Sin ayuno en curso se muestran el próximo planificado y el último terminado (si existen) y «Nuevo ayuno» lleva a crear uno.
-- [ ] Sin ningún ayuno, la pantalla explica cómo empezar.
+- [ ] Sin ayuno en curso se muestran el próximo planificado y el último terminado (si existen). Del próximo se ven la fecha y hora de la última comida, el inicio previsto y el objetivo, con una única acción principal «Empieza el ayuno ahora» y un acceso secundario «Ver y preparar este ayuno» a su detalle (H-046) (EV-002).
+- [ ] Preparar, cambiar, borrar y planificar ayunos no están en Inicio, sino en la pestaña Planificados (H-046) (EV-002).
+- [ ] Sin ningún ayuno, la pantalla explica cómo empezar y ofrece «Planificar ayuno».
 
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | tiempo transcurrido desde la hora de inicio guardada | `fast.clock_start_actual` |  | ✓ |  |  |
 | tiempo restante y fin previsto | `fast.target_hours` |  | ✓ |  |  |
 | hitos con fecha y hora | `fast.milestone_hours` |  | ✓ |  |  |
 | ayuno en curso / planificado / terminado | `fast.status` |  | ✓ |  |  |
-| próximo ayuno planificado | `fast.clock_start_planned` |  | ✓ |  |  |
+| próximo ayuno planificado: el de última comida prevista más cercana | `fast.last_meal_planned` |  | ✓ |  |  |
+| próximo ayuno planificado: inicio previsto | `fast.clock_start_planned` |  | ✓ |  |  |
+| «Empieza el ayuno ahora» del próximo (acción de H-005) | `fast.clock_start_actual`, `fast.status` |  |  | ✓ |  |
 | último ayuno terminado | `fast.end_actual` |  | ✓ |  |  |
 | motivo del último ayuno | `fast.end_reason` |  | ✓ |  |  |
 | próximo pendiente | `metric_schedule.time_of_day` |  | ✓ |  |  |

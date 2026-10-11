@@ -64,6 +64,9 @@ class ReminderScheduler(
         }.sortedBy { it.item.scheduledAt }
     }
 
+    /** H-045: retira los avisos visibles de un ayuno borrado. */
+    fun cancelNotificationsFor(fastId: String) = ReminderNotifier.cancelForFast(context, fastId)
+
     /** H-017: vuelve a avisar de [reminder] dentro de [minutes] minutos (alarma propia, no altera la cadena). */
     fun snooze(reminder: DueReminder, minutes: Long) {
         val at = LocalTimes.now(clock).plusMinutes(minutes)

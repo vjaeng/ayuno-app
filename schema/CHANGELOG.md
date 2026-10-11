@@ -6,6 +6,13 @@ archivo publicado no coincide. Para regenerarlo: `./gradlew :data:testDebugUnitT
 (reescribe también `fasting-log-1.0.example.json`, un ayuno simulado completo). Un cambio incompatible sube la
 versión mayor; la app rechaza importar una versión mayor que la suya (ADR-007).
 
+## 1.0 — aclaración 2026-10-10 (EV-001, sin cambio de versión)
+
+- **Ayuno borrado** (MODELO-DATOS D-15, ADR-SEG-007): borrar un ayuno es definitivo; un archivo exportado después ya no
+  contiene ninguna de sus filas. Un archivo exportado antes sí, e importarlo lo devuelve.
+- **Plan reemplazado** (D-16): al cambiar la plantilla de un ayuno planificado, la copia anterior del plan viaja con
+  `deleted_at` y la nueva con identificadores nuevos.
+
 ## 1.0 — 2026-10-10 (app 0.5.0)
 
 Primera versión publicada. Diferencias con la estructura de ejemplo de la solicitud (`docs/SOLICITUD_app_movil_ayuno.md`):

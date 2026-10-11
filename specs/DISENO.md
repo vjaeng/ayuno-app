@@ -21,6 +21,7 @@ Registro de decisiones arquitectónicas (formato Nygard). Las decisiones con com
 | ADR-SEG-004 | App sin permiso de red ni terceros | aceptada |
 | ADR-SEG-005 | Copia de seguridad cifrada con contraseña | aceptada |
 | ADR-SEG-006 | Importación validada, todo o nada | aceptada |
+| ADR-SEG-007 | Borrado definitivo de un ayuno a petición de la persona | aceptada (EV-001) |
 
 ---
 
@@ -149,6 +150,8 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 **Alternativas consideradas.** Seguir literalmente la estructura de ejemplo (sin listas para presión, comidas ni pasos): obligaría a desnormalizar entidades del modelo validado. CSV como formato principal: pierde la cabecera y los catálogos (queda como opción de H-037).
 
 **Implementación (tanda 4, 2026-10-10).** Esquema publicado en `schema/fasting-log-1.0.schema.json` con ejemplo y `schema/CHANGELOG.md` (diferencias con la solicitud: listas y campos con nombres canónicos, `person` con los campos de `person_profile`). Ruta del esquema: `schema/` en la raíz del repositorio.
+
+**Aclaración (EV-001, 2026-10-10).** Un plan reemplazado al cambiar la plantilla de un ayuno planificado viaja con `deleted_at` (MODELO-DATOS D-16); un ayuno borrado no viaja (D-15, borrado definitivo). Compatible: `schema_version` sigue en 1.0; registrado en `schema/CHANGELOG.md`.
 
 ## ADR-008: Datos precargados y textos fuera del código
 **Fecha:** 2026-10-08 · **Estado:** aceptada
@@ -285,6 +288,24 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - Paga: un archivo grande con un solo error se rechaza entero (se informa la primera fila inválida).
 
 **Alternativas consideradas.** Importación parcial «lo que se pueda»: deja estados inconsistentes y dificulta saber qué entró.
+
+## ADR-SEG-007: Borrado definitivo de un ayuno a petición de la persona
+**Fecha:** 2026-10-10 · **Estado:** aceptada (EV-001) · **Principios:** S8 (excepción deliberada), S4, S6
+
+**Contexto.** H-045 pide borrar un ayuno con todos sus datos. El resto del modelo usa borrado blando con rastro en `edit_log` (S8: «operaciones sobre datos Críticos […] se registran con quién/qué/cuándo»). El humano decidió que el borrado del ayuno sea definitivo y **sin traza**, aun contradiciendo S8 y la decisión de que las alertas no se borran.
+
+**Decisión.**
+- «Borrar ayuno» elimina físicamente, en una sola transacción, el `fast`, toda fila con su `fast_id` (registros, alertas y plan copiado, también las ya borradas en blando), los `metric_schedule` y `refeed_check` que cuelgan de su plan y las filas de `edit_log` cuyo `row_id` sea cualquiera de ellas (MODELO-DATOS D-15). No se escribe ninguna fila de bitácora del borrado.
+- Confirmación explícita que dice qué se borra, cuántos registros, que no se puede deshacer y que los archivos ya exportados no cambian; «Cancelar» por defecto.
+- Todo o nada: un fallo a mitad revierte el borrado entero.
+- Después de confirmar, se retiran las notificaciones del ayuno y se reprograman los recordatorios; los receptores de notificación ignoran un ayuno inexistente.
+- Nada del contenido borrado se escribe en logs (S4).
+
+**Consecuencias.**
+- Gana: la persona puede eliminar de su teléfono datos de salud que no quiere conservar.
+- Paga: no hay forma de deshacer ni de saber después que el ayuno existió; una alerta que motivó el fin de un ayuno se pierde con él. Las páginas liberadas en la base quedan cifradas (ADR-SEG-001). Los archivos exportados antes y las copias cifradas (ADR-SEG-005) conservan el ayuno, e importarlos (H-040) lo devuelve.
+
+**Alternativas consideradas.** Borrado blando restaurable (coherente con S8 y H-003/H-034): descartado por el humano. Borrado definitivo con traza mínima sin datos (`edit_log` con solo `row_id`, acción y hora): descartado por el humano, que prefiere no dejar constancia.
 
 ---
 
