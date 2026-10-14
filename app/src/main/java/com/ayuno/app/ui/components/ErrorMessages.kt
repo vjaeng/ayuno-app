@@ -33,6 +33,7 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.VALUE_REQUIRED -> R.string.error_value_required
     ValidationError.VALUE_AND_NOT_DONE -> R.string.error_value_and_not_done
     ValidationError.UNIT_NOT_ALLOWED -> R.string.error_unit_not_allowed
+    ValidationError.WEIGHT_OUT_OF_RANGE_UNCONFIRMED -> R.string.error_weight_out_of_range
     ValidationError.SOURCE_REQUIRED -> R.string.error_source_required
     ValidationError.DIASTOLIC_NOT_BELOW_SYSTOLIC -> R.string.error_diastolic
     ValidationError.PAIRED_READING_INVALID -> R.string.error_paired

@@ -130,7 +130,7 @@ class ExchangeTest {
         RecordNote(fasts, records)(fastId, at7.plusHours(5).plusMinutes(10), "leve temblor")
         TriggerManualAlert(fasts, alerts, tx, clock)(fastId, "Algo no va bien", "Mensaje")
         now = Instant.parse("2026-10-25T12:03:00Z")
-        EndFast(fasts, refeed, tx, clock)(EndFast.Input(fastId, LocalDateTime.of(2026, 10, 25, 7, 3), EndReason.GOAL_MET, null, null))
+        EndFast(fasts, refeed, catalog, records, tx, clock)(EndFast.Input(fastId, LocalDateTime.of(2026, 10, 25, 7, 3), EndReason.GOAL_MET, null, null))
         now = Instant.parse("2026-10-25T12:05:00Z")
         SetRefeedCheck(refeed, audit, tx, clock)(refeed.checks(fastId).first().id, true)
         RecordMeal(fasts, refeed)(RecordMeal.Input(fastId, LocalDateTime.of(2026, 10, 25, 9, 40), "Puré de calabaza", null, MealTolerance.FINE, null))

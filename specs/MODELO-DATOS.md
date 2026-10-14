@@ -103,7 +103,7 @@ erDiagram
 
 *Justificación:* H-004 (creación desde plantilla o desde cero, hitos planificado/real, estado planificado, notas generales), H-005 (inicio real, corrección con motivo, un solo ayuno en curso), H-006 (reloj calculado desde la hora de inicio), H-030 (fin, motivo, regla, sin reanudar), H-033 (lista con duración, objetivo y motivo), H-036 (nombre del archivo, desfase en cabecera), H-044 (cambiar horas previstas, notas y plantilla mientras está planificado), H-045 (borrar el ayuno para siempre con todos sus datos, D-15), H-046 (lista y detalle de los planificados; semana de separación, D-17).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002; re-tejido el 2026-10-13, EV-003)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-003 | R | template_id |
@@ -122,6 +122,7 @@ erDiagram
 | H-044 | R, U | status, template_id, target_hours, milestone_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, end_actual, notes |
 | H-045 | R, D | todos |
 | H-046 | R, U, D | status, template_id, target_hours, last_meal_planned, last_meal_actual, clock_start_planned, clock_start_actual, notes; D: todo el ayuno (vía H-045) |
+| H-047 | R | clock_start_actual, end_actual |
 
 #### STAGE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -340,14 +341,16 @@ erDiagram
 
 *Justificación:* H-007 (catálogo precargado, desactivable, mediciones propias con nombre, unidad, numérica y rango; unidad principal y alternativa), H-008 (teclado numérico, rango válido), H-043 (unidades por defecto). El catálogo precargado incluye las escalas 0-10 de hambre, energía, ánimo y claridad mental como tipos numéricos con rango 0-10.
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-13, EV-003)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | R | name |
 | H-007 | C, R, U | todos |
 | H-008 | R | name, active, unit, alt_unit, entry_unit, is_numeric, min_valid, max_valid |
+| H-033 | R | entry_unit |
 | H-036 | R | todos |
 | H-043 | R, U | alt_unit, entry_unit |
+| H-047 | R | active, unit, alt_unit, entry_unit, min_valid, max_valid |
 
 #### SYMPTOM_TYPE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -442,7 +445,7 @@ erDiagram
 
 *Justificación:* H-008 (anotar con fecha y hora editable, nota, origen y tendencia de la glucosa, unidad tecleada y equivalente, fuera de rango tal cual), H-017 (no se hizo con motivo, hora programada), H-020 y H-024 (lecturas para reglas sostenidas y al despertar). La presión arterial **no** se guarda aquí: tiene entidad propia (D-09).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-13, EV-003)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | metric_type_code, taken_at, value_entered, unit_entered |
@@ -453,6 +456,7 @@ erDiagram
 | H-019 | R | metric_type_code, value_num |
 | H-020 | R | taken_at, value_num |
 | H-024 | R | on_waking |
+| H-030 | C, R | taken_at, value_num, value_entered, unit_entered |
 | H-033 | R | todos |
 | H-034 | U, D | todos |
 | H-036 | R | todos |
@@ -461,6 +465,7 @@ erDiagram
 | H-041 | C | value_entered |
 | H-043 | R | unit_entered |
 | H-045 | R, D | todos |
+| H-047 | C, R | metric_type_code, taken_at, value_num, value_entered, unit_entered |
 
 #### BLOOD_PRESSURE_READING (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -728,6 +733,7 @@ erDiagram
 | Pendientes del día y su estado (hecho, pendiente, atrasado, no hecho) | `metric_schedule`, `product_schedule` + `plan_product`, `refeed_check`, recordatorios de reglas, cruzados con los registros | H-016, H-017, H-018 |
 | Recuento de registros del ayuno | número de filas visibles de `measurement`, `blood_pressure_reading`, `symptom`, `intake`, `product_log`, `alert`, `note` y `meal` con su `fast_id` | H-045 |
 | Franja del ayuno | planificado: de `last_meal_planned` al fin previsto · en curso: de `last_meal_actual` (o `last_meal_planned`) al mayor entre el fin previsto y ahora · terminado: de `last_meal_actual` (o `last_meal_planned`) a `end_actual` | H-004, H-044 |
+| Peso inicial, final y diferencia | sobre `measurement` del ayuno con `metric_type_code = weight` y `value_num` no nulo: inicial = la última con `taken_at` ≤ `fast.clock_start_actual` o, si no hay, la primera; final = la última con `taken_at` ≤ `fast.end_actual` y posterior a la inicial o, si no hay, la primera tras `end_actual`; diferencia = final − inicial en `metric_type.unit`, mostrada en `metric_type.entry_unit` (D-19) | H-030, H-033, H-047 |
 | Hora del ayuno («hora 33») | ahora o la hora de la entrada − `clock_start_actual` | H-018 |
 
 ## 3. Estructuras de control
@@ -763,6 +769,7 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | Hito | `milestone_hours` | — |
 | Etapa / tramo | `stage` | «posterior» = «etapa posterior» = `post` |
 | Medición / lectura | `measurement` | — |
+| Peso inicial / peso final / cuánto cambió | derivado «Peso inicial, final y diferencia» (§2.5) sobre `measurement` de `weight` | no son campos de `fast` (D-19) |
 | Toma de presión / presión arterial | `blood_pressure_reading` | «toma» sin más es de un producto (`product_log`) |
 | Tipo de medición | `metric_type` | — |
 | Síntoma | `symptom` / `symptom_type` | — |
@@ -803,6 +810,7 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-16 | 2026-10-10 | EV-001 (H-044): cambiar `fast.template_id` de un ayuno `planned` marca con `deleted_at` la copia anterior del plan y crea una copia nueva con identificadores nuevos (o ninguna, si pasa a «desde cero»); `milestone_hours` se copia de la nueva plantilla. Cada campo de `fast` cambiado escribe una fila en `edit_log` (motivo opcional). | Mantiene D-03 (el plan vive en la copia del ayuno) sin borrar nada físicamente (S8). Las marcas de la lista previa se pierden con la copia anterior: la UI lo avisa. Nudo EV1-01 (decisión del humano): las alertas ya registradas conservan su regla — se leen también las reglas sustituidas del ayuno para mostrar la alerta y para sus recordatorios de «medir de nuevo» pendientes; el motor de reglas solo evalúa las vigentes. |
 | D-17 | 2026-10-11 | EV-002 (H-004, H-044, H-046): entre la franja de un ayuno que se crea o cuyas horas se cambian y la franja de cualquier otro ayuno (planificado, en curso o terminado) debe haber al menos **7 días**, antes y después. Se comprueba al crear y al cambiar las horas; no al empezar, terminar, cambiar solo notas o plantilla, ni al importar. Los 7 días son fijos en el código. Varios ayunos `planned` a la vez siguen permitidos. | Decisión del humano: «no se pueden planificar ayunos que inicien en menos de 1 semana del anterior», contada desde el fin y también contra los terminados. Tensión aceptada con el requisito transversal «Todo configurable» (HISTORIAS/README): hacerlo ajustable sería otra evolución. Empezar antes de tiempo no se bloquea (regla de planificación, no de ejecución). Sin cambio de esquema. |
 | D-18 | 2026-10-13 | La rejilla Anotar muestra toda medición con `metric_type.active`, esté o no en el plan del ayuno; `plan_metric` decide solo los recordatorios y el orden (las del plan primero). | Petición del humano: un ayuno desde cero (o creado antes de activar una medición) quedaba sin poder anotar mediciones, y el plan de un ayuno empezado no se edita. `measurement` nunca exigió `plan_metric`: sin cambio de esquema. |
+| D-19 | 2026-10-13 | EV-003 (H-047): el peso al empezar y al terminar es un `measurement` normal (`weight`); no hay campos de peso en `fast`. El de terminar se inserta en la transacción del fin con `taken_at = end_actual` y no evalúa reglas; el de empezar se guarda después como cualquier entrada y sí las evalúa. Inicial y final se derivan (§2.5). | Sin cambio de esquema; el peso se corrige, se borra y se exporta como el resto de mediciones. Una regla que ofrezca terminar no tiene sentido sobre un ayuno que ya termina. |
 
 ## 6. Preguntas para el humano
 

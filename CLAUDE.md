@@ -104,12 +104,13 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación) cerrada. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación) y EV-003 (peso al empezar y al terminar, con su diferencia) cerradas. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
 
 ## Decisiones Técnicas
 
 | Fecha | Decisión | Razón |
 |---|---|---|
+| 2026-10-13 | El peso al empezar y al terminar es una medición normal; inicial, final y diferencia se derivan (MODELO D-19) | EV-003: sin campos nuevos ni cambio de esquema; se corrige, borra y exporta como el resto |
 | 2026-10-13 | Anotar ofrece todas las mediciones activas del catálogo; el plan del ayuno solo decide recordatorios y orden (MODELO D-18) | Un ayuno desde cero quedaba sin mediciones que anotar |
 | 2026-10-11 | Navegación con 5 pestañas (Inicio, Planificados, Hoy, Historial, Más); los ayunos planificados se gestionan en su pestaña, no en Inicio | EV-002: Inicio confuso con todas las opciones; elegir qué ayuno cambiar |
 | 2026-10-11 | Al menos 7 días entre ayunos, fijos en el código (D-17) | Decisión del humano (EV-002); configurable solo con otra evolución |

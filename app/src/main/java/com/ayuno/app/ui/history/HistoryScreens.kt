@@ -47,12 +47,14 @@ import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
 import com.ayuno.app.ui.home.endReasonText
+import com.ayuno.app.ui.record.weightChangeText
 import com.ayuno.app.ui.home.totalText
 import com.ayuno.app.ui.refeed.toleranceText
 import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.derived.DailyTotal
 import com.ayuno.domain.derived.DailyTotals
 import com.ayuno.domain.derived.FastClock
+import com.ayuno.domain.derived.WeightChange
 import com.ayuno.domain.derived.FastRecords
 import com.ayuno.domain.derived.Timeline
 import com.ayuno.domain.derived.TimelineEntry
@@ -60,6 +62,7 @@ import com.ayuno.domain.model.EndReason
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.FastWithPlan
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Position
 import com.ayuno.domain.model.ProductLogStatus
 import com.ayuno.domain.model.RuleLevel
@@ -144,6 +147,8 @@ data class FastDetail(
     val productNames: Map<String, String>,
     /** Derivado «recuento de registros del ayuno» (MODELO-DATOS §2.5) para la confirmación de borrado (H-045). */
     val recordCount: Int,
+    /** H-047: peso inicial, final y diferencia; nulo si «Peso» no existe en el catálogo. */
+    val weight: Pair<WeightChange, MetricType>?,
 )
 
 /** H-033: línea de tiempo del ayuno por días (H-027 alertas, H-035 notas, H-031/H-032 vuelta a comer). */
@@ -178,6 +183,7 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
             intakeNames = intakeTypes.associate { it.code to it.name },
             productNames = c.catalog.products().associate { it.code to it.name },
             recordCount = records.count(),
+            weight = c.catalog.metricType(MetricType.WEIGHT_CODE)?.let { WeightChange.of(source.fast, records.measurements) to it },
         )
     }
 
@@ -217,6 +223,7 @@ fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = 
             fast.endReason?.let { endText(it, fast.endReasonDetail, d.endRuleName) },
         ).joinToString(" · ")
         Text(summary, style = MaterialTheme.typography.bodyLarge)
+        d.weight?.let { (change, type) -> weightChangeText(change, type)?.let { Text(it, style = MaterialTheme.typography.bodyLarge) } }
         fast.notes?.let { Text(stringResource(R.string.history_notes, it), style = MaterialTheme.typography.bodyLarge) }
         SecondaryButton(stringResource(R.string.export_action), onClick = onExport)
         if (d.days.isEmpty()) EmptyState(stringResource(R.string.history_no_entries))

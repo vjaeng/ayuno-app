@@ -2,7 +2,7 @@
 
 Fuente: `docs/SOLICITUD_app_movil_ayuno.md` (versión base, app genérica). Actor único: **la persona que ayuna**.
 
-Total: **46** historias · alta 32 · media 13 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
+Total: **47** historias · alta 32 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
 
 ## Índice
 
@@ -54,6 +54,7 @@ Total: **46** historias · alta 32 · media 13 · baja 1. H-001 a H-043 son la v
 | H-044 | [Cambiar un ayuno que aún no ha empezado](ayuno-044-cambiar-ayuno-planificado.md) | ayuno | media | entregada (EV-001) |
 | H-045 | [Borrar un ayuno para siempre con todos sus datos](historial-045-borrar-ayuno.md) | historial | alta | en construcción (EV-001) |
 | H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
+| H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
 
 ## Épicas
 
@@ -166,3 +167,4 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | 2026-10-11 | EV-002: H-046 nueva (pestaña Planificados con lista y detalle); H-006 deja en Inicio solo el próximo ayuno con una acción principal; H-004 y H-044 exigen una semana de separación entre ayunos (D-17). Motivo: Inicio era confuso con todas las opciones juntas y no había dónde elegir qué ayuno planificado cambiar | Petición del humano (EV-002) |
 | 2026-10-13 | H-003 | La plantilla de ejemplo incluye todas las mediciones del catálogo (antes solo glucosa, peso y presión); solo esas tres llevan horario, las demás se anotan sin recordatorio. Las instalaciones existentes las reciben con la migración 5→6 (sin cambios de esquema). Los ayunos ya creados conservan su plan | Petición del humano |
 | 2026-10-13 | H-001, H-008, H-004 | Anotar muestra todas las mediciones activas del catálogo (las del plan primero): el plan decide los recordatorios, no qué se puede anotar. Al planificar viene propuesta la primera plantilla en vez de «desde cero». Motivo: un ayuno desde cero quedaba sin mediciones y no había forma de añadirlas | Petición del humano |
+| 2026-10-13 | EV-003: H-047 nueva; H-030 y H-033 con un criterio de peso; nota en H-005 | Peso al empezar (después del toque, se puede saltar) y al terminar (campo opcional), con inicial, final y diferencia en el resultado y en el detalle. Motivo: el humano quiere saber cuánto cambió su peso en cada ayuno | Petición del humano (EV-003) |

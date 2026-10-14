@@ -115,6 +115,12 @@
     <string name="record_equivalent">%1$s %2$s equivalen a %3$s %4$s</string>
     <string name="record_not_done">No se hizo</string>
     <string name="record_out_of_range_title">¿Seguro?</string>
+    <string name="weight_start_title">¿Cuánto pesas al empezar?</string>
+    <string name="weight_start_already_started">El ayuno ya ha empezado.</string>
+    <string name="field_weight_optional">Peso (opcional)</string>
+    <string name="weight_single">Peso: %1$s</string>
+    <string name="weight_change">Peso: %1$s → %2$s · %3$s</string>
+    <string name="error_weight_out_of_range">El peso está fuera de lo habitual.</string>
     <string name="record_out_of_range_text">%1$s está fuera de lo habitual (de %2$s a %3$s). Puedes guardarlo tal cual o corregirlo.</string>
     <string name="bp_out_of_range_text">Algún valor está fuera de lo habitual. Puedes guardarlo tal cual o corregirlo.</string>
     <string name="record_save_as_is">Guardar tal cual</string>

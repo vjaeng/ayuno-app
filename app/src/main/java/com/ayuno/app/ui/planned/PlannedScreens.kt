@@ -140,7 +140,7 @@ class PlannedDetailViewModel(private val container: AppContainer, private val fa
 
     fun start(onStarted: () -> Unit) {
         _leaving.value = true
-        execute(onStarted) { container.startFast(fastId) }
+        execute(onStarted) { container.startFastAskingWeight(fastId) }
     }
 
     fun registerLastMeal(at: LocalDateTime) = execute { container.registerLastMeal(fastId, at) }

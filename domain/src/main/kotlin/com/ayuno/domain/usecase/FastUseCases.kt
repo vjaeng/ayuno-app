@@ -9,13 +9,18 @@ import com.ayuno.domain.model.EndReason
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.FastWithPlan
+import com.ayuno.domain.model.Measurement
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Plan
 import com.ayuno.domain.port.AuditRepository
+import com.ayuno.domain.port.CatalogRepository
 import com.ayuno.domain.port.FastRepository
+import com.ayuno.domain.port.RecordRepository
 import com.ayuno.domain.port.RefeedRepository
 import com.ayuno.domain.port.TemplateRepository
 import com.ayuno.domain.port.TransactionRunner
 import com.ayuno.domain.time.LocalTimes
+import com.ayuno.domain.units.UnitConversions
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -252,6 +257,8 @@ class CorrectClockStart(
 class EndFast(
     private val fasts: FastRepository,
     private val refeed: RefeedRepository,
+    private val catalog: CatalogRepository,
+    private val records: RecordRepository,
     private val transactions: TransactionRunner,
     private val clock: Clock,
 ) {
@@ -261,7 +268,11 @@ class EndFast(
         val reason: EndReason,
         val detail: String?,
         val ruleId: String?,
+        val weight: Weight? = null,
     )
+
+    /** H-047: peso opcional al terminar, tecleado en la unidad elegida. */
+    data class Weight(val value: Double, val unit: String, val confirmedOutOfRange: Boolean = false)
 
     suspend operator fun invoke(input: Input): Outcome<Fast> = transactions.inTransaction {
         val source = fasts.get(input.fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
@@ -276,6 +287,17 @@ class EndFast(
             if (input.reason == EndReason.ALERT_RULE && source.ruleById(input.ruleId) == null) add(ValidationError.END_RULE_REQUIRED)
         }
         if (errors.isNotEmpty()) return@inTransaction Outcome.Invalid(errors)
+        val weight = input.weight?.let { w ->
+            val type = catalog.metricType(MetricType.WEIGHT_CODE)?.takeIf { it.active } ?: return@inTransaction invalid(ValidationError.METRIC_NOT_ACTIVE)
+            if (w.unit != type.unit && w.unit != type.altUnit) return@inTransaction invalid(ValidationError.UNIT_NOT_ALLOWED)
+            val valueNum = UnitConversions.convert(w.value, w.unit, type.unit)
+            if (type.isOutOfRange(valueNum) && !w.confirmedOutOfRange) return@inTransaction invalid(ValidationError.WEIGHT_OUT_OF_RANGE_UNCONFIRMED)
+            Measurement(
+                id = Ids.newId(), fastId = fast.id, metricTypeCode = type.code, takenAt = end, scheduledFor = null,
+                valueNum = valueNum, valueText = null, valueEntered = w.value, unitEntered = w.unit,
+                source = null, trend = null, onWaking = false, notDoneReason = null, note = null,
+            )
+        }
         val ended = fast.copy(
             status = FastStatus.FINISHED,
             endActual = end,
@@ -285,6 +307,8 @@ class EndFast(
         )
         fasts.update(ended)
         if (source.plan.refeed.isNotEmpty()) refeed.insertChecks(RefeedSchedule.occurrences(source.plan.refeed, end))
+        // El peso del fin no evalúa reglas: el ayuno ya termina (D-19).
+        weight?.let { records.insertMeasurement(it) }
         Outcome.Ok(ended)
     }
 }

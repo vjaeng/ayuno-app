@@ -39,6 +39,7 @@
 ┌──────────────────────────────────┐
 │ ← Ayuno · 22 al 25 oct [Exportar]⋮│
 │ 57 h 3 min · objetivo cumplido   │
+│ Peso: 71.4 kg → 68.9 kg · −2.5 kg│
 │ Notas: «Semana tranquila»        │
 │ [Todo ▾]  (filtro por tipo)      │
 │──────────────────────────────────│
@@ -60,6 +61,7 @@
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Cabecera: fechas, duración, motivo | `fast.clock_start_actual`, `fast.end_actual`, duración final, `fast.end_reason` | lectura / derivado |
+| Línea de peso (H-047) | peso inicial, final y diferencia (derivado, D-19) | derivado; sin pesos no aparece; texto neutro, sin colores |
 | Notas del ayuno | `fast.notes` | lectura / escritura (editar) |
 | Totales por día | totales del día, sodio | derivado |
 | Entrada: medición | `measurement.taken_at`, `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.not_done_reason` | lectura |
@@ -140,3 +142,5 @@ Recuento: derivado «recuento de registros del ayuno» (MODELO-DATOS §2.5). «C
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - **Alertas:** ¿se permite borrar o editar una alerta registrada? Propuesta: no (S8: registro de seguridad). *EV-001:* al borrar el ayuno entero, sus alertas se borran con él (ADR-SEG-007); una alerta suelta sigue sin poder borrarse.
 - **Editar un ayuno terminado:** ¿se permite corregir entradas de ayunos ya terminados? Propuesta: sí, siempre con rastro.
+
+*Cambio EV-003 (2026-10-13):* la cabecera del detalle muestra el peso inicial, el final y la diferencia. Motivo: ver cuánto cambió el peso en cada ayuno sin hacer la cuenta (H-047); solo en el detalle, no en la lista (decisión del humano).

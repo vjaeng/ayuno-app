@@ -65,7 +65,7 @@ class Repositories3Test {
         w.startFast(fastId)
         w.now = Instant.parse("2026-10-25T12:03:00Z")
         val end = LocalDateTime.of(2026, 10, 25, 7, 3)
-        EndFast(w.fasts, w.refeed, w.tx, w.clock)(EndFast.Input(fastId, end, EndReason.GOAL_MET, null, null))
+        EndFast(w.fasts, w.refeed, w.catalog, w.records, w.tx, w.clock)(EndFast.Input(fastId, end, EndReason.GOAL_MET, null, null))
 
         val checks = w.refeed.checks(fastId)
         assertEquals(listOf(end, end.plusHours(1), LocalDateTime.of(2026, 10, 27, 0, 0)), checks.map { it.scheduledAt })

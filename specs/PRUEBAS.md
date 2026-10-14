@@ -61,10 +61,10 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-027 | Decidir yo ante cada alerta y que quede constancia | alta | 4 | 7 | U + I + E2E | en verde |
 | H-028 | Tener mis reglas siempre a un toque | alta | 3 | 15 | U + E2E | en verde |
 | H-029 | Llamar a mi contacto de emergencia con un toque | media | 3 | 2 | U + I | pendiente |
-| H-030 | Terminar el ayuno con su hora y motivo | alta | 5 | 7 | U + I + E2E | en verde |
+| H-030 | Terminar el ayuno con su hora y motivo | alta | 6 | 11 | U + I + E2E | en verde |
 | H-031 | Definir y seguir mi plan de vuelta a comer | media | 4 | 10 | U + I | en verde |
 | H-032 | Anotar cada comida y cómo me cayó | media | 2 | 5 | U + I | en verde |
-| H-033 | Revisar mis ayunos pasados | media | 4 | 15 | U | en verde |
+| H-033 | Revisar mis ayunos pasados | media | 5 | 17 | U + E2E | en verde |
 | H-034 | Corregir o borrar una entrada dejando rastro | alta | 4 | 15 | U + I + E2E | pendiente |
 | H-035 | Escribir una nota libre | alta | 3 | 2 | U + I + E2E | en verde |
 | H-036 | Exportar un ayuno o todo a un archivo con formato fijo | alta | 9 | 29 | U + E2E | en verde |
@@ -78,6 +78,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-044 | Cambiar un ayuno que aún no ha empezado | media | 9 | 27 | U + I (+ E2E de acceso) | en verde |
 | H-045 | Borrar un ayuno para siempre con todos sus datos | alta | 7 | 22 | U + I + E2E | en verde (parcial: caso D) |
 | H-046 | Ver mis ayunos planificados y elegir uno | alta | 8 | 12 | U + E2E | en verde |
+| H-047 | Anotar mi peso al empezar y al terminar y ver cuánto cambió | media | 7 | 13 | U + I + E2E | en verde |
 
 ## 4. Casos transversales
 

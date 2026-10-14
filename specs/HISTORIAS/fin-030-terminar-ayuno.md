@@ -12,11 +12,12 @@
 - [ ] Un ayuno terminado antes se muestra con su hora y motivo, sin lenguaje de fracaso ni colores de juicio.
 - [ ] Un ayuno terminado no se puede reanudar; para seguir se crea otro.
 - [ ] Al terminar empieza la vuelta a comer si la plantilla la usa.
+- [ ] Puedo anotar el peso al terminar, opcional, y el resultado muestra cuánto cambió (H-047, EV-003).
 
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-13, EV-003)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | hora real de fin | `fast.end_actual` | ✓ | ✓ |  |  |
@@ -26,3 +27,7 @@
 | duración desde el inicio real | `fast.clock_start_actual` |  | ✓ |  |  |
 | terminado, no se reanuda | `fast.status` |  | ✓ | ✓ |  |
 | la plantilla usa vuelta a comer | `stage.kind` |  | ✓ |  |  |
+| peso opcional al terminar | `measurement.value_entered` | ✓ |  |  |  |
+| unidad del peso | `measurement.unit_entered` | ✓ |  |  |  |
+| peso con la hora de fin | `measurement.taken_at` | ✓ |  |  |  |
+| cuánto cambió (peso inicial y final) | `measurement.value_num` | ✓ | ✓ |  |  |

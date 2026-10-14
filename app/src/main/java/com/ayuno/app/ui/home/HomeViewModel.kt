@@ -162,7 +162,14 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
 
     fun now(): LocalDateTime = LocalTimes.now(container.clock)
 
-    fun startFast(fastId: String) = execute { container.startFast(fastId) }
+    fun startFast(fastId: String) = execute { container.startFastAskingWeight(fastId) }
+
+    /** H-047: ayuno al que ofrecer el peso al empezar, si «Peso» está activo en el catálogo. */
+    val startWeightPrompt: StateFlow<String?> = combine(container.startWeightPrompt, container.catalog.observeMetricTypes()) { fastId, types ->
+        fastId?.takeIf { types.any { it.code == MetricType.WEIGHT_CODE && it.active } }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun dismissStartWeight() { container.startWeightPrompt.value = null }
 
     fun registerLastMeal(fastId: String, at: LocalDateTime) = execute { container.registerLastMeal(fastId, at) }
 

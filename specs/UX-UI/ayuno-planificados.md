@@ -69,7 +69,7 @@
 | Menú ⋮ → «Cambiar» | — | acción → [ayuno-crear.md](ayuno-crear.md), modo cambio (H-044) |
 | Menú ⋮ → «Borrar ayuno» | `fast` (D) + recuento de registros del ayuno | acción → confirmación de [historial-revisar.md](historial-revisar.md) (H-045) |
 
-**Acciones:** «Empieza el ayuno ahora» → fija `clock_start_actual` con segundos, `status = in_progress`, reprograma recordatorios y lleva a Inicio con el reloj (sin confirmación, igual que en Inicio). Si ya hay otro ayuno en curso, el botón no aparece y en su lugar una FranjaInformativa dice «Termina el ayuno en curso para poder empezar este.» «Cambiar» → modo cambio y vuelta a este detalle. «Borrar ayuno» → confirmación «Borrar para siempre»; al confirmar, vuelve a Planificados.
+**Acciones:** «Empieza el ayuno ahora» → fija `clock_start_actual` con segundos, `status = in_progress`, reprograma recordatorios y lleva a Inicio con el reloj (sin confirmación, igual que en Inicio), donde se abre la hoja «Peso al empezar» ([ayuno-inicio.md](ayuno-inicio.md), H-047). Si ya hay otro ayuno en curso, el botón no aparece y en su lugar una FranjaInformativa dice «Termina el ayuno en curso para poder empezar este.» «Cambiar» → modo cambio y vuelta a este detalle. «Borrar ayuno» → confirmación «Borrar para siempre»; al confirmar, vuelve a Planificados.
 **Estados:** vacío (n/a) · cargando (esqueleto; al empezar, botón deshabilitado con indicador) · error (fallo al leer → mensaje y «Reintentar»; el ayuno ya no está planificado — se empezó desde Inicio o una notificación, o se borró → «Este ayuno ya no está planificado.» y vuelta a Planificados) · sin permisos (bloqueo activo; notificaciones denegadas → FranjaInformativa como en Inicio).
 
 ## Validación Laws of UX

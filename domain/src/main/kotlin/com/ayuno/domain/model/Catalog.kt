@@ -21,6 +21,7 @@ data class MetricType(
     companion object {
         const val BLOOD_PRESSURE_CODE = "blood_pressure"
         const val GLUCOSE_CODE = "glucose"
+        const val WEIGHT_CODE = "weight"
     }
 }
 

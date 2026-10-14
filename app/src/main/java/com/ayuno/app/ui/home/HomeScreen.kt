@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
+import com.ayuno.app.ui.record.StartWeightDialog
 import com.ayuno.app.reminders.ReminderNotifier
 import com.ayuno.app.ui.components.AyunoTextField
 import com.ayuno.app.ui.components.DateTimeField
@@ -102,6 +103,10 @@ fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = viewModel(factor
             is HomeUiState.Idle -> IdleContent(s, viewModel, actions)
             is HomeUiState.InProgress -> InProgressContent(s, viewModel, actions)
         }
+    }
+    val askWeight by viewModel.startWeightPrompt.collectAsStateWithLifecycle()
+    askWeight?.let { fastId ->
+        if ((state as? HomeUiState.InProgress)?.fast?.id == fastId) StartWeightDialog(fastId, onDone = viewModel::dismissStartWeight)
     }
 }
 
