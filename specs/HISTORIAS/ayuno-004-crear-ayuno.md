@@ -11,6 +11,7 @@
 - [ ] Si el fin previsto no es posterior al inicio, no se puede crear el ayuno.
 - [ ] Con la plantilla, la app calcula las fechas de las etapas y los recordatorios.
 - [ ] También puedo crear un ayuno desde cero, sin plantilla.
+- [ ] Al planificar viene propuesta la primera plantilla de la lista, no «desde cero»; puedo elegir otra o empezar desde cero (cambio 2026-10-13).
 - [ ] El ayuno guarda una copia del plan de la plantilla: cambios posteriores a la plantilla no lo alteran.
 - [ ] Un ayuno recién creado queda como planificado, no en curso.
 - [ ] Puedo crear un ayuno aunque haya otro en curso (EV-002).
@@ -27,7 +28,7 @@ Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exp
 ### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
-| plantilla elegida (o desde cero) | `fast.template_id` | ✓ |  |  |  |
+| plantilla elegida (o desde cero; propuesta la primera) | `fast.template_id` | ✓ |  |  |  |
 | fecha y hora de la última comida (planificada) | `fast.last_meal_planned` | ✓ | ✓ |  |  |
 | hora prevista de inicio del reloj | `fast.clock_start_planned` | ✓ | ✓ |  |  |
 | hora real de la última comida (también franja de otros ayunos, D-17) | `fast.last_meal_actual` |  | ✓ |  |  |

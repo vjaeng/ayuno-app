@@ -12,8 +12,8 @@ android {
         applicationId = "com.ayuno"
         minSdk = 29
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.8.0"
+        versionCode = 10
+        versionName = "0.8.2"
     }
 
     buildTypes {

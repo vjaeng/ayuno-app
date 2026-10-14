@@ -148,9 +148,9 @@ erDiagram
 #### PLAN_METRIC (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
 |---|---|---|---|---|
-| metric_type_code | TEXT → METRIC_TYPE | no nulo; único por propietario | Público | la presencia de la fila activa la medición en la plantilla o ayuno |
+| metric_type_code | TEXT → METRIC_TYPE | no nulo; único por propietario | Público | la presencia de la fila activa los recordatorios de esa medición en la plantilla o ayuno y la pone primero en la rejilla Anotar; anotar no exige la fila (D-18) |
 
-*Justificación:* H-001 (activar o desactivar mediciones por plantilla; una desactivada no aparece en la rejilla ni genera recordatorios), H-008 (rejilla con mediciones activas).
+*Justificación:* H-001 (activar o desactivar mediciones por plantilla; una desactivada no genera recordatorios), H-003 (la plantilla de ejemplo lleva todas las del catálogo), H-008 (orden de la rejilla: las del plan primero).
 
 **Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
 | Historia | Operaciones | Campos |
@@ -345,7 +345,7 @@ erDiagram
 |---|---|---|
 | H-001 | R | name |
 | H-007 | C, R, U | todos |
-| H-008 | R | unit, alt_unit, entry_unit, is_numeric, min_valid, max_valid |
+| H-008 | R | name, active, unit, alt_unit, entry_unit, is_numeric, min_valid, max_valid |
 | H-036 | R | todos |
 | H-043 | R, U | alt_unit, entry_unit |
 
@@ -802,6 +802,7 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-15 | 2026-10-10 | EV-001 (H-045): borrar un ayuno es **definitivo**. En una transacción se eliminan físicamente el `fast`, toda fila con su `fast_id` (registros, alertas y plan copiado, incluidas las ya borradas en blando), los `metric_schedule` de sus `plan_metric`, los `refeed_check` de sus `refeed_step` y las filas de `edit_log` cuyo `row_id` sea cualquiera de ellas. No queda traza del borrado. | Decisión del humano: poder eliminar del teléfono sus propios datos de salud prevalece sobre la trazabilidad; excepción a S8 registrada en ADR-SEG-007. Sin claves foráneas, el borrado se hace tabla a tabla. Sin cambios de esquema. |
 | D-16 | 2026-10-10 | EV-001 (H-044): cambiar `fast.template_id` de un ayuno `planned` marca con `deleted_at` la copia anterior del plan y crea una copia nueva con identificadores nuevos (o ninguna, si pasa a «desde cero»); `milestone_hours` se copia de la nueva plantilla. Cada campo de `fast` cambiado escribe una fila en `edit_log` (motivo opcional). | Mantiene D-03 (el plan vive en la copia del ayuno) sin borrar nada físicamente (S8). Las marcas de la lista previa se pierden con la copia anterior: la UI lo avisa. Nudo EV1-01 (decisión del humano): las alertas ya registradas conservan su regla — se leen también las reglas sustituidas del ayuno para mostrar la alerta y para sus recordatorios de «medir de nuevo» pendientes; el motor de reglas solo evalúa las vigentes. |
 | D-17 | 2026-10-11 | EV-002 (H-004, H-044, H-046): entre la franja de un ayuno que se crea o cuyas horas se cambian y la franja de cualquier otro ayuno (planificado, en curso o terminado) debe haber al menos **7 días**, antes y después. Se comprueba al crear y al cambiar las horas; no al empezar, terminar, cambiar solo notas o plantilla, ni al importar. Los 7 días son fijos en el código. Varios ayunos `planned` a la vez siguen permitidos. | Decisión del humano: «no se pueden planificar ayunos que inicien en menos de 1 semana del anterior», contada desde el fin y también contra los terminados. Tensión aceptada con el requisito transversal «Todo configurable» (HISTORIAS/README): hacerlo ajustable sería otra evolución. Empezar antes de tiempo no se bloquea (regla de planificación, no de ejecución). Sin cambio de esquema. |
+| D-18 | 2026-10-13 | La rejilla Anotar muestra toda medición con `metric_type.active`, esté o no en el plan del ayuno; `plan_metric` decide solo los recordatorios y el orden (las del plan primero). | Petición del humano: un ayuno desde cero (o creado antes de activar una medición) quedaba sin poder anotar mediciones, y el plan de un ayuno empezado no se edita. `measurement` nunca exigió `plan_metric`: sin cambio de esquema. |
 
 ## 6. Preguntas para el humano
 

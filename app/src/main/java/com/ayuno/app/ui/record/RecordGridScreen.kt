@@ -35,11 +35,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class RecordGridViewModel(container: AppContainer, fastId: String) : ViewModel() {
-    /** Mediciones activas del plan del ayuno y del catálogo (H-001: una desactivada no aparece). */
+    /**
+     * Todas las mediciones activas del catálogo, las del plan del ayuno primero: el plan decide los recordatorios, no
+     * qué se puede anotar (H-001, H-008). Así un ayuno desde cero también admite mediciones.
+     */
     val metrics: StateFlow<List<MetricType>?> = container.catalog.observeMetricTypes()
         .map { types ->
             val planned = container.fasts.get(fastId)?.plan?.metrics?.map { it.metricTypeCode }.orEmpty()
-            planned.mapNotNull { code -> types.firstOrNull { it.code == code && it.active } }
+            types.filter { it.active }.sortedBy { type -> planned.indexOf(type.code).let { if (it < 0) Int.MAX_VALUE else it } }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 }

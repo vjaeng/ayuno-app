@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -224,6 +225,15 @@ private fun FastForm(
         val templateId = id.takeIf { it != FROM_SCRATCH }
         viewModel.select(templateId)
         templates.firstOrNull { it.id == templateId }?.let { plannedEnd = clockStart.plusMinutes(Math.round(it.targetHours * 60)) }
+    }
+
+    // Al crear se propone la primera plantilla, no «desde cero», que deja el ayuno sin recordatorios ni reglas.
+    var proposed by remember { mutableStateOf(original != null) }
+    LaunchedEffect(templates) {
+        if (!proposed && templates.isNotEmpty()) {
+            proposed = true
+            if (choice == FROM_SCRATCH) applyChoice(templates.first().id)
+        }
     }
 
     ScreenScaffold(title, onBack) {

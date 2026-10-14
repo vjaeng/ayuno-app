@@ -11,7 +11,7 @@
 - [ ] Elijo qué etapas usa; preparación y posterior se miden en días, vuelta a comer en horas.
 - [ ] Defino los hitos que se mostrarán en el reloj (p. ej. 12, 24, 36 y 48 horas).
 - [ ] Activo o desactivo cada tipo de medición del catálogo y defino sus horarios de recordatorio, distintos por etapa.
-- [ ] Una medición desactivada no aparece en la rejilla de anotar ni genera recordatorios.
+- [ ] Una medición desactivada en la plantilla no genera recordatorios; se puede anotar igual mientras esté activa en el catálogo (cambio 2026-10-13).
 - [ ] Editar una plantilla no cambia los ayunos ya creados desde ella.
 - [ ] Todo funciona en modo avión.
 

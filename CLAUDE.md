@@ -110,6 +110,7 @@ Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta a
 
 | Fecha | Decisión | Razón |
 |---|---|---|
+| 2026-10-13 | Anotar ofrece todas las mediciones activas del catálogo; el plan del ayuno solo decide recordatorios y orden (MODELO D-18) | Un ayuno desde cero quedaba sin mediciones que anotar |
 | 2026-10-11 | Navegación con 5 pestañas (Inicio, Planificados, Hoy, Historial, Más); los ayunos planificados se gestionan en su pestaña, no en Inicio | EV-002: Inicio confuso con todas las opciones; elegir qué ayuno cambiar |
 | 2026-10-11 | Al menos 7 días entre ayunos, fijos en el código (D-17) | Decisión del humano (EV-002); configurable solo con otra evolución |
 | 2026-10-08 | Nombres canónicos en inglés y `snake_case` | Coinciden con las claves del archivo de exportación (MODELO-DATOS D-01) |

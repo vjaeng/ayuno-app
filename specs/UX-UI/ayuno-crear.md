@@ -11,7 +11,7 @@
 ┌──────────────────────────────────┐
 │ ← Planificar ayuno               │
 │ ¿Desde qué plantilla?            │
-│  ○ Ayuno de 57 horas   57 h      │
+│  ● Ayuno de 57 horas   57 h      │  ← propuesta: la primera plantilla
 │  ○ Ayuno de 36 horas   36 h      │
 │  ○ Empezar desde cero            │
 │                                  │
@@ -24,7 +24,7 @@
 |---|---|---|
 | Nombre de plantilla | `template.name` | lectura |
 | Duración objetivo | `template.target_hours` | lectura |
-| Opción elegida | `fast.template_id` | escritura (vacío = desde cero) |
+| Opción elegida | `fast.template_id` | escritura (vacío = desde cero; al crear viene marcada la primera plantilla) |
 
 **Acciones:** Siguiente → Datos del ayuno. Atrás → pantalla de origen.
 **Estados:** vacío (sin plantillas: solo «Empezar desde cero» + enlace «Crear una plantilla») · cargando · error (no se pudo leer: reintentar) · sin permisos (bloqueo activo).
@@ -67,7 +67,7 @@
 | Resumen de etapas | `stage.kind`, `stage.duration_value`, `stage.duration_unit` + fechas de etapas | lectura / derivado |
 | Lista previa (resumen y casillas al tocar) | `checklist_item.text`, `checklist_item.is_checked` | lectura / escritura |
 
-**Acciones:** «Crear ayuno» → copia el plan de la plantilla (etapas, mediciones y horarios, metas, lista previa, avisos, productos, reglas, vuelta a comer) al ayuno con `status = planned`, programa recordatorios → Planificados. Se puede crear aunque haya otro ayuno en curso (EV-002). Desde cero: mismas entradas más etapas y objetivo; el resto del plan queda vacío y se edita después.
+**Acciones:** «Crear ayuno» → copia el plan de la plantilla (etapas, mediciones y horarios, metas, lista previa, avisos, productos, reglas, vuelta a comer) al ayuno con `status = planned`, programa recordatorios → Planificados. Se puede crear aunque haya otro ayuno en curso (EV-002). Desde cero: mismas entradas más etapas y objetivo; el resto del plan queda vacío (sin recordatorios ni reglas), aunque en Anotar siguen todas las mediciones activas del catálogo (D-18).
 **Estados:** vacío (n/a) · cargando (al crear: botón deshabilitado con indicador hasta confirmar guardado) · error (validación: inicio previsto anterior a la última comida → mensaje en el campo; menos de una semana con otro ayuno (D-17) → mensaje bajo el campo de última comida: «Tiene que pasar una semana desde el ayuno que termina el sábado 24 oct, 07:00. Puedes planificarlo desde el sábado 31 oct, 07:00.» o, si choca con uno posterior, «Este ayuno tiene que terminar una semana antes del que empieza el lunes 2 nov, 20:00.»; nada se guarda; fallo al guardar → nada se crea, mensaje y reintento) · sin permisos (notificaciones denegadas → se crea igual y se advierte «No podremos recordarte las mediciones»).
 
 ### Modo «Cambiar ayuno» (H-044)

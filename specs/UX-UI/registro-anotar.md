@@ -16,7 +16,7 @@ Objetivo de diseño: **3 toques o menos y menos de 30 segundos** desde Inicio ha
 │ │Glucosa ││Presión ││ Peso   │   │
 │ └────────┘└────────┘└────────┘   │
 │ ┌────────┐┌────────┐┌────────┐   │
-│ │Temper. ││Hambre  ││Energía │   │  ← mediciones activas del ayuno
+│ │Temper. ││Hambre  ││Energía │   │  ← activas del catálogo, las del plan primero
 │ └────────┘└────────┘└────────┘   │
 │ ┌────────┐┌────────┐┌────────┐   │
 │ │Síntoma ││Líquido ││Producto│   │
@@ -30,11 +30,11 @@ Objetivo de diseño: **3 toques o menos y menos de 30 segundos** desde Inicio ha
 **Campos:**
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
-| Botón por medición activa | `plan_metric.metric_type_code` → `metric_type.name` (solo `metric_type.active`) | lectura |
+| Botón por medición activa | `metric_type.name` (todas con `metric_type.active`; primero las de `plan_metric.metric_type_code`) | lectura |
 | Botones fijos Síntoma, Líquido, Producto, Nota | — | acción |
 
 **Acciones:** cada botón abre su formulario de una sola pantalla.
-**Estados:** vacío (plan sin mediciones activas: solo los botones fijos + «Activa mediciones en la plantilla») · cargando · error · sin permisos (bloqueo activo).
+**Estados:** vacío (catálogo sin mediciones activas: solo los botones fijos + «Actívalas en Más, Catálogos») · cargando · error · sin permisos (bloqueo activo).
 
 ### Pantalla: Formulario de medición (genérico; glucosa como ejemplo)
 

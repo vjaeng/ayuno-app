@@ -111,7 +111,7 @@
 
     <!-- Anotar -->
     <string name="record_title">Anotar</string>
-    <string name="record_empty">Este ayuno no tiene mediciones activas. Actívalas en la plantilla antes de crear el ayuno.</string>
+    <string name="record_empty">No tienes mediciones activas. Actívalas en Más, Catálogos.</string>
     <string name="record_equivalent">%1$s %2$s equivalen a %3$s %4$s</string>
     <string name="record_not_done">No se hizo</string>
     <string name="record_out_of_range_title">¿Seguro?</string>

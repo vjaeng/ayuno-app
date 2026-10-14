@@ -86,5 +86,13 @@ object Migrations {
         }
     }
 
-    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(From1To2(context, clock), From2To3, From3To4, From4To5(context, clock))
+    /** Versión 5 → 6: sin cambios de esquema; la plantilla de ejemplo instalada recibe todas las mediciones del catálogo. */
+    class From5To6(private val context: Context, private val clock: Clock) : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            CatalogSeed.insertExampleMetrics(db, context, LocalTimes.format(LocalTimes.now(clock)))
+        }
+    }
+
+    fun all(context: Context, clock: Clock): Array<Migration> =
+        arrayOf(From1To2(context, clock), From2To3, From3To4, From4To5(context, clock), From5To6(context, clock))
 }

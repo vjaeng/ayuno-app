@@ -114,6 +114,15 @@ class H046PlannedFastsE2eTest {
         )
         assertEquals(1, runBlocking { app.container.fasts.all() }.size)
     }
+
+    @Test
+    fun `H004 al planificar viene propuesta la primera plantilla, no desde cero`() {
+        val template = seedTemplate()
+        compose.tap("Planificados")
+        compose.tap("Planificar ayuno")
+        compose.tap("Crear ayuno")
+        compose.eventually { assertEquals(template.template.id, runBlocking { app.container.fasts.all() }.single().templateId) }
+    }
 }
 
 private const val MENU = "Más acciones de este ayuno"

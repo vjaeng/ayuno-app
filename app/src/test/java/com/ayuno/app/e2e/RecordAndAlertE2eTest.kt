@@ -40,6 +40,24 @@ class RecordAndAlertE2eTest {
     }
 
     @Test
+    fun `H008 un ayuno desde cero tambien muestra en Anotar las mediciones activas del catalogo`() {
+        val id = runBlocking {
+            val lastMeal = java.time.LocalDateTime.of(2026, 10, 22, 18, 0)
+            val created = app.container.createFast(com.ayuno.domain.usecase.CreateFast.Input(null, lastMeal, lastMeal.plusHours(4), 57.0, null))
+            (created as com.ayuno.domain.usecase.Outcome.Ok).value.fast.id
+        }
+        app.clock.now = java.time.Instant.parse("2026-10-23T03:10:00Z")
+        runBlocking { app.container.startFast(id) }
+        compose.activityRule.scenario.recreate()
+        compose.tap("Anotar")
+        listOf("Glucosa", "Presión arterial", "Temperatura").forEach { compose.assertShown(it) }
+        compose.tap("Peso")
+        compose.type("Valor", "71.4")
+        compose.tap("Guardar")
+        compose.eventually { assertEquals("weight", runBlocking { app.container.records.measurements(id) }.single().metricTypeCode) }
+    }
+
+    @Test
     fun `H008 un valor fuera de rango pide confirmacion y se guarda tal cual`() {
         val id = seedStartedFast(seedTemplate())
         compose.activityRule.scenario.recreate()

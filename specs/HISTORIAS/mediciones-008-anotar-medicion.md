@@ -22,7 +22,8 @@ Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exp
 ### Matriz CRUD (tejida el 2026-10-08)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
-| mediciones activas en la rejilla | `plan_metric.metric_type_code` |  | ✓ |  |  |
+| mediciones activas en la rejilla | `metric_type.active` |  | ✓ |  |  |
+| orden de la rejilla (las del plan primero) | `plan_metric.metric_type_code` |  | ✓ |  |  |
 | tipo de medición | `measurement.metric_type_code` | ✓ |  |  |  |
 | teclado numérico para valores numéricos | `metric_type.is_numeric` |  | ✓ |  |  |
 | fecha y hora, por defecto ahora, con segundos | `measurement.taken_at` | ✓ |  | ✓ |  |

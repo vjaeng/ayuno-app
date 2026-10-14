@@ -10,7 +10,14 @@
   "metrics": [
     { "metric_type_code": "glucose", "schedules": [ { "stage_kind": "fast", "time_of_day": "07:00" }, { "stage_kind": "fast", "time_of_day": "19:00" } ] },
     { "metric_type_code": "weight", "schedules": [ { "stage_kind": "fast", "time_of_day": "07:00" }, { "stage_kind": "post", "time_of_day": "07:00" } ] },
-    { "metric_type_code": "blood_pressure", "schedules": [ { "stage_kind": "fast", "time_of_day": "07:00" } ] }
+    { "metric_type_code": "blood_pressure", "schedules": [ { "stage_kind": "fast", "time_of_day": "07:00" } ] },
+    { "metric_type_code": "ketones", "schedules": [] },
+    { "metric_type_code": "waist", "schedules": [] },
+    { "metric_type_code": "temperature", "schedules": [] },
+    { "metric_type_code": "hunger", "schedules": [] },
+    { "metric_type_code": "energy", "schedules": [] },
+    { "metric_type_code": "mood", "schedules": [] },
+    { "metric_type_code": "mental_clarity", "schedules": [] }
   ],
   "rules": [
     {

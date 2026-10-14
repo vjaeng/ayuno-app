@@ -35,11 +35,11 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-001 | Crear una plantilla con qué medir y cuándo | alta | 7 | 10 | U + I + E2E | en verde |
 | H-002 | Completar la plantilla con metas, lista previa y avisos | media | 4 | 8 | U + I | en verde |
 | H-003 | Duplicar, borrar y partir de una plantilla de ejemplo | media | 4 | 8 | U + I | en verde |
-| H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 9 | 24 | U + I + E2E | en verde |
+| H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 12 | 24 | U + I + E2E | en verde |
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
 | H-006 | Ver de un vistazo dónde estoy | alta | 8 | 16 | U + E2E | en verde (parcial) |
 | H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 4 | 9 | U + I + E2E | en verde |
-| H-008 | Anotar una medición en tres toques | alta | 8 | 20 | U + I + E2E | en verde |
+| H-008 | Anotar una medición en tres toques | alta | 8 | 21 | U + I + E2E | en verde |
 | H-009 | Anotar la presión sentado y de pie | alta | 4 | 6 | U + I + E2E | en verde |
 | H-010 | Marcar síntomas de mi propio catálogo | alta | 5 | 8 | U + I + E2E | en verde |
 | H-011 | Definir mis tipos de líquidos y electrolitos | alta | 3 | 4 | U + I + E2E | en verde |

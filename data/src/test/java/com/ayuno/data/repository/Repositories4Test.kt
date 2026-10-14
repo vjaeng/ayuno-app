@@ -32,7 +32,9 @@ class Repositories4Test {
     fun `H-003 al instalar hay una plantilla de ejemplo con etapas, mediciones y reglas sin umbrales ni productos`() = runTest {
         val plan = w.templates.get(example().id)!!.plan
         assertEquals(setOf(StageKind.PREPARATION, StageKind.REFEED, StageKind.POST), plan.stages.map { it.kind }.toSet())
-        assertEquals(listOf("glucose", "weight", "blood_pressure"), plan.metrics.map { it.metricTypeCode })
+        // Todas las mediciones del catálogo; solo glucosa, peso y presión con horario.
+        assertEquals(w.catalog.metricTypes().map { it.code }.toSet(), plan.metrics.map { it.metricTypeCode }.toSet())
+        assertEquals(setOf("glucose", "weight", "blood_pressure"), plan.metrics.filter { it.schedules.isNotEmpty() }.map { it.metricTypeCode }.toSet())
         assertEquals(setOf(RuleConditionKind.METRIC_BELOW, RuleConditionKind.MANUAL), plan.rules.map { it.conditionKind }.toSet())
         assertTrue(plan.rules.all { it.threshold == null })
         assertTrue(plan.products.isEmpty())
@@ -54,7 +56,7 @@ class Repositories4Test {
         assertEquals(fast.plan.metrics.size, w.fasts.get(fast.fast.id)!!.plan.metrics.size)
 
         delete(id, false)
-        assertEquals(3, w.templates.get(id)!!.plan.metrics.size)
+        assertEquals(w.catalog.metricTypes().size, w.templates.get(id)!!.plan.metrics.size)
         assertTrue(w.templates.observeDeleted().first().isEmpty())
     }
 }

@@ -80,6 +80,26 @@ class MigrationTest {
     }
 
     @Test
+    fun `la migracion 5 a 6 conserva el esquema y completa las mediciones de la plantilla de ejemplo sin duplicar`() {
+        createV1WithAFast()
+        val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        val clock = Clock.systemDefaultZone()
+        helper.runMigrationsAndValidate(dbName, 2, true, Migrations.From1To2(context, clock)).close()
+        helper.runMigrationsAndValidate(dbName, 3, true, Migrations.From2To3).close()
+        helper.runMigrationsAndValidate(dbName, 4, true, Migrations.From3To4).close()
+        helper.runMigrationsAndValidate(dbName, 5, true, Migrations.From4To5(context, clock)).close()
+        val db = helper.runMigrationsAndValidate(dbName, 6, true, Migrations.From5To6(context, clock))
+        Migrations.From5To6(context, clock).migrate(db)
+        val example = "(SELECT id FROM template WHERE name = 'Ejemplo (sin valores clínicos)')"
+        val codes = db.query("SELECT metric_type_code FROM plan_metric WHERE template_id = $example").use { c ->
+            buildList { while (c.moveToNext()) add(c.getString(0)) }
+        }
+        val catalog = listOf("glucose", "ketones", "blood_pressure", "weight", "waist", "temperature", "hunger", "energy", "mood", "mental_clarity")
+        assertEquals(catalog.sorted(), codes.sorted())
+        db.query("SELECT COUNT(*) FROM fast").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
+    }
+
+    @Test
     fun `la app nueva abre la base de la primera instalacion y conserva el ayuno y sus mediciones`() = runTest {
         createV1WithAFast()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()

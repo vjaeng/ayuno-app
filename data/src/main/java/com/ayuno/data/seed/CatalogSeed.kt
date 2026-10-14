@@ -133,19 +133,7 @@ object CatalogSeed {
                 },
             )
         }
-        t.metrics.forEach { m ->
-            val metricId = exampleId("metric/${m.metricTypeCode}")
-            insert("plan_metric", ContentValues().apply { put("id", metricId); put("template_id", templateId); put("metric_type_code", m.metricTypeCode) })
-            m.schedules.forEach { s ->
-                insert(
-                    "metric_schedule",
-                    ContentValues().apply {
-                        put("id", exampleId("schedule/${m.metricTypeCode}/${s.stageKind}/${s.timeOfDay}")); put("plan_metric_id", metricId)
-                        put("stage_kind", s.stageKind); put("time_of_day", s.timeOfDay)
-                    },
-                )
-            }
-        }
+        insertPlanMetrics(db, t.metrics, templateId, now)
         t.rules.forEachIndexed { i, r ->
             insert(
                 "rule",
@@ -159,6 +147,38 @@ object CatalogSeed {
     }
 
     /** Síntomas y tipos de ingesta de ejemplo (H-010, H-011); también los usa la migración 1→2. */
+    /**
+     * La plantilla de ejemplo incluye todas las mediciones del catálogo; solo las tres primeras llevan horario, las
+     * demás se pueden anotar sin recordatorio. La migración 5→6 las añade a la de ejemplo ya instalada si sigue existiendo.
+     */
+    fun insertExampleMetrics(db: SupportSQLiteDatabase, context: Context, now: String) {
+        val templateId = exampleId("template")
+        val exists = db.query("SELECT COUNT(*) FROM template WHERE id = ?", arrayOf(templateId)).use { it.moveToFirst() && it.getInt(0) > 0 }
+        if (!exists) return
+        val metrics = json.decodeFromString<SeedTemplate>(read(context, "seed/example_template.json")).metrics
+        val present = db.query("SELECT metric_type_code FROM plan_metric WHERE template_id = ?", arrayOf(templateId)).use { c ->
+            buildSet { while (c.moveToNext()) add(c.getString(0)) }
+        }
+        insertPlanMetrics(db, metrics.filter { it.metricTypeCode !in present }, templateId, now)
+    }
+
+    private fun insertPlanMetrics(db: SupportSQLiteDatabase, metrics: List<SeedMetric>, templateId: String, now: String) {
+        fun insert(table: String, values: ContentValues) = db.insert(table, SQLiteDatabase.CONFLICT_IGNORE, values.apply { put("created_at", now) })
+        metrics.forEach { m ->
+            val metricId = exampleId("metric/${m.metricTypeCode}")
+            insert("plan_metric", ContentValues().apply { put("id", metricId); put("template_id", templateId); put("metric_type_code", m.metricTypeCode) })
+            m.schedules.forEach { s ->
+                insert(
+                    "metric_schedule",
+                    ContentValues().apply {
+                        put("id", exampleId("schedule/${m.metricTypeCode}/${s.stageKind}/${s.timeOfDay}")); put("plan_metric_id", metricId)
+                        put("stage_kind", s.stageKind); put("time_of_day", s.timeOfDay)
+                    },
+                )
+            }
+        }
+    }
+
     fun insertCatalogs(db: SupportSQLiteDatabase, context: Context, now: String) {
         json.decodeFromString<List<SeedSymptomType>>(read(context, "seed/symptom_types.json")).forEach { t ->
             db.insert("symptom_type", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
