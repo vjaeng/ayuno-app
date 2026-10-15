@@ -33,6 +33,7 @@ import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.derived.PendingRecords
 import com.ayuno.domain.derived.PendingState
 import com.ayuno.domain.derived.RefeedSchedule
+import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.DuringFast
 import com.ayuno.domain.model.FastStatus
@@ -52,7 +53,15 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class TodayRow(val item: PendingItem, val state: PendingState, val label: String, val detail: String?, val fastHour: Long?)
+/** [entry]: la medición o presión que respondió a la fila, para abrirla y corregirla (H-018, H-048). */
+data class TodayRow(
+    val item: PendingItem,
+    val state: PendingState,
+    val label: String,
+    val detail: String?,
+    val fastHour: Long?,
+    val entry: Pair<EntryKind, String>? = null,
+)
 
 data class TodayState(
     val fastId: String?,
@@ -121,6 +130,14 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
                 PendingKind.PRODUCT -> products.firstOrNull { it.code == item.code }?.let { "${it.name} · ${Formats.number(item.amount ?: it.defaultAmount)} ${it.unit}" } ?: item.code
                 PendingKind.REFEED -> checks.firstOrNull { it.id == item.code }?.let { steps[it.refeedStepId]?.description }.orEmpty()
             }
+            val answer: Pair<EntryKind, String>? = if (item.kind != PendingKind.METRIC) {
+                null
+            } else if (item.code == MetricType.BLOOD_PRESSURE_CODE) {
+                readings.lastOrNull { it.scheduledFor == item.scheduledAt || (item.fromRule && it.takenAt.isAfter(item.answeredAfter)) }?.let { EntryKind.BLOOD_PRESSURE to it.id }
+            } else {
+                measurements.lastOrNull { it.metricTypeCode == item.code && (it.scheduledFor == item.scheduledAt || (item.fromRule && it.takenAt.isAfter(item.answeredAfter))) }
+                    ?.let { EntryKind.MEASUREMENT to it.id }
+            }
             val detail = when (item.kind) {
                 PendingKind.PRODUCT -> logs.lastOrNull { it.productCode == item.code && it.scheduledAt == item.scheduledAt }?.let { log ->
                     if (log.status == ProductLogStatus.NOT_TAKEN) log.reason else log.takenAt?.let { Formats.time(it) }
@@ -134,7 +151,7 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
                         ?.let { m -> m.notDoneReason ?: "${m.valueEntered?.let { Formats.number(it, 2) } ?: m.valueText.orEmpty()} ${m.unitEntered.orEmpty()} · ${Formats.time(m.takenAt)}" }
                 }
             }
-            TodayRow(item, s.state, label, detail, FastClock.fastHour(source.fast, item.scheduledAt))
+            TodayRow(item, s.state, label, detail, FastClock.fastHour(source.fast, item.scheduledAt), answer.takeIf { s.state == PendingState.DONE || s.state == PendingState.NOT_DONE })
         }
         val stopped = source.plan.products.filter { it.duringFast == DuringFast.STOPS }.mapNotNull { p -> products.firstOrNull { it.code == p.productCode }?.name }
         return TodayState(fastId, now.toLocalDate(), rows, stopped)
@@ -144,6 +161,7 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
 @Composable
 fun TodayScreen(
     onOpen: (fastId: String, item: PendingItem, notDone: Boolean) -> Unit,
+    onOpenEntry: (kind: EntryKind, id: String) -> Unit = { _, _ -> },
     viewModel: TodayViewModel = viewModel(factory = containerFactory { TodayViewModel(it) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -156,7 +174,7 @@ fun TodayScreen(
         // Agrupado por franjas para no superar 9 filas por bloque (Miller); las filas ya llegan en orden de hora.
         s.rows.groupBy { slotOf(it.item.scheduledAt) }.forEach { (slot, rows) ->
             SectionTitle(stringResource(slot))
-            rows.forEach { row -> Row(row, onOpen = { notDone -> onOpen(fastId, row.item, notDone) }) }
+            rows.forEach { row -> Row(row, onOpen = { notDone -> onOpen(fastId, row.item, notDone) }, onOpenEntry = onOpenEntry) }
         }
         if (s.stopped.isNotEmpty()) {
             SectionTitle(stringResource(R.string.today_stopped_title))
@@ -172,7 +190,7 @@ private fun slotOf(at: LocalDateTime): Int = when (at.hour) {
 }
 
 @Composable
-private fun Row(row: TodayRow, onOpen: (notDone: Boolean) -> Unit) {
+private fun Row(row: TodayRow, onOpen: (notDone: Boolean) -> Unit, onOpenEntry: (EntryKind, String) -> Unit) {
     // Estado con icono y texto, nunca solo con color (GUIA-ESTILO, FilaPendiente).
     val (mark, stateText) = when (row.state) {
         PendingState.DONE -> "✔" to stringResource(R.string.today_done)
@@ -190,7 +208,8 @@ private fun Row(row: TodayRow, onOpen: (notDone: Boolean) -> Unit) {
     val supporting = listOfNotNull(stateText, row.detail).joinToString(" · ")
     val open = row.state == PendingState.PENDING || row.state == PendingState.LATE
     val refeed = row.item.kind == PendingKind.REFEED
-    ListRow(title, supporting, onClick = { if (open || refeed) onOpen(false) }) {
+    val entry = row.entry
+    ListRow(title, supporting, onClick = { if (entry != null && !refeed) onOpenEntry(entry.first, entry.second) else if (open || refeed) onOpen(false) }) {
         if (open && !refeed) TextButton(onClick = { onOpen(true) }, modifier = Modifier.heightIn(min = Dimens.touchMin)) { Text(stringResource(R.string.record_not_done)) }
     }
 }

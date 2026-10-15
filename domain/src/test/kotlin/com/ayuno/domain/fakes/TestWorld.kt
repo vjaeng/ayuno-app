@@ -73,6 +73,9 @@ class TestWorld {
     val setChecklistItem = com.ayuno.domain.usecase.SetChecklistItem(fasts)
     val changePlannedFast = com.ayuno.domain.usecase.ChangePlannedFast(templates, fasts, audit, DirectTransactions, clock)
     val deleteFast = com.ayuno.domain.usecase.DeleteFast(fasts, DirectTransactions)
+    val correctMeasurement = com.ayuno.domain.usecase.CorrectMeasurement(catalog, fasts, records, alerts, audit, DirectTransactions, clock)
+    val correctBloodPressure = com.ayuno.domain.usecase.CorrectBloodPressure(catalog, fasts, records, alerts, audit, DirectTransactions, clock)
+    val setEntryDeleted = com.ayuno.domain.usecase.SetEntryDeleted(records, audit, DirectTransactions, clock)
 
     fun glucoseBelow(threshold: Double, sustained: Int? = null, action: RuleAction = RuleAction.OFFER_END) = Rule(
         id = Ids.newId(), name = "Glucosa baja", active = true, conditionKind = RuleConditionKind.METRIC_BELOW,

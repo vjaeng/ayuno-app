@@ -30,6 +30,7 @@ import com.ayuno.domain.port.TemplateRepository
 import com.ayuno.domain.port.TransactionRunner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.Instant
@@ -118,12 +119,26 @@ class FakeFasts : FastRepository {
 class FakeRecords : RecordRepository {
     val measurements = MutableStateFlow<List<Measurement>>(emptyList())
     val readings = MutableStateFlow<List<BloodPressureReading>>(emptyList())
-    override fun observeMeasurements(fastId: String) = measurements.map { l -> l.filter { it.fastId == fastId } }
-    override fun observeBloodPressure(fastId: String) = readings.map { l -> l.filter { it.fastId == fastId } }
-    override suspend fun measurements(fastId: String) = measurements.value.filter { it.fastId == fastId }
-    override suspend fun bloodPressure(fastId: String) = readings.value.filter { it.fastId == fastId }
+    override fun observeMeasurements(fastId: String) = combine(measurements, deleted) { l, d -> l.filter { it.fastId == fastId && it.id !in d } }
+    override fun observeBloodPressure(fastId: String) = combine(readings, deleted) { l, d -> l.filter { it.fastId == fastId && it.id !in d } }
+    override suspend fun measurements(fastId: String) = measurements.value.filter { it.fastId == fastId && it.id !in deleted.value }
+    override suspend fun bloodPressure(fastId: String) = readings.value.filter { it.fastId == fastId && it.id !in deleted.value }
     override suspend fun insertMeasurement(measurement: Measurement) { measurements.value = measurements.value + measurement }
     override suspend fun insertBloodPressure(reading: BloodPressureReading) { readings.value = readings.value + reading }
+
+    /** Borradas en blando (H-034): fuera de las listas visibles. */
+    val deleted = MutableStateFlow<Set<String>>(emptySet())
+    override suspend fun measurement(id: String, includeDeleted: Boolean) =
+        measurements.value.firstOrNull { it.id == id && (includeDeleted || it.id !in deleted.value) }
+    override suspend fun bloodPressureReading(id: String, includeDeleted: Boolean) =
+        readings.value.firstOrNull { it.id == id && (includeDeleted || it.id !in deleted.value) }
+    override suspend fun updateMeasurement(measurement: Measurement) { measurements.value = measurements.value.map { if (it.id == measurement.id) measurement else it } }
+    override suspend fun updateBloodPressure(reading: BloodPressureReading) { readings.value = readings.value.map { if (it.id == reading.id) reading else it } }
+    override suspend fun setMeasurementDeleted(id: String, deleted: Boolean) = setDeleted(id, deleted)
+    override suspend fun setBloodPressureDeleted(id: String, deleted: Boolean) = setDeleted(id, deleted)
+    private fun setDeleted(id: String, value: Boolean) { deleted.value = if (value) deleted.value + id else deleted.value - id }
+    override fun observeDeletedMeasurements(fastId: String) = combine(measurements, deleted) { l, d -> l.filter { it.fastId == fastId && it.id in d } }
+    override fun observeDeletedBloodPressure(fastId: String) = combine(readings, deleted) { l, d -> l.filter { it.fastId == fastId && it.id in d } }
 
     val symptoms = MutableStateFlow<List<Symptom>>(emptyList())
     override fun observeSymptoms(fastId: String) = symptoms.map { l -> l.filter { it.fastId == fastId } }
@@ -171,9 +186,13 @@ class FakeAlerts : AlertRepository {
 }
 
 class FakeAudit : AuditRepository {
-    val entries = mutableListOf<EditLogEntry>()
-    override suspend fun append(entry: EditLogEntry) { entries += entry }
+    private val flow = MutableStateFlow<List<EditLogEntry>>(emptyList())
+    val entries: List<EditLogEntry> get() = flow.value
+    override suspend fun append(entry: EditLogEntry) { flow.value = flow.value + entry }
     override suspend fun entriesFor(rowId: String) = entries.filter { it.rowId == rowId }
+    override fun observeEntriesFor(rowId: String) = flow.map { l -> l.filter { it.rowId == rowId } }
+    override fun observeEditedRowIds(entityNames: List<String>) =
+        flow.map { l -> l.filter { it.action == com.ayuno.domain.model.EditAction.EDIT && it.entityName in entityNames }.map { it.rowId }.toSet() }
 }
 
 class FakeSettings : com.ayuno.domain.port.SettingsRepository {

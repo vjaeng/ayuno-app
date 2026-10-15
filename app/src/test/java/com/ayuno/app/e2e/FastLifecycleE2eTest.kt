@@ -71,6 +71,9 @@ class FastLifecycleE2eTest {
         compose.assertShown("33 h 12 min")
         compose.assertShown("Faltan 23 h 48 min")
         compose.assertShown("Fin previsto: domingo 25 de octubre, 07:10")
+        // BarraHitos: por defecto, el siguiente hito; tocar uno muestra su fecha y hora.
+        compose.assertShown("36 horas · sábado 24 de octubre, 10:10")
+        compose.tap("24")
         compose.assertShown("24 horas · viernes 23 de octubre, 22:10 · alcanzado")
         compose.assertShown("Seguridad")
         compose.assertShown("Anotar")

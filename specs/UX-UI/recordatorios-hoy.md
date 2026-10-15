@@ -1,6 +1,6 @@
 # Flujo: Recordatorios y Hoy
 
-**Historias que cubre:** H-015, H-016, H-017, H-018
+**Historias que cubre:** H-015, H-016, H-017, H-018, H-048 (tocar un hecho)
 **Entrada:** notificación del sistema, o pestaña Hoy · **Salida:** formulario de registro prerrellenado; o vuelta a Hoy
 
 ## Pantallas
@@ -59,7 +59,7 @@
 | Motivo (no hechos) | `measurement.not_done_reason`, `blood_pressure_reading.not_done_reason`, `product_log.reason` | lectura |
 | Productos que salen (sección gris al pie) | `plan_product.during_fast = stops`, `product.name` | lectura |
 
-**Acciones:** tocar un pendiente o atrasado → formulario prerrellenado con la hora programada · deslizar → «No se hizo» con motivo · tocar un hecho → detalle con «Corregir» ([historial-revisar.md](historial-revisar.md)).
+**Acciones:** tocar un pendiente o atrasado → formulario prerrellenado con la hora programada · deslizar → «No se hizo» con motivo · tocar una medición o presión hecha → Detalle de entrada con sus valores, para verla o corregirla ([historial-revisar.md](historial-revisar.md), H-048; las tomas de producto y los pasos de vuelta a comer, cuando se complete H-034).
 **Estados:** vacío (sin ayuno en curso: «No hay nada programado hoy» + enlace a Inicio; con ayuno pero sin pendientes: «Hoy no hay mediciones programadas») · cargando · error (no se pudo leer: reintentar) · sin permisos (bloqueo activo; notificaciones denegadas: franja).
 
 ## Validación Laws of UX
@@ -73,3 +73,5 @@
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - ¿Hoy muestra solo el día natural o la franja del ayuno de ese día (de medianoche a medianoche)? Propuesta: día natural, con la hora del ayuno junto a cada hora.
 - ¿Cuándo pasa un pendiente a «atrasado»? Propuesta: 15 minutos después de su hora (configurable en un futuro).
+
+*Cambio EV-004 (2026-10-14):* tocar una medición o presión hecha abre su Detalle de entrada (antes no hacía nada). Motivo: corregir desde donde se ve el hecho (H-018, H-048).

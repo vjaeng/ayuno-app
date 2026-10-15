@@ -99,6 +99,27 @@ interface RecordDao {
 
     @Insert suspend fun insertMeasurement(entity: MeasurementEntity)
     @Insert suspend fun insertBloodPressure(entity: BloodPressureReadingEntity)
+
+    @Query("SELECT * FROM measurement WHERE id = :id")
+    suspend fun measurement(id: String): MeasurementEntity?
+
+    @Query("SELECT * FROM blood_pressure_reading WHERE id = :id")
+    suspend fun bloodPressureReading(id: String): BloodPressureReadingEntity?
+
+    @Update suspend fun updateMeasurement(entity: MeasurementEntity)
+    @Update suspend fun updateBloodPressure(entity: BloodPressureReadingEntity)
+
+    @Query("UPDATE measurement SET deleted_at = :deletedAt, updated_at = :now WHERE id = :id")
+    suspend fun setMeasurementDeleted(id: String, deletedAt: String?, now: String)
+
+    @Query("UPDATE blood_pressure_reading SET deleted_at = :deletedAt, updated_at = :now WHERE id = :id")
+    suspend fun setBloodPressureDeleted(id: String, deletedAt: String?, now: String)
+
+    @Query("SELECT * FROM measurement WHERE fast_id = :fastId AND deleted_at IS NOT NULL ORDER BY taken_at DESC")
+    fun observeDeletedMeasurements(fastId: String): Flow<List<MeasurementEntity>>
+
+    @Query("SELECT * FROM blood_pressure_reading WHERE fast_id = :fastId AND deleted_at IS NOT NULL ORDER BY taken_at DESC")
+    fun observeDeletedBloodPressure(fastId: String): Flow<List<BloodPressureReadingEntity>>
 }
 
 @Dao
@@ -122,4 +143,10 @@ interface AuditDao {
 
     @Query("SELECT * FROM edit_log WHERE row_id = :rowId ORDER BY edited_at")
     suspend fun entriesFor(rowId: String): List<EditLogEntity>
+
+    @Query("SELECT * FROM edit_log WHERE row_id = :rowId ORDER BY edited_at")
+    fun observeEntriesFor(rowId: String): Flow<List<EditLogEntity>>
+
+    @Query("SELECT DISTINCT row_id FROM edit_log WHERE action = 'edit' AND entity_name IN (:entityNames)")
+    fun observeEditedRowIds(entityNames: List<String>): Flow<List<String>>
 }

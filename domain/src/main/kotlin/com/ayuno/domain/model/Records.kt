@@ -2,6 +2,9 @@ package com.ayuno.domain.model
 
 import java.time.LocalDateTime
 
+/** Entradas que se pueden ver y corregir en «Mediciones de este ayuno» (H-048); [entityName] es la tabla en `edit_log`. */
+enum class EntryKind(val entityName: String) { MEASUREMENT("measurement"), BLOOD_PRESSURE("blood_pressure_reading") }
+
 /** Entrada del registro sobre la que se pueden evaluar reglas. */
 sealed interface RecordEntry {
     val id: String

@@ -3,6 +3,7 @@ package com.ayuno.app.e2e
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -73,6 +74,21 @@ fun Rule4.node(text: String): SemanticsNodeInteraction {
         runCatching { all[0].performScrollTo() }
         all[0]
     }
+}
+
+/** Toca el primer nodo cuyo texto contiene [text] (filas con hora y estado delante del valor). */
+fun Rule4.tapContaining(text: String) {
+    waitForText(text, substring = true)
+    runCatching { onNode(hasScrollToNodeAction()).performScrollToNode(hasText(text, substring = true)) }
+    onAllNodesWithText(text, substring = true)[0].performClick()
+    waitForIdle()
+}
+
+/** Toca un icono por su descripción para el lector de pantalla (MenuAcciones ⋮). */
+fun Rule4.tapDescription(description: String) {
+    waitUntil(5_000) { onAllNodesWithContentDescription(description).fetchSemanticsNodes().isNotEmpty() }
+    onAllNodesWithContentDescription(description)[0].performClick()
+    waitForIdle()
 }
 
 fun Rule4.type(label: String, value: String) {

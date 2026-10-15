@@ -54,6 +54,8 @@ import com.ayuno.app.ui.planned.PlannedListScreen
 import com.ayuno.app.ui.plan.TemplateEditorScreen
 import com.ayuno.app.ui.plan.TemplateListScreen
 import com.ayuno.app.ui.record.BloodPressureFormScreen
+import com.ayuno.app.ui.record.CorrectEntryScreen
+import com.ayuno.app.ui.record.FastMeasurementsScreen
 import com.ayuno.app.ui.record.MeasurementFormScreen
 import com.ayuno.app.ui.record.RecordGridScreen
 import com.ayuno.app.ui.safety.AlertScreen
@@ -68,6 +70,7 @@ import com.ayuno.app.ui.refeed.MealFormScreen
 import com.ayuno.app.ui.refeed.RefeedScreen
 import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.model.Alert
+import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.time.LocalTimes
 import java.time.LocalDateTime
@@ -120,6 +123,8 @@ private object Routes {
     const val TEMPLATE = "template?id={id}"
     const val METRICS = "catalog/metrics"
     const val METRIC = "catalog/metric?code={code}"
+    const val MEASUREMENTS = "measurements/{fastId}"
+    const val ENTRY = "entry/{kind}/{id}"
 
     fun record(fastId: String) = "record/$fastId"
     fun changeFast(fastId: String) = "fast/change/$fastId"
@@ -145,6 +150,8 @@ private object Routes {
     fun catalogEdit(base: String, code: String?) = base + (code?.let { "?code=$it" } ?: "")
     fun template(id: String?) = "template" + (id?.let { "?id=$it" } ?: "")
     fun metric(code: String?) = "catalog/metric" + (code?.let { "?code=$it" } ?: "")
+    fun measurements(fastId: String) = "measurements/$fastId"
+    fun entry(kind: EntryKind, id: String) = "entry/${kind.name}/$id"
 }
 
 private fun optional(name: String) = navArgument(name) { type = NavType.StringType; nullable = true; defaultValue = null }
@@ -207,6 +214,7 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                         onAlert = { navController.navigate(Routes.alert(it)) },
                         onRefeed = { navController.navigate(Routes.refeed(it)) },
                         onMeal = { navController.navigate(Routes.meal(it)) },
+                        onMeasurements = { navController.navigate(Routes.measurements(it)) },
                     ),
                 )
             }
@@ -223,7 +231,7 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                 )
             }
             composable(TopLevelDestination.TODAY.route) {
-                TodayScreen(onOpen = { fastId, item, notDone ->
+                TodayScreen(onOpenEntry = { kind, id -> navController.navigate(Routes.entry(kind, id)) }, onOpen = { fastId, item, notDone ->
                     when (item.kind) {
                         PendingKind.PRODUCT -> navController.navigate(Routes.product(fastId, item.scheduledAt, item.code, notDone))
                         PendingKind.REFEED -> navController.navigate(Routes.refeed(fastId))
@@ -243,6 +251,8 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                     fastId,
                     onBack = { navController.popBackStack() },
                     onExport = { navController.navigate(Routes.exportFast(fastId)) },
+                    onOpenEntry = { kind, id -> navController.navigate(Routes.entry(kind, id)) },
+                    onMeasurements = { navController.navigate(Routes.measurements(fastId)) },
                 )
             }
             composable(Routes.EXPORT_FAST) { entry -> ExportFastScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }) }
@@ -358,6 +368,25 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
             }
             composable(Routes.TEMPLATE, arguments = listOf(optional("id"))) { entry ->
                 TemplateEditorScreen(entry.arguments?.getString("id"), onBack = { navController.popBackStack() })
+            }
+            composable(Routes.MEASUREMENTS) { entry ->
+                FastMeasurementsScreen(
+                    entry.arguments?.getString("fastId")!!,
+                    onBack = { navController.popBackStack() },
+                    onOpen = { kind, id -> navController.navigate(Routes.entry(kind, id)) },
+                    onRecord = { navController.navigate(Routes.record(it)) },
+                )
+            }
+            composable(Routes.ENTRY) { entry ->
+                CorrectEntryScreen(
+                    kind = EntryKind.valueOf(entry.arguments?.getString("kind")!!),
+                    id = entry.arguments?.getString("id")!!,
+                    onBack = { navController.popBackStack() },
+                    onSaved = { alerts ->
+                        // Una corrección que cumple una regla lleva a su alerta como al anotar (D-20).
+                        if (alerts.isNotEmpty()) navController.navigate(Routes.alert(alerts.first().id)) { popUpTo(TopLevelDestination.HOME.route) } else navController.popBackStack()
+                    },
+                )
             }
             composable(Routes.METRICS) {
                 MetricCatalogScreen(onBack = { navController.popBackStack() }, onEdit = { navController.navigate(Routes.metric(it)) })

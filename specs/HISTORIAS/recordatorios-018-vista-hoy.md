@@ -9,12 +9,13 @@
 ### Criterios de Aceptación
 - [ ] Cada elemento del día aparece como hecho, pendiente, atrasado o no hecho.
 - [ ] Tocar un pendiente lo abre ya rellenado.
+- [ ] Tocar una medición o presión hecha la abre con sus valores para verla o corregirla (H-048, H-034) (EV-004).
 - [ ] La hora del ayuno («hora 33») aparece siempre junto a la fecha y hora reales.
 
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-14, EV-004)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | hora programada de cada pendiente | `metric_schedule.time_of_day` |  | ✓ |  |  |
@@ -27,3 +28,4 @@
 | toma pendiente a la que responde | `product_log.scheduled_at` |  | ✓ |  |  |
 | pasos de vuelta a comer | `refeed_check.done_at` |  | ✓ |  |  |
 | hora del ayuno junto a la hora real | `fast.clock_start_actual` |  | ✓ |  |  |
+| tocar un hecho lo abre (medición o presión, para H-048) | `measurement.id`, `blood_pressure_reading.id` |  | ✓ |  |  |

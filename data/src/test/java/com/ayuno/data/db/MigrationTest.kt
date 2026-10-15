@@ -100,6 +100,27 @@ class MigrationTest {
     }
 
     @Test
+    fun `la migracion 6 a 7 cambia los hitos de la plantilla de ejemplo sin tocar ayunos ni hitos cambiados`() {
+        createV1WithAFast()
+        val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        val clock = Clock.systemDefaultZone()
+        helper.runMigrationsAndValidate(dbName, 2, true, Migrations.From1To2(context, clock)).close()
+        helper.runMigrationsAndValidate(dbName, 3, true, Migrations.From2To3).close()
+        helper.runMigrationsAndValidate(dbName, 4, true, Migrations.From3To4).close()
+        helper.runMigrationsAndValidate(dbName, 5, true, Migrations.From4To5(context, clock)).close()
+        helper.runMigrationsAndValidate(dbName, 6, true, Migrations.From5To6(context, clock)).use { db ->
+            // Lo que instaló la 4→5 con el archivo de ejemplo de entonces, y una copia que la persona cambió.
+            db.execSQL("UPDATE template SET milestone_hours = '[12.0,24.0]' WHERE name = 'Ejemplo (sin valores clínicos)'")
+            db.execSQL("INSERT INTO template (id, name, target_hours, milestone_hours, created_at) VALUES ('mine', 'Mía', 36.0, '[12.0,24.0]', 'x')")
+        }
+        val db = helper.runMigrationsAndValidate(dbName, 7, true, Migrations.From6To7(context, clock))
+        fun milestones(where: String) = db.query("SELECT milestone_hours FROM template WHERE $where").use { it.moveToFirst(); it.getString(0) }
+        assertEquals("[24.0,36.0,48.0]", milestones("name = 'Ejemplo (sin valores clínicos)'"))
+        assertEquals("[12.0,24.0]", milestones("id = 'mine'"))
+        db.query("SELECT milestone_hours FROM fast WHERE id = 'f1'").use { it.moveToFirst(); assertEquals("[12.0,24.0]", it.getString(0)) }
+    }
+
+    @Test
     fun `la app nueva abre la base de la primera instalacion y conserva el ayuno y sus mediciones`() = runTest {
         createV1WithAFast()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()

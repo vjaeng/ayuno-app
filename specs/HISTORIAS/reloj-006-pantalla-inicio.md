@@ -12,6 +12,7 @@
 - [ ] Tras forzar el cierre de la app y reiniciar el teléfono, el tiempo transcurrido es el correcto (se calcula desde la hora de inicio guardada).
 - [ ] La pantalla aparece en menos de 1 segundo al abrir la app.
 - [ ] Durante el ayuno, los botones «Anotar» y de seguridad están siempre visibles.
+- [ ] Durante el ayuno, bajo la última medición, «Mediciones de este ayuno» con su número lleva a la lista de H-048 (EV-004).
 - [ ] Sin ayuno en curso se muestran el próximo planificado y el último terminado (si existen). Del próximo se ven la fecha y hora de la última comida, el inicio previsto y el objetivo, con una única acción principal «Empieza el ayuno ahora» y un acceso secundario «Ver y preparar este ayuno» a su detalle (H-046) (EV-002).
 - [ ] Preparar, cambiar, borrar y planificar ayunos no están en Inicio, sino en la pestaña Planificados (H-046) (EV-002).
 - [ ] Sin ningún ayuno, la pantalla explica cómo empezar y ofrece «Planificar ayuno».
@@ -19,7 +20,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002; re-tejida el 2026-10-14, EV-004)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | tiempo transcurrido desde la hora de inicio guardada | `fast.clock_start_actual` |  | ✓ |  |  |
@@ -38,3 +39,4 @@
 | última medición: valor | `measurement.value_entered` |  | ✓ |  |  |
 | última medición: unidad | `measurement.unit_entered` |  | ✓ |  |  |
 | última medición: hora | `measurement.taken_at` |  | ✓ |  |  |
+| número de mediciones del ayuno (acceso a H-048) | `measurement.fast_id`, `blood_pressure_reading.fast_id` (control) |  | ✓ |  |  |

@@ -14,7 +14,8 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 | Importar o restaurar | [importar.md](importar.md) | H-039, H-040 | construida |
 | Cambiar un ayuno planificado | [cambiar-ayuno.md](cambiar-ayuno.md) | H-044 | construida |
 | Borrar un ayuno para siempre | [borrar-ayuno.md](borrar-ayuno.md) | H-045 | construida |
+| Corregir, borrar o restaurar una entrada | [corregir-entrada.md](corregir-entrada.md) | H-034, H-048 | construida (mediciones y presión, EV-004) |
 
-Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, corregir o borrar entradas (H-034), copia cifrada.
+Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, copia cifrada.
 
 **Efecto externo común — reprogramar recordatorios.** Tras confirmar cualquiera de estas transacciones, la app llama a `ReminderScheduler.reschedule()`. Es idempotente (recalcula la siguiente alarma desde los datos y la reemplaza con el mismo `PendingIntent`); si falla o la app muere antes, la reprogramación ocurre al siguiente arranque, reinicio o cambio de hora (H-016).

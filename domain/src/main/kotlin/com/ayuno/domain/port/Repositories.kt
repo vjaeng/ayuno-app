@@ -90,6 +90,20 @@ interface RecordRepository {
     suspend fun insertMeasurement(measurement: Measurement)
     suspend fun insertBloodPressure(reading: BloodPressureReading)
 
+    /** H-034, H-048: una entrada por su id; [includeDeleted] también las borradas en blando. */
+    suspend fun measurement(id: String, includeDeleted: Boolean = false): Measurement?
+    suspend fun bloodPressureReading(id: String, includeDeleted: Boolean = false): BloodPressureReading?
+
+    /** Corrige la fila conservando su id (D-20). */
+    suspend fun updateMeasurement(measurement: Measurement)
+    suspend fun updateBloodPressure(reading: BloodPressureReading)
+
+    /** Borrado blando (`deleted_at`) o restauración. */
+    suspend fun setMeasurementDeleted(id: String, deleted: Boolean)
+    suspend fun setBloodPressureDeleted(id: String, deleted: Boolean)
+    fun observeDeletedMeasurements(fastId: String): Flow<List<Measurement>>
+    fun observeDeletedBloodPressure(fastId: String): Flow<List<BloodPressureReading>>
+
     fun observeSymptoms(fastId: String): Flow<List<Symptom>>
     suspend fun symptoms(fastId: String): List<Symptom>
     suspend fun insertSymptom(symptom: Symptom)
@@ -157,4 +171,8 @@ interface DataExchange {
 interface AuditRepository {
     suspend fun append(entry: EditLogEntry)
     suspend fun entriesFor(rowId: String): List<EditLogEntry>
+    fun observeEntriesFor(rowId: String): Flow<List<EditLogEntry>>
+
+    /** Filas de [entityNames] con al menos una corrección (`action = edit`): la marca «corregida» (H-048). */
+    fun observeEditedRowIds(entityNames: List<String>): Flow<Set<String>>
 }

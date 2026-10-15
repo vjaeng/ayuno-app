@@ -1,5 +1,9 @@
 package com.ayuno.app.ui.history
 
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.foundation.clickable
+import kotlinx.coroutines.flow.combine
+import com.ayuno.domain.model.EntryKind
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -153,7 +157,12 @@ data class FastDetail(
 
 /** H-033: línea de tiempo del ayuno por días (H-027 alertas, H-035 notas, H-031/H-032 vuelta a comer). */
 class FastDetailViewModel(private val container: AppContainer, private val fastId: String) : ViewModel() {
-    val state: StateFlow<FastDetail?> = container.fasts.observeFasts().map { load() }
+    // Corregir o borrar una medición (H-034) también recalcula la línea de tiempo.
+    val state: StateFlow<FastDetail?> = combine(
+        container.fasts.observeFasts(),
+        container.records.observeMeasurements(fastId),
+        container.records.observeBloodPressure(fastId),
+    ) { _, _, _ -> }.map { load() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private suspend fun load(): FastDetail? {
@@ -199,7 +208,14 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
 }
 
 @Composable
-fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = {}, onDeleted: () -> Unit = onBack) {
+fun FastDetailScreen(
+    fastId: String,
+    onBack: () -> Unit,
+    onExport: () -> Unit = {},
+    onDeleted: () -> Unit = onBack,
+    onOpenEntry: (kind: EntryKind, id: String) -> Unit = { _, _ -> },
+    onMeasurements: () -> Unit = {},
+) {
     val viewModel: FastDetailViewModel = viewModel(key = "detail-$fastId", factory = containerFactory { FastDetailViewModel(it, fastId) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     val deleteFailed by viewModel.deleteFailed.collectAsStateWithLifecycle()
@@ -226,13 +242,19 @@ fun FastDetailScreen(fastId: String, onBack: () -> Unit, onExport: () -> Unit = 
         d.weight?.let { (change, type) -> weightChangeText(change, type)?.let { Text(it, style = MaterialTheme.typography.bodyLarge) } }
         fast.notes?.let { Text(stringResource(R.string.history_notes, it), style = MaterialTheme.typography.bodyLarge) }
         SecondaryButton(stringResource(R.string.export_action), onClick = onExport)
+        ListRow(
+            stringResource(R.string.measurements_title),
+            null,
+            onClick = onMeasurements,
+            trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+        )
         if (d.days.isEmpty()) EmptyState(stringResource(R.string.history_no_entries))
         d.days.forEach { day ->
             SectionTitle(Formats.date(day.day.atStartOfDay()))
             if (day.totals.isNotEmpty()) {
                 Text(stringResource(R.string.history_totals, day.totals.map { totalText(it) }.joinToString(" · ")), style = MaterialTheme.typography.bodyLarge)
             }
-            day.entries.forEach { TimelineItem(fast, it, d) }
+            day.entries.forEach { TimelineItem(fast, it, d, onOpenEntry) }
         }
     }
 
@@ -307,9 +329,16 @@ fun FastMenu(onChange: (() -> Unit)?, onDelete: () -> Unit) {
 
 /** ItemLineaTiempo: hora + hora del ayuno + tipo + valor. */
 @Composable
-private fun TimelineItem(fast: Fast, entry: TimelineEntry, d: FastDetail) {
+private fun TimelineItem(fast: Fast, entry: TimelineEntry, d: FastDetail, onOpenEntry: (EntryKind, String) -> Unit) {
     val hour = FastClock.fastHour(fast, entry.at)?.let { " · " + stringResource(R.string.fast_hour, it) }.orEmpty()
-    Column(Modifier.fillMaxWidth().heightIn(min = Dimens.touchMin).padding(vertical = Dimens.spaceXs).semantics(mergeDescendants = true) {}) {
+    // H-048: mediciones y presiones se abren para corregirlas; el resto de entradas, cuando se complete H-034.
+    val open: (() -> Unit)? = when (entry) {
+        is TimelineEntry.OfMeasurement -> { { onOpenEntry(EntryKind.MEASUREMENT, entry.id) } }
+        is TimelineEntry.OfBloodPressure -> { { onOpenEntry(EntryKind.BLOOD_PRESSURE, entry.id) } }
+        else -> null
+    }
+    val base = Modifier.fillMaxWidth().heightIn(min = Dimens.touchMin)
+    Column((if (open != null) base.clickable(onClick = open) else base).padding(vertical = Dimens.spaceXs).semantics(mergeDescendants = true) {}) {
         Text(Formats.time(entry.at) + hour, style = MaterialTheme.typography.bodyMedium)
         Text(entryText(entry, d), style = MaterialTheme.typography.titleMedium)
     }

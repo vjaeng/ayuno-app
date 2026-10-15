@@ -2,7 +2,7 @@
 
 Fuente: `docs/SOLICITUD_app_movil_ayuno.md` (versión base, app genérica). Actor único: **la persona que ayuna**.
 
-Total: **47** historias · alta 32 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
+Total: **48** historias · alta 33 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; H-048 con EV-004; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
 
 ## Índice
 
@@ -41,7 +41,7 @@ Total: **47** historias · alta 32 · media 14 · baja 1. H-001 a H-043 son la v
 | H-031 | [Definir y seguir mi plan de vuelta a comer](vuelta-a-comer-031-plan-vuelta.md) | vuelta-a-comer | media | entregada |
 | H-032 | [Anotar cada comida y cómo me cayó](vuelta-a-comer-032-registrar-comida.md) | vuelta-a-comer | media | entregada |
 | H-033 | [Revisar mis ayunos pasados](historial-033-historial-ayunos.md) | historial | media | entregada |
-| H-034 | [Corregir o borrar una entrada dejando rastro](historial-034-corregir-borrar.md) | historial | alta | tejida |
+| H-034 | [Corregir o borrar una entrada dejando rastro](historial-034-corregir-borrar.md) | historial | alta | en construcción (EV-004: mediciones y presión hechas) |
 | H-035 | [Escribir una nota libre](notas-035-nota-libre.md) | notas | alta | entregada |
 | H-036 | [Exportar un ayuno o todo a un archivo con formato fijo](exportacion-036-exportar.md) | exportacion | alta | entregada |
 | H-037 | [Exportar también en tablas](exportacion-037-exportar-tablas.md) | exportacion | baja | entregada |
@@ -55,6 +55,7 @@ Total: **47** historias · alta 32 · media 14 · baja 1. H-001 a H-043 son la v
 | H-045 | [Borrar un ayuno para siempre con todos sus datos](historial-045-borrar-ayuno.md) | historial | alta | en construcción (EV-001) |
 | H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
 | H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
+| H-048 | [Ver y corregir las mediciones del ayuno en curso](mediciones-048-ver-corregir-mediciones.md) | mediciones | alta | entregada (EV-004) |
 
 ## Épicas
 
@@ -168,3 +169,6 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | 2026-10-13 | H-003 | La plantilla de ejemplo incluye todas las mediciones del catálogo (antes solo glucosa, peso y presión); solo esas tres llevan horario, las demás se anotan sin recordatorio. Las instalaciones existentes las reciben con la migración 5→6 (sin cambios de esquema). Los ayunos ya creados conservan su plan | Petición del humano |
 | 2026-10-13 | H-001, H-008, H-004 | Anotar muestra todas las mediciones activas del catálogo (las del plan primero): el plan decide los recordatorios, no qué se puede anotar. Al planificar viene propuesta la primera plantilla en vez de «desde cero». Motivo: un ayuno desde cero quedaba sin mediciones y no había forma de añadirlas | Petición del humano |
 | 2026-10-13 | EV-003: H-047 nueva; H-030 y H-033 con un criterio de peso; nota en H-005 | Peso al empezar (después del toque, se puede saltar) y al terminar (campo opcional), con inicial, final y diferencia en el resultado y en el detalle. Motivo: el humano quiere saber cuánto cambió su peso en cada ayuno | Petición del humano (EV-003) |
+| 2026-10-14 | EV-004: H-048 nueva (lista de mediciones del ayuno desde Inicio, con corrección y borrado); H-034 con reevaluación de reglas al corregir en curso y alcance por entregas (primero mediciones y presión); H-006 con el acceso desde Inicio; H-018 tocar un hecho lo abre | El humano necesita ver y corregir las mediciones de un ayuno en curso | Petición del humano (EV-004) |
+| 2026-10-14 | H-006 | Los hitos de Inicio pasan de lista vertical a la barra horizontal del wireframe; la fecha y hora de cada hito se ve bajo la barra (el siguiente por defecto, cualquiera al tocarlo). Sin cambio de criterios | Petición del humano |
+| 2026-10-14 | H-003 | La plantilla de ejemplo pasa de los hitos 12 y 24 a 24, 36 y 48 (con objetivo 36 h, el 48 queda después del objetivo). Las instalaciones existentes la reciben con la migración 6→7 (solo datos), salvo que la persona ya hubiera cambiado los hitos; los ayunos ya creados conservan los suyos | Petición del humano |

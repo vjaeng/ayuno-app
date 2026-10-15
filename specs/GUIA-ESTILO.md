@@ -78,9 +78,10 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 | **CampoTexto** | Notas, motivos, nombres | Valores numéricos | `body`, borde `outline`, error como CampoNumerico |
 | **SelectorFechaHora** | Hora de cualquier entrada | — | Muestra «viernes 23 oct, 12:01:40» + icono ✎; abre selectores nativos |
 | **SelectorOpciones** | 2-5 opciones excluyentes (origen, posición, nivel, motivo) | Más de 5 opciones (usar lista) | Botones segmentados o radio en fila, 48 dp de alto |
+| **FiltroTipos** | Filtrar una lista por tipo cuando hay más de 5 tipos posibles (Mediciones de este ayuno, EV-004) | 2-5 opciones excluyentes de un formulario (usar SelectorOpciones) | Fila desplazable horizontal de chips de filtro de Material 3, alto 48 dp, `radius_s`, `label`; el primero es «Todas»; seleccionado en `primary_container`/`on_primary_container` con ✓, sin seleccionar con borde `outline` sobre `surface`; selección única; estado anunciado al lector de pantalla |
 | **Interruptor** | Activar o desactivar (medición en plantilla, regla, bloqueo) | Acciones con efecto inmediato irreversible | Switch de Material 3 con etiqueta tocable en toda la fila |
 | **TarjetaReloj** | Reloj del ayuno en Inicio | — | `primary_container`, `display_clock`, restante y fin previsto en `body` |
-| **BarraHitos** | Hitos del ayuno | — | Puntos rellenos (`primary`) alcanzados y huecos pendientes, con hora y fecha legibles por el lector de pantalla |
+| **BarraHitos** | Hitos del ayuno | — | Línea horizontal (`outline`) con un punto por hito repartidos a lo ancho: rellenos (`primary`) alcanzados y huecos pendientes, con las horas debajo; cada punto es tocable (≥48 dp) y una línea bajo la barra muestra la fecha y hora del elegido (por defecto, el siguiente); hora y fecha legibles por el lector de pantalla |
 | **FilaPendiente** | Vista Hoy | — | Estado con icono **y** texto (✔ hecho · ○ pendiente · ! atrasado · ✖ no hecho), nunca solo con color; fila de 56 dp |
 | **ItemLineaTiempo** | Historial y detalle del ayuno | — | Hora + hora del ayuno + tipo + valor (`body_strong`); alertas con icono de nivel |
 | **FranjaInformativa** | Avisos persistentes no clínicos (permiso de notificaciones denegado, recordatorios no aceptados) | Alertas de reglas | `surface_variant`, icono ⓘ, texto + botón de texto |
@@ -120,3 +121,10 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 - **Errores:** qué pasó + qué hacer («No se pudo guardar. Inténtalo de nuevo; lo que escribiste sigue aquí.»). Nunca culpar.
 - **Neutralidad:** sin juicios ni ánimos sobre las cifras o el resultado («Ayuno terminado · 30 horas y 40 minutos · decisión personal»); nunca «fracaso», «éxito», «¡bien hecho!».
 - **Mensajes de reglas:** se muestran exactamente como los escribió la persona.
+
+## 6. Log de cambios
+
+| Fecha | Cambio | Porqué |
+|---|---|---|
+| 2026-10-14 | EV-004: componente **FiltroTipos** | La lista de mediciones del ayuno se filtra por tipo y puede haber más de 5 tipos, el límite de SelectorOpciones |
+| 2026-10-14 | **BarraHitos** precisada (línea horizontal, punto tocable, fecha del elegido debajo) | La construcción había hecho una lista vertical que ocupaba demasiado; el humano prefirió la barra del wireframe |

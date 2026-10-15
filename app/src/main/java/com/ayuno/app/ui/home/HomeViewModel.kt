@@ -69,6 +69,8 @@ sealed interface HomeUiState {
         val totals: List<DailyTotal>,
         val notices: List<String>,
         val undecidedAlertId: String?,
+        /** H-048: mediciones y presiones visibles del ayuno. */
+        val measurementCount: Int = 0,
     ) : HomeUiState
 }
 
@@ -157,6 +159,7 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
             totals = DailyTotals.of(now.toLocalDate(), c.records.intakes(fastId), c.catalog.intakeTypes(), source.plan.goals),
             notices = source.plan.notices.filter { stage != null && stage in it.stageKinds }.map { it.text },
             undecidedAlertId = c.alerts.alerts(fastId).firstOrNull { it.userChoice == null }?.id,
+            measurementCount = measurements.size + readings.size,
         )
     }
 

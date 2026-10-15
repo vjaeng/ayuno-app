@@ -93,6 +93,13 @@ object Migrations {
         }
     }
 
+    /** Versión 6 → 7: sin cambios de esquema; la plantilla de ejemplo pasa a los hitos 24, 36 y 48 si no se cambiaron. */
+    class From6To7(private val context: Context, private val clock: Clock) : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            CatalogSeed.updateExampleMilestones(db, context, LocalTimes.format(LocalTimes.now(clock)))
+        }
+    }
+
     fun all(context: Context, clock: Clock): Array<Migration> =
-        arrayOf(From1To2(context, clock), From2To3, From3To4, From4To5(context, clock), From5To6(context, clock))
+        arrayOf(From1To2(context, clock), From2To3, From3To4, From4To5(context, clock), From5To6(context, clock), From6To7(context, clock))
 }

@@ -37,7 +37,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-003 | Duplicar, borrar y partir de una plantilla de ejemplo | media | 4 | 8 | U + I | en verde |
 | H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 12 | 24 | U + I + E2E | en verde |
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
-| H-006 | Ver de un vistazo dónde estoy | alta | 8 | 16 | U + E2E | en verde (parcial) |
+| H-006 | Ver de un vistazo dónde estoy | alta | 9 | 17 | U + E2E | en verde (parcial) |
 | H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 4 | 9 | U + I + E2E | en verde |
 | H-008 | Anotar una medición en tres toques | alta | 8 | 21 | U + I + E2E | en verde |
 | H-009 | Anotar la presión sentado y de pie | alta | 4 | 6 | U + I + E2E | en verde |
@@ -49,7 +49,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-015 | Marcar cada toma de un producto | alta | 3 | 10 | U + I + E2E | en verde |
 | H-016 | Que cada recordatorio suene a su hora pase lo que pase | alta | 4 | 4 | U + E2E | en verde (parcial) |
 | H-017 | Resolver un pendiente desde la notificación | alta | 5 | 9 | U + I + E2E | en verde (parcial) |
-| H-018 | Ver el día como una línea de tiempo | alta | 3 | 10 | U + E2E | en verde |
+| H-018 | Ver el día como una línea de tiempo | alta | 4 | 11 | U + E2E | en verde |
 | H-019 | Definir una regla de alerta por umbral | alta | 5 | 18 | U + I + E2E | en verde |
 | H-020 | Definir una regla de alerta sostenida en el tiempo | alta | 3 | 5 | U + I + E2E | en verde |
 | H-021 | Definir una regla que salte con un síntoma de alarma | alta | 2 | 5 | U + I + E2E | en verde |
@@ -65,7 +65,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-031 | Definir y seguir mi plan de vuelta a comer | media | 4 | 10 | U + I | en verde |
 | H-032 | Anotar cada comida y cómo me cayó | media | 2 | 5 | U + I | en verde |
 | H-033 | Revisar mis ayunos pasados | media | 5 | 17 | U + E2E | en verde |
-| H-034 | Corregir o borrar una entrada dejando rastro | alta | 4 | 15 | U + I + E2E | pendiente |
+| H-034 | Corregir o borrar una entrada dejando rastro | alta | 7 | 19 | U + I + E2E | en verde (parcial: mediciones y presión, EV-004) |
 | H-035 | Escribir una nota libre | alta | 3 | 2 | U + I + E2E | en verde |
 | H-036 | Exportar un ayuno o todo a un archivo con formato fijo | alta | 9 | 29 | U + E2E | en verde |
 | H-037 | Exportar también en tablas | baja | 2 | 2 | U | en verde |
@@ -79,6 +79,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-045 | Borrar un ayuno para siempre con todos sus datos | alta | 7 | 22 | U + I + E2E | en verde (parcial: caso D) |
 | H-046 | Ver mis ayunos planificados y elegir uno | alta | 8 | 12 | U + E2E | en verde |
 | H-047 | Anotar mi peso al empezar y al terminar y ver cuánto cambió | media | 7 | 13 | U + I + E2E | en verde |
+| H-048 | Ver y corregir las mediciones del ayuno en curso | alta | 7 | 23 | U + I + E2E | en verde |
 
 ## 4. Casos transversales
 

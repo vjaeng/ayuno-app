@@ -1,6 +1,12 @@
 package com.ayuno.app.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -177,6 +183,37 @@ fun <T> OptionSelector(options: List<Pair<T, String>>, selected: T?, onSelect: (
                 shape = SegmentedButtonDefaults.itemShape(index, options.size),
                 modifier = Modifier.heightIn(min = Dimens.touchMin),
             ) { Text(label, maxLines = 2) }
+        }
+    }
+}
+
+/**
+ * FiltroTipos (EV-004): chips de filtro en fila desplazable, selección única; el primero es «Todas» (valor nulo).
+ */
+@Composable
+fun <T> FilterChips(options: List<Pair<T, String>>, selected: T?, allLabel: String, onSelect: (T?) -> Unit, description: String) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .semantics { contentDescription = description },
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceS),
+    ) {
+        (listOf<Pair<T?, String>>(null to allLabel) + options).forEach { (value, label) ->
+            val isSelected = value == selected
+            FilterChip(
+                selected = isSelected,
+                onClick = { onSelect(value) },
+                label = { Text(label, style = MaterialTheme.typography.labelLarge) },
+                leadingIcon = if (isSelected) ({ Icon(Icons.Filled.Check, contentDescription = null) }) else null,
+                modifier = Modifier.heightIn(min = Dimens.touchMin),
+                shape = RoundedCornerShape(Dimens.radiusS),
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
+            )
         }
     }
 }
