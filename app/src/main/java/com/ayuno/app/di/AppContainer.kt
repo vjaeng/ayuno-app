@@ -51,7 +51,7 @@ class AppContainer(
     val fasts: FastRepository by lazy { RoomFastRepository(database, clock) }
     val records: RecordRepository by lazy { RoomRecordRepository(database, clock) }
     val alerts: AlertRepository by lazy { RoomAlertRepository(database, clock) }
-    private val audit by lazy { RoomAuditRepository(database, clock) }
+    val audit: com.ayuno.domain.port.AuditRepository by lazy { RoomAuditRepository(database, clock) }
 
     val saveMetricType by lazy { SaveMetricType(catalog) }
     val setMetricTypeActive by lazy { SetMetricTypeActive(catalog) }
@@ -89,6 +89,9 @@ class AppContainer(
     val setChecklistItem by lazy { com.ayuno.domain.usecase.SetChecklistItem(fasts) }
     val changePlannedFast by lazy { com.ayuno.domain.usecase.ChangePlannedFast(templates, fasts, audit, transactions, clock) }
     val deleteFast by lazy { com.ayuno.domain.usecase.DeleteFast(fasts, transactions) }
+    val correctMeasurement by lazy { com.ayuno.domain.usecase.CorrectMeasurement(catalog, fasts, records, alerts, audit, transactions, clock) }
+    val correctBloodPressure by lazy { com.ayuno.domain.usecase.CorrectBloodPressure(catalog, fasts, records, alerts, audit, transactions, clock) }
+    val setEntryDeleted by lazy { com.ayuno.domain.usecase.SetEntryDeleted(records, audit, transactions, clock) }
 
     val settings: com.ayuno.domain.port.SettingsRepository by lazy { com.ayuno.data.repository.RoomSettingsRepository(database) }
     val saveQuietHours by lazy { com.ayuno.domain.usecase.SaveQuietHours(settings) }

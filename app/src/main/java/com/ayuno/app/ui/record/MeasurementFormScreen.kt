@@ -107,24 +107,7 @@ fun MeasurementFormScreen(
                 )
             }
         }
-        if (current.isGlucose) {
-            Text(stringResource(R.string.field_source), style = MaterialTheme.typography.bodyLarge)
-            OptionSelector(
-                listOf(GlucoseSource.CGM to stringResource(R.string.source_cgm), GlucoseSource.GLUCOMETER to stringResource(R.string.source_glucometer)),
-                source,
-                { source = it },
-            )
-            Text(stringResource(R.string.field_trend), style = MaterialTheme.typography.bodyLarge)
-            OptionSelector(
-                listOf(
-                    Trend.RISING_FAST to stringResource(R.string.trend_rising_fast), Trend.RISING to stringResource(R.string.trend_rising),
-                    Trend.STEADY to stringResource(R.string.trend_steady), Trend.FALLING to stringResource(R.string.trend_falling),
-                    Trend.FALLING_FAST to stringResource(R.string.trend_falling_fast),
-                ),
-                trend,
-                { trend = if (trend == it) null else it },
-            )
-        }
+        if (current.isGlucose) GlucoseFields(source, trend, { source = it }, { trend = if (trend == it) null else it })
         CheckRow(stringResource(R.string.field_on_waking), onWaking) { onWaking = it }
         AyunoTextField(stringResource(R.string.field_note), note, { note = it }, singleLine = false)
 

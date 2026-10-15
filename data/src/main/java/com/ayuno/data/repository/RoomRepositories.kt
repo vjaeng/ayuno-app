@@ -272,6 +272,34 @@ class RoomRecordRepository(private val database: AyunoDatabase, private val cloc
     override suspend fun insertMeasurement(measurement: Measurement) = dao.insertMeasurement(measurement.toEntity(clock.stamp()))
     override suspend fun insertBloodPressure(reading: BloodPressureReading) = dao.insertBloodPressure(reading.toEntity(clock.stamp()))
 
+    override suspend fun measurement(id: String, includeDeleted: Boolean) =
+        dao.measurement(id)?.takeIf { includeDeleted || it.deletedAt == null }?.toDomain()
+    override suspend fun bloodPressureReading(id: String, includeDeleted: Boolean) =
+        dao.bloodPressureReading(id)?.takeIf { includeDeleted || it.deletedAt == null }?.toDomain()
+
+    override suspend fun updateMeasurement(measurement: Measurement) {
+        val existing = dao.measurement(measurement.id) ?: error("Medición inexistente")
+        dao.updateMeasurement(measurement.toEntity(existing.createdAt).copy(updatedAt = clock.stamp(), deletedAt = existing.deletedAt))
+    }
+
+    override suspend fun updateBloodPressure(reading: BloodPressureReading) {
+        val existing = dao.bloodPressureReading(reading.id) ?: error("Presión inexistente")
+        dao.updateBloodPressure(reading.toEntity(existing.createdAt).copy(updatedAt = clock.stamp(), deletedAt = existing.deletedAt))
+    }
+
+    override suspend fun setMeasurementDeleted(id: String, deleted: Boolean) {
+        val now = clock.stamp()
+        dao.setMeasurementDeleted(id, now.takeIf { deleted }, now)
+    }
+
+    override suspend fun setBloodPressureDeleted(id: String, deleted: Boolean) {
+        val now = clock.stamp()
+        dao.setBloodPressureDeleted(id, now.takeIf { deleted }, now)
+    }
+
+    override fun observeDeletedMeasurements(fastId: String): Flow<List<Measurement>> = dao.observeDeletedMeasurements(fastId).map { l -> l.map { it.toDomain() } }
+    override fun observeDeletedBloodPressure(fastId: String): Flow<List<BloodPressureReading>> = dao.observeDeletedBloodPressure(fastId).map { l -> l.map { it.toDomain() } }
+
     private val dao2 get() = database.record2Dao()
     override fun observeSymptoms(fastId: String): Flow<List<Symptom>> = dao2.observeSymptoms(fastId).map { l -> l.map { it.toDomain() } }
     override suspend fun symptoms(fastId: String): List<Symptom> = dao2.symptoms(fastId).map { it.toDomain() }
@@ -325,6 +353,8 @@ class RoomAlertRepository(private val database: AyunoDatabase, private val clock
 class RoomAuditRepository(private val database: AyunoDatabase, private val clock: Clock) : AuditRepository {
     override suspend fun append(entry: EditLogEntry) = database.auditDao().insert(entry.toEntity(clock.stamp()))
     override suspend fun entriesFor(rowId: String): List<EditLogEntry> = database.auditDao().entriesFor(rowId).map { it.toDomain() }
+    override fun observeEntriesFor(rowId: String): Flow<List<EditLogEntry>> = database.auditDao().observeEntriesFor(rowId).map { l -> l.map { it.toDomain() } }
+    override fun observeEditedRowIds(entityNames: List<String>): Flow<Set<String>> = database.auditDao().observeEditedRowIds(entityNames).map { it.toSet() }
 }
 
 /** Datos personales (registro único, H-038). Sin fila todavía = todo vacío. */

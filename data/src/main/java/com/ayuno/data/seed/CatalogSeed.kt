@@ -162,6 +162,23 @@ object CatalogSeed {
         insertPlanMetrics(db, metrics.filter { it.metricTypeCode !in present }, templateId, now)
     }
 
+    /**
+     * Migración 6→7: la plantilla de ejemplo instalada pasa a los hitos del archivo de ejemplo, solo si conserva los
+     * de antes (si la persona los cambió, se respetan). Los ayunos ya creados guardan su copia y no cambian.
+     */
+    fun updateExampleMilestones(db: SupportSQLiteDatabase, context: Context, now: String) {
+        val milestones = json.decodeFromString<SeedTemplate>(read(context, "seed/example_template.json")).milestoneHours
+        db.update(
+            "template",
+            SQLiteDatabase.CONFLICT_NONE,
+            ContentValues().apply { put("milestone_hours", milestones.joinToString(",", "[", "]")); put("updated_at", now) },
+            "id = ? AND milestone_hours = ?",
+            arrayOf(exampleId("template"), PREVIOUS_EXAMPLE_MILESTONES),
+        )
+    }
+
+    private const val PREVIOUS_EXAMPLE_MILESTONES = "[12.0,24.0]"
+
     private fun insertPlanMetrics(db: SupportSQLiteDatabase, metrics: List<SeedMetric>, templateId: String, now: String) {
         fun insert(table: String, values: ContentValues) = db.insert(table, SQLiteDatabase.CONFLICT_IGNORE, values.apply { put("created_at", now) })
         metrics.forEach { m ->

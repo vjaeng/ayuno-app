@@ -7,6 +7,12 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
@@ -78,6 +85,7 @@ data class HomeActions(
     val onAlert: (alertId: String) -> Unit,
     val onRefeed: (fastId: String) -> Unit = {},
     val onMeal: (fastId: String) -> Unit = {},
+    val onMeasurements: (fastId: String) -> Unit = {},
     val onOpenPlanned: (fastId: String) -> Unit = {},
     val onPlannedTab: () -> Unit = {},
 )
@@ -242,6 +250,13 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
         SectionTitle(stringResource(R.string.home_last_measurement))
         Text(stringResource(R.string.home_last_measurement_value, last.metricName, last.value, last.unit, Formats.dateTime(last.at)), style = MaterialTheme.typography.bodyLarge)
     }
+    // H-048: acceso secundario a todas las mediciones del ayuno, bajo la última (no compite con «Anotar»).
+    com.ayuno.app.ui.components.ListRow(
+        title = stringResource(R.string.measurements_title),
+        supporting = if (state.measurementCount == 0) stringResource(R.string.measurements_none_count) else pluralStringResource(R.plurals.measurements_count, state.measurementCount, state.measurementCount),
+        onClick = { actions.onMeasurements(state.fast.id) },
+        trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+    )
     PrimaryButton(stringResource(R.string.home_record), onClick = { actions.onRecord(state.fast.id) })
 }
 
@@ -282,21 +297,52 @@ private fun ClockDetail(fast: Fast, viewModel: HomeViewModel, actions: HomeActio
 
 @Composable
 private fun Milestones(milestones: List<Milestone>) {
+    if (milestones.isEmpty()) return
     val colors = AyunoThemeTokens.colors
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
-        milestones.forEach { m ->
-            val label = stringResource(if (m.reached) R.string.milestone_reached else R.string.milestone_pending, Formats.number(m.hours), Formats.dateTime(m.at))
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = Dimens.touchMin)) {
-                Surface(
-                    shape = CircleShape,
-                    color = if (m.reached) colors.primary else colors.surface,
-                    border = androidx.compose.foundation.BorderStroke(2.dp, colors.primary),
-                    modifier = Modifier.size(16.dp),
-                ) {}
-                Spacer(Modifier.size(Dimens.spaceM))
-                Text(label, style = MaterialTheme.typography.bodyLarge)
+    // BarraHitos (GUIA-ESTILO): puntos en una línea; la fecha y hora del hito elegido (por defecto, el siguiente) va debajo.
+    var selected by remember(milestones.size) { mutableStateOf(milestones.indexOfFirst { !it.reached }.takeIf { it >= 0 } ?: milestones.lastIndex) }
+    fun label(m: Milestone) = Formats.number(m.hours) to Formats.dateTime(m.at)
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceS)) {
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val inset = maxWidth / (milestones.size * 2)
+            // Línea de fondo de centro a centro del primer y el último punto.
+            Box(
+                Modifier
+                    .padding(start = inset, end = inset, top = Dimens.spaceS + 7.dp)
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(colors.outline),
+            )
+            Row(Modifier.fillMaxWidth()) {
+                milestones.forEachIndexed { index, m ->
+                    val (hours, at) = label(m)
+                    val description = stringResource(if (m.reached) R.string.milestone_reached else R.string.milestone_pending, hours, at)
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .heightIn(min = Dimens.touchMin)
+                            .clickable(role = Role.Button) { selected = index }
+                            .padding(top = Dimens.spaceS)
+                            .semantics(mergeDescendants = true) { contentDescription = description },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (m.reached) colors.primary else colors.surface,
+                            border = androidx.compose.foundation.BorderStroke(2.dp, colors.primary),
+                            modifier = Modifier.size(16.dp),
+                        ) {}
+                        Text(
+                            hours,
+                            style = if (index == selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                }
             }
         }
+        val m = milestones[selected]
+        val (hours, at) = label(m)
+        Text(stringResource(if (m.reached) R.string.milestone_reached else R.string.milestone_pending, hours, at), style = MaterialTheme.typography.bodyLarge)
     }
 }
 

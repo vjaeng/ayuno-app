@@ -25,6 +25,9 @@ sealed interface SaveState {
     data class NeedsConfirmation(val fields: List<String>) : SaveState
     data class Invalid(val errors: List<ValidationError>) : SaveState
     data class Saved(val alerts: List<Alert>, val bloodPressure: BloodPressureReading? = null) : SaveState
+
+    /** La escritura falló (no una validación): lo tecleado se conserva para reintentar. */
+    data object Failed : SaveState
 }
 
 class RecordFormViewModel(private val container: AppContainer, val metricCode: String) : ViewModel() {

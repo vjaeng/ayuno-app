@@ -86,7 +86,7 @@ Los paquetes de `ui/`, `usecase/` y `repository/` se agrupan por las mismas áre
 | `plan` | H-001–H-003, H-014, H-031 (definir) | template, stage, plan_metric, metric_schedule, intake_goal, checklist_item, stage_notice, plan_product, refeed_step |
 | `fast` | H-004–H-006, H-030, H-044 | fast |
 | `planned` | H-046 | fast (lista y detalle de planificados; reutiliza los casos de uso de `fast`) |
-| `record` | H-008–H-010, H-012, H-015, H-032, H-035, H-047 | measurement, blood_pressure_reading, symptom, intake, product_log, meal, note |
+| `record` | H-008–H-010, H-012, H-015, H-032, H-035, H-047, H-048 | measurement, blood_pressure_reading, symptom, intake, product_log, meal, note |
 | `catalog` | H-007, H-010, H-011, H-013 | metric_type, symptom_type, intake_type, product, product_schedule |
 | `rules` | H-019–H-029 | rule, alert |
 | `refeed` | H-031, H-032 | refeed_step, refeed_check, meal |
@@ -127,7 +127,7 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | Empezar el ayuno | H-005 | `fast` + `edit_log` (si corrige) + reprogramar alarmas (efecto externo) |
 | Guardar entrada con evaluación de reglas | H-008–H-012, H-019–H-027 | Entrada + `alert` en una transacción; programa recordatorio de regla |
 | Terminar el ayuno | H-030, H-031, H-047 | `fast` + generación de `refeed_check` + peso opcional (`measurement`) + alarmas |
-| Corregir o borrar entrada | H-034, H-005 | Entrada + `edit_log` |
+| Corregir o borrar entrada | H-034, H-048, H-005 | Entrada + `edit_log` + `alert` si se corrige con el ayuno en curso (D-20); reprograma recordatorios ([corregir-entrada.md](TRANSACCIONES-CLAVE/corregir-entrada.md)) |
 | Cambiar un ayuno planificado | H-044 | `fast` + sustitución de la copia del plan + `edit_log`; reprograma alarmas; semana de separación si cambian las horas (D-17). Las alertas resuelven su regla también entre las sustituidas (D-16) |
 | Borrar un ayuno para siempre | H-045 | Borrado físico de `fast` y de todo lo que cuelga de él (~19 tablas) todo o nada (ADR-SEG-007); retira notificaciones y reprograma alarmas |
 | Exportar | H-036, H-037 | Efecto externo (archivo, hoja de compartir) |
@@ -169,6 +169,8 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-13 | H-003: la plantilla de ejemplo lleva todas las mediciones del catálogo; la migración 5→6 (solo datos) añade a la de ejemplo instalada las que le falten, sin duplicar ni tocar ayunos | ADR-008 |
 | 2026-10-13 | H-008 (D-18): `RecordGridViewModel` lista todas las mediciones activas del catálogo, ordenadas con las del plan primero; el formulario de crear ayuno propone la primera plantilla. Base de datos en versión 6, mismo esquema que la 5 (registrada en `ReleasedSchemasTest`) | ADR-008 |
 | 2026-10-13 | EV-003 (H-047, D-19): `derived/WeightChange` calcula peso inicial, final y diferencia; `EndFast` recibe `CatalogRepository` y `RecordRepository` para insertar el peso en su transacción. La hoja «peso al empezar» se dispara con `AppContainer.startWeightPrompt` (señal en memoria, de un solo uso) desde `startFastAskingWeight`, que usan Inicio y el detalle del planificado | — |
+| 2026-10-14 | EV-004 (H-048, H-034, D-20): `derived/FastMeasurements` (lista del ayuno); `usecase/CorrectionUseCases` (`CorrectMeasurement`, `CorrectBloodPressure`, `SetEntryDeleted`) reutiliza `AlertRecorder` para evaluar reglas al corregir en curso; `RecordRepository` gana lectura por id, actualización y borrado blando; `AuditRepository` gana `observeEntriesFor` y `observeEditedRowIds`. En `:app`, `ui/record/FastMeasurementsScreen` y `CorrectEntryScreen` (formulario propio que comparte `GlucoseFields` con Anotar). Sin cambio de esquema | ADR-006 |
+| 2026-10-14 | H-003: hitos de la plantilla de ejemplo 24, 36 y 48; migración 6→7 solo de datos (`CatalogSeed.updateExampleMilestones`), que solo cambia la de ejemplo si conserva los hitos de antes; base en la versión 7 con el mismo esquema (`ReleasedSchemasTest`) | ADR-003 |
 | 2026-10-10 | Tanda 4: una sola vía de importación para H-039 y H-040 (importa lo que traiga el archivo; fusión por clave, gana `updated_at` más reciente). El bloque `person` del archivo no se importa (la copia cifrada de H-042 lo restaurará) | ADR-SEG-006 |
 | 2026-10-11 | EV-002: área `planned` (H-046) en `:app` reutilizando los casos de uso de `fast`; la semana de separación vive en el dominio (`derived/FastSpacing`) y la UI la usa para el mensaje detallado, sin añadir datos al resultado tipado. El diálogo de borrado, el borrado con recordatorios y el recuento de registros se comparten entre Historial y Planificados | Un solo cálculo de la regla (D-17) para el caso de uso y el mensaje; sin puertos nuevos (`FastRepository.all()` basta) |
 
@@ -199,3 +201,4 @@ Se eligieron las versiones ya presentes en la caché local del equipo de desarro
 | kotlinx-coroutines | 1.9.0 | Asincronía |
 
 **Solo pruebas:** JUnit 5.11.3 (`:domain`), JUnit 4.13.2, Robolectric 4.14.1, AndroidX Test, Room testing, Compose UI Test, networknt json-schema-validator 1.5.6 (valida cada exportación contra el esquema publicado, ADR-007; no viaja en el APK).
+

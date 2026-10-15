@@ -76,6 +76,8 @@ enum class ValidationError {
     TOLERANCE_REQUIRED,
     NOTHING_TO_EXPORT,
     WEIGHT_OUT_OF_RANGE_UNCONFIRMED,
+    ENTRY_NOT_FOUND,
+    FIELD_NOT_EDITABLE,
 }
 
 fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

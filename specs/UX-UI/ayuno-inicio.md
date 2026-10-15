@@ -1,7 +1,7 @@
 # Flujo: Inicio y reloj
 
-**Historias que cubre:** H-005, H-006, H-041 (H-005 incluye registrar la última comida real, ahora en el detalle del planificado), H-046 (acceso a «Ver ›»), H-047 (peso al empezar)
-**Entrada:** apertura de la app, pestaña Inicio · **Salida:** Detalle del ayuno planificado, Planificados, Anotar, Seguridad, Terminar el ayuno
+**Historias que cubre:** H-005, H-006, H-041 (H-005 incluye registrar la última comida real, ahora en el detalle del planificado), H-046 (acceso a «Ver ›»), H-047 (peso al empezar), H-048 (acceso a «Mediciones de este ayuno»)
+**Entrada:** apertura de la app, pestaña Inicio · **Salida:** Detalle del ayuno planificado, Planificados, Anotar, Seguridad, Terminar el ayuno, Mediciones de este ayuno
 
 ## Pantallas
 
@@ -58,6 +58,10 @@ La sección de vuelta a comer (H-031) y las reintroducciones pendientes, cuando 
 │ Hoy: Agua 1.2 de 2 L · Sodio     │
 │ 0.8 de 1.5 g                     │
 │ Última: Glucosa 64 mg/dL · 11:58 │
+│ ┌──────────────────────────────┐ │
+│ │ Mediciones de este ayuno   › │ │  ← FilaLista (EV-004)
+│ │ 14 anotadas                  │ │
+│ └──────────────────────────────┘ │
 │──────────────────────────────────│
 │            [ Anotar ]            │  ← botón grande inferior
 └──────────────────────────────────┘
@@ -76,11 +80,12 @@ La sección de vuelta a comer (H-031) y las reintroducciones pendientes, cuando 
 | Próximo pendiente | pendientes del día | derivado |
 | Totales frente a metas | totales del día, `intake_goal.daily_amount`, `intake_goal.unit` | derivado / lectura |
 | Última medición | `measurement.metric_type_code`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.taken_at` | lectura |
+| Fila «Mediciones de este ayuno» con su número (FilaLista) | derivado «Mediciones del ayuno» (número) | acción → [historial-revisar.md](historial-revisar.md#pantalla-mediciones-de-este-ayuno) (H-048) |
 | Avisos fijos de la etapa | `stage_notice.text` (si la etapa actual está en `stage_notice.stage_kinds`) | lectura |
 | Botón «Seguridad» | — | acción → [seguridad-alertas.md](seguridad-alertas.md) |
 | Botón «Anotar» | — | acción → [registro-anotar.md](registro-anotar.md) |
 
-**Acciones:** Anotar · Seguridad · tocar el reloj → detalle de horas planificadas y reales con «Corregir hora de inicio» · tocar «Próximo» → abre el formulario prerrellenado.
+**Acciones:** Anotar · Seguridad · «Mediciones de este ayuno» → lista para ver y corregir (H-048) · tocar el reloj → detalle de horas planificadas y reales con «Corregir hora de inicio» · tocar «Próximo» → abre el formulario prerrellenado.
 **Estados:** vacío (no aplica: hay ayuno) · cargando (reloj calculado en <1 s desde la hora guardada, aun tras reinicio) · error (fallo al leer: mensaje y reintento; el botón de seguridad sigue visible) · sin permisos (como arriba; además, si las notificaciones están denegadas, franja roja **no**: franja informativa persistente, porque no es una alerta de regla).
 
 ### Hoja: Peso al empezar (H-047, EV-003)
@@ -110,7 +115,7 @@ Diálogo de Material 3 (sin hoja inferior en la guía). Se abre una sola vez sob
 - **Hick:** hoja de peso: 1 principal (Guardar) + 1 secundaria (Ahora no). Sin ayuno, 1 acción principal (Empieza el ayuno ahora; o Planificar ayuno si no hay planificado) y 1 secundaria (Ver y preparar este ayuno). Preparar, cambiar y planificar viven en la pestaña Planificados (EV-002). En curso, 2 principales (Anotar, Seguridad). ✔
 - **Jakob:** pantalla de estado con contador grande y botón de acción inferior, patrón de apps de ayuno y temporizadores. ✔
 - **Fitts:** «Anotar» ocupa el ancho inferior al alcance del pulgar; Seguridad arriba pero siempre visible y ≥48 pt. ✔
-- **Miller:** 4 bloques en curso (reloj, próximo, hoy, última). ✔
+- **Miller:** 4 bloques en curso (reloj, próximo, hoy, última con su acceso «Mediciones de este ayuno»). ✔
 
 ## Decisiones de producto
 
@@ -120,3 +125,7 @@ Diálogo de Material 3 (sin hoja inferior en la guía). Se abre una sola vez sob
 *Cambio EV-002 (2026-10-11):* la lista previa, «Registrar última comida», «Cambiar este ayuno» y «Nuevo ayuno» salen de Inicio hacia el detalle del planificado y la pestaña Planificados ([ayuno-planificados.md](ayuno-planificados.md)). Motivo: el humano encontró Inicio confuso con todas las opciones juntas. *Implementación:* «Ver ›» se construyó como BotonSecundario «Ver y preparar este ayuno», porque la guía no tiene un componente de enlace de texto y el botón mide 48 dp.
 
 *Cambio EV-003 (2026-10-13):* tras «Empieza el ayuno ahora» se ofrece una vez «¿Cuánto pesas al empezar?». Motivo: el humano quiere comparar el peso de antes y después del ayuno; se pregunta *después* de empezar para que empezar siga siendo un toque (H-005). *Implementación:* diálogo de Material 3, porque la guía no tiene hoja inferior.
+
+*Cambio EV-004 (2026-10-14):* bajo la última medición, la FilaLista «Mediciones de este ayuno · N anotadas ›» abre la lista del ayuno en curso para verlas y corregirlas ([historial-revisar.md](historial-revisar.md)). Motivo: el humano necesita repasar y corregir las mediciones sin esperar a que termine el ayuno (H-048). Es acceso secundario: no compite con «Anotar» (Hick).
+
+*Implementación (2026-10-14):* los hitos se construyeron como lista vertical con fecha y hora y ocupaban demasiado; se rehacen como **BarraHitos** horizontal, como en el wireframe (puntos rellenos alcanzados, huecos pendientes, horas debajo). Debajo de la barra, una línea con la fecha y hora del hito elegido: por defecto el siguiente; tocar un punto muestra el suyo. El lector de pantalla anuncia cada hito con su fecha y hora. Petición del humano tras verlo en el teléfono.
