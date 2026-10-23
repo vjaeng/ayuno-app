@@ -104,7 +104,7 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación), EV-003 (peso al empezar y al terminar, con su diferencia), EV-004 (ver y corregir las mediciones del ayuno en curso) y EV-005 (capturas permitidas y escalas con palabras; falta verificarla en el teléfono) cerradas; H-034 hecha para mediciones y presión. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación), EV-003 (peso al empezar y al terminar, con su diferencia), EV-004 (ver y corregir las mediciones del ayuno en curso) y EV-005 (capturas permitidas y escalas con palabras, verificada en el teléfono) cerradas; H-034 hecha para mediciones y presión. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
 
 ## Decisiones Técnicas
 
