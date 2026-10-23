@@ -21,6 +21,8 @@ sequenceDiagram
     UI->>R: 8. reprogramar recordatorios
 ```
 
+**Palabras de las mediciones (EV-005):** `metric_options` viaja en `catalogs` desde el formato 1.1 y se importa como cualquier catálogo por su `id` (gana el `updated_at` más reciente). Se valida que su `metric_type_code` exista en el archivo o en el teléfono y sea numérico, y que `value` quede dentro del rango del tipo. Un archivo 1.0 no trae la lista: las palabras del teléfono se conservan sin cambios. Las 20 de fábrica tienen identificadores fijos (como la plantilla de ejemplo), así que restaurar en otro teléfono no las duplica; si aun así la importación dejaría en un tipo dos palabras no borradas con el mismo texto o número, se rechaza con la primera fila en conflicto y nada se modifica.
+
 ## Manejo de fallos
 | Falla en paso | Estado resultante | Acción |
 |---|---|---|

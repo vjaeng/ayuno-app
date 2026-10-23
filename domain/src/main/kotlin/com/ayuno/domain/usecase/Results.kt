@@ -78,6 +78,14 @@ enum class ValidationError {
     WEIGHT_OUT_OF_RANGE_UNCONFIRMED,
     ENTRY_NOT_FOUND,
     FIELD_NOT_EDITABLE,
+    OPTION_NOT_FOUND,
+    OPTION_LABEL_REQUIRED,
+    OPTION_VALUE_REQUIRED,
+    OPTION_LABEL_DUPLICATED,
+    OPTION_VALUE_DUPLICATED,
+    OPTION_VALUE_OUT_OF_RANGE,
+    OPTIONS_TOO_MANY,
+    OPTIONS_NOT_NUMERIC,
 }
 
 fun invalid(vararg errors: ValidationError): Outcome.Invalid = Outcome.Invalid(errors.toList())

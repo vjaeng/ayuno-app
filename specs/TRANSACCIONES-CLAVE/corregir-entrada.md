@@ -1,6 +1,6 @@
 # TRX: Corregir, borrar o restaurar una entrada con bitácora
 
-**Historias:** H-034, H-048 · **Disparador:** «Guardar», «Borrar» o «Restaurar» en el Detalle de entrada
+**Historias:** H-034, H-048, H-049 · **Disparador:** «Guardar», «Borrar» o «Restaurar» en el Detalle de entrada
 **Entidades tocadas:** `measurement` o `blood_pressure_reading` (U; borrar y restaurar: control `deleted_at`), `edit_log` (C, una por campo cambiado o una por borrado/restauración), `alert` (C, solo al corregir con el ayuno en curso)
 **Alcance (EV-004):** mediciones y presión; el resto de entradas de H-034 seguirá esta misma secuencia cuando se construya.
 
@@ -21,6 +21,8 @@ sequenceDiagram
     UI->>UI: 8. mostrar la alerta (si hay) o volver a la lista; reprogramar recordatorios
 ```
 
+**Medición con palabras (EV-005, H-049):** el valor nuevo llega como el `id` de una `metric_option` y se resuelve en el paso 2 igual que al anotar ([guardar-entrada.md](guardar-entrada.md)); `edit_log` guarda los números anterior y nuevo de `value_entered` y `value_num`, no las palabras.
+
 ## Secuencia — borrar o restaurar
 1. BEGIN · leer la fila. 2. Fijar (borrar) o vaciar (restaurar) `deleted_at` · insertar `edit_log` con `action = delete` o `restore`. 3. COMMIT · reprogramar recordatorios (un pendiente que esa medición cumplía vuelve a estar pendiente o atrasado, y al revés). No se evalúan reglas (D-20).
 
@@ -29,6 +31,7 @@ sequenceDiagram
 |---|---|---|
 | 2 | Validación o fuera de rango sin confirmar | Nada se escribe; el formulario conserva lo editado |
 | 2 | Intento de poner valor a una «no se hizo» o de cambiar `scheduled_for` / `paired_reading_id` | `FIELD_NOT_EDITABLE`; nada se escribe |
+| 2 | La palabra elegida se quitó en Catálogos | `OPTION_NOT_FOUND`; nada se escribe; el formulario pide elegir otra |
 | 3 | La fila ya no existe o está borrada (p. ej. se borró el ayuno) | `ENTRY_NOT_FOUND`; nada se escribe; vuelve a la lista con mensaje |
 | 5–7 | Fallo a mitad | Rollback: nunca queda una corrección sin su rastro (S8) ni sin sus alertas |
 | 8 | La app se cierra antes de mostrar la alerta | La alerta queda sin decisión e Inicio la vuelve a mostrar (H-027) |

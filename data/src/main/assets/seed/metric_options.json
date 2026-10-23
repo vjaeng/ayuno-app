@@ -1,0 +1,6 @@
+[
+  { "metric_type_code": "hunger", "options": [ { "label": "Nada", "value": 0 }, { "label": "Poca", "value": 3 }, { "label": "Moderada", "value": 5 }, { "label": "Mucha", "value": 7 }, { "label": "Intensa", "value": 10 } ] },
+  { "metric_type_code": "energy", "options": [ { "label": "Muy baja", "value": 0 }, { "label": "Baja", "value": 3 }, { "label": "Normal", "value": 5 }, { "label": "Alta", "value": 7 }, { "label": "Muy alta", "value": 10 } ] },
+  { "metric_type_code": "mood", "options": [ { "label": "Muy bajo", "value": 0 }, { "label": "Bajo", "value": 3 }, { "label": "Normal", "value": 5 }, { "label": "Bueno", "value": 7 }, { "label": "Muy bueno", "value": 10 } ] },
+  { "metric_type_code": "mental_clarity", "options": [ { "label": "Nublada", "value": 0 }, { "label": "Poca", "value": 3 }, { "label": "Normal", "value": 5 }, { "label": "Buena", "value": 7 }, { "label": "Muy clara", "value": 10 } ] }
+]

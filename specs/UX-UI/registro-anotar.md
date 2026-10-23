@@ -1,6 +1,6 @@
 # Flujo: Anotar
 
-**Historias que cubre:** H-008, H-009, H-010, H-012, H-013, H-015, H-035
+**Historias que cubre:** H-008, H-009, H-010, H-012, H-013, H-015, H-035, H-049
 **Entrada:** Inicio → «Anotar», o acción directa de una notificación, o un pendiente de Hoy · **Salida:** pantalla de origen; o Aviso/Alerta si una regla se cumple; o Terminar el ayuno si se anota algo que lo rompe
 
 Objetivo de diseño: **3 toques o menos y menos de 30 segundos** desde Inicio hasta guardar (Anotar → tipo → Guardar).
@@ -69,6 +69,46 @@ Objetivo de diseño: **3 toques o menos y menos de 30 segundos** desde Inicio ha
 
 **Acciones:** Guardar → si el valor está fuera de rango, diálogo «¿Seguro? 640 está fuera de lo habitual (20 a 600)» con «Guardar tal cual» / «Corregir»; se guarda sin redondear. Tras guardar se evalúan las reglas → [seguridad-alertas.md](seguridad-alertas.md) si alguna se cumple; si no, vuelve al origen con confirmación breve. Un peso tecleado en lb muestra «157.4 lb · 71.4 kg».
 **Estados:** vacío (n/a) · cargando (Guardar deshabilitado hasta confirmar escritura) · error (campo vacío: «Escribe el valor o marca No se hizo»; fallo al guardar: el formulario conserva lo tecleado y ofrece reintentar) · sin permisos (bloqueo activo).
+
+### Pantalla: Formulario de medición con palabras (H-049, EV-005; hambre como ejemplo)
+
+Se usa en lugar del formulario genérico cuando la medición tiene `metric_option` sin borrar (de fábrica: Hambre, Energía, Ánimo y Claridad mental).
+
+```
+┌──────────────────────────────────┐
+│ ← Hambre                         │
+│ viernes 23 oct, 12:01:40  [✎]    │
+│ ┌──────────────────────────────┐ │
+│ │ ○ Nada                     0 │ │
+│ ├──────────────────────────────┤ │
+│ │ ○ Poca                     3 │ │
+│ ├──────────────────────────────┤ │
+│ │ ○ Moderada                 5 │ │
+│ ├──────────────────────────────┤ │
+│ │ ● Mucha                    7 │ │  ← elegida (primary_container)
+│ ├──────────────────────────────┤ │
+│ │ ○ Intensa                 10 │ │
+│ └──────────────────────────────┘ │
+│ [ ] Al despertar                 │
+│ Nota: [______________]           │
+│ [No se hizo]        [ Guardar ]  │
+└──────────────────────────────────┘
+```
+
+**Campos:**
+| Elemento UI | Campo canónico | Modo |
+|---|---|---|
+| Fecha y hora | `measurement.taken_at` | escritura (default ahora con segundos) |
+| Hora programada (si viene de un pendiente) | `measurement.scheduled_for` | escritura implícita |
+| Botón por palabra (SelectorPalabras), en orden de `position` | `metric_option.label`, `metric_option.value` (sin `deleted_at`, del `metric_type_code` del formulario) | lectura |
+| Palabra elegida | `measurement.value_entered` = `measurement.value_num` = `metric_option.value` | escritura |
+| Unidad | `measurement.unit_entered` = `metric_type.entry_unit` | escritura implícita (sin selector) |
+| Casilla «Al despertar» | `measurement.on_waking` | escritura |
+| Nota | `measurement.note` | escritura |
+| Botón «No se hizo» | `measurement.not_done_reason` | escritura (motivo obligatorio) |
+
+**Acciones:** tocar una palabra la elige (una sola; tocar otra cambia la elección). Guardar → igual que el genérico: se evalúan las reglas con el número (una regla «Hambre ≥ 7» salta con «Mucha») → [seguridad-alertas.md](seguridad-alertas.md) si alguna se cumple; si no, vuelve al origen con confirmación breve («Hambre: Mucha guardada»). No hay confirmación de rango: los números de las palabras ya están dentro del rango.
+**Estados:** vacío (la medición no tiene palabras → formulario genérico con teclado) · cargando (Guardar deshabilitado hasta confirmar escritura) · error (sin palabra elegida: «Elige una opción o marca No se hizo»; la palabra elegida se quitó en Catálogos mientras el formulario estaba abierto: «Esa opción ya no existe. Elige otra.»; fallo al guardar: conserva la elección y ofrece reintentar) · sin permisos (bloqueo activo).
 
 ### Pantalla: Formulario de presión arterial
 
@@ -214,7 +254,8 @@ Objetivo de diseño: **3 toques o menos y menos de 30 segundos** desde Inicio ha
 ## Validación Laws of UX
 - **Hick:** cada formulario tiene 1 acción principal (Guardar) y 1 secundaria (No se hizo); la rejilla es una elección única. ✔
 - **Jakob:** rejilla de accesos + formulario de una pantalla, patrón de apps de salud. ✔
-- **Fitts:** botones de rejilla ≥ 96 pt; Guardar al alcance del pulgar; teclado numérico abierto de entrada. ✔
+- **Fitts:** botones de rejilla ≥ 96 pt; Guardar al alcance del pulgar; teclado numérico abierto de entrada; en las escalas, palabras a ancho completo de 56 pt (EV-005). ✔
+- **Hick / Miller (escalas, EV-005):** una elección única entre 5 palabras de fábrica, como mucho 9. ✔
 - **Miller:** la rejilla puede superar 9 botones si se activan muchas mediciones → se agrupan en «Mediciones» y «Otros registros» (bloques ≤ 9). ✔ con condición.
 
 ## Decisiones de producto
@@ -222,3 +263,5 @@ Objetivo de diseño: **3 toques o menos y menos de 30 segundos** desde Inicio ha
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - **Escalas 0-10** (hambre, energía, ánimo, claridad): ¿botones sueltos en la rejilla o agrupadas en un único formulario «Cómo me siento» que guarda varias mediciones a la vez? Propuesta: formulario agrupado, para no saturar la rejilla.
 - **«Al despertar»:** ¿se marca solo a mano o se propone marcado si es la primera lectura tras el fin del silencio nocturno? Propuesta: propuesto automáticamente, editable.
+
+*Cambio EV-005 (2026-10-23):* las mediciones con palabras (`metric_option`; de fábrica Hambre, Energía, Ánimo y Claridad mental) se anotan tocando una palabra que guarda su número, en lugar de teclearlo (H-049). La decisión de 2026-10-08 de agrupar las escalas en un formulario «Cómo me siento» no se construyó (cada escala tiene su botón en la rejilla, D-18) y no cambia aquí. Motivo: el humano quiere elegir cómo se siente con palabras. Mockup: https://claude.ai/artifact/ERYg3yGCNPWG7x6tdGkjCq

@@ -50,6 +50,7 @@ import com.ayuno.domain.usecase.RecordProductLog
 import com.ayuno.domain.usecase.RecordSymptom
 import com.ayuno.domain.usecase.SavePersonProfile
 import com.ayuno.domain.usecase.SaveProduct
+import com.ayuno.domain.usecase.SaveMetricType
 import com.ayuno.domain.usecase.SetRefeedCheck
 import com.ayuno.domain.usecase.TriggerManualAlert
 import com.networknt.schema.JsonSchemaFactory
@@ -90,8 +91,8 @@ class ExchangeTest {
     fun tearDown() = worlds.forEach { it.database.close() }
 
     private val schemaDir = File(System.getProperty("schemaDir") ?: "../schema")
-    private val schemaFile get() = File(schemaDir, "fasting-log-1.0.schema.json")
-    private val exampleFile get() = File(schemaDir, "fasting-log-1.0.example.json")
+    private val schemaFile get() = File(schemaDir, "fasting-log-${ExchangeFormat.VERSION}.schema.json")
+    private val exampleFile get() = File(schemaDir, "fasting-log-${ExchangeFormat.VERSION}.example.json")
 
     private class Seeded(val fastId: String, val templateId: String)
 
@@ -290,6 +291,61 @@ class ExchangeTest {
         val again = (fresh.exporter().import(backup) as ImportCheck.Ok).value
         assertEquals(0, again.created)
         assertEquals(0, again.updated)
+        assertEquals(before, fresh.snapshot())
+    }
+
+    @Test
+    fun `H-049 las palabras viajan en 1_1, un archivo 1_0 conserva las del telefono y restaurar no duplica las de fabrica`() = runTest {
+        val source = world()
+        val s = source.seed()
+        val hunger = source.catalog.metricType("hunger")!!
+        SaveMetricType(source.catalog)(
+            SaveMetricType.Input("hunger", "Hambre", hunger.unit, true, 0.0, 10.0, hunger.options.map { SaveMetricType.OptionDraft(it.id, it.label, it.value) } + SaveMetricType.OptionDraft(null, "Feroz", 9.0)),
+        )
+        val doc = parse((source.export()(s.fastId) as Outcome.Ok).value.json)
+        assertEquals("1.1", doc["schema_version"]!!.jsonPrimitive.content)
+        assertEquals(21, doc["catalogs"]!!.jsonObject["metric_options"]!!.jsonArray.size)
+
+        val fresh = world()
+        assertTrue(fresh.exporter().import(doc.toString().toByteArray()) is ImportCheck.Ok)
+        assertEquals(source.catalog.metricType("hunger")!!.options, fresh.catalog.metricType("hunger")!!.options)
+        assertEquals(20 + 1, fresh.catalog.metricTypes().sumOf { it.options.size })
+
+        // Un archivo 1.0 no trae la lista: las palabras del teléfono no cambian.
+        val old = JsonObject(doc + ("schema_version" to JsonPrimitive("1.0")) + ("catalogs" to JsonObject(doc["catalogs"]!!.jsonObject - "metric_options")))
+        val other = world()
+        val before = other.catalog.metricTypes().associate { it.code to it.options }
+        assertTrue(other.exporter().import(old.toString().toByteArray()) is ImportCheck.Ok)
+        assertEquals(before, other.catalog.metricTypes().associate { it.code to it.options })
+    }
+
+    @Test
+    fun `H-049 palabras fuera de rango, repetidas o de una medicion no numerica rechazan el archivo sin tocar nada`() = runTest {
+        val source = world()
+        val s = source.seed()
+        val doc = parse((source.export()(s.fastId) as Outcome.Ok).value.json)
+        val options = doc["catalogs"]!!.jsonObject["metric_options"]!!.jsonArray.map { it.jsonObject }
+        fun withOptions(change: (List<JsonObject>) -> List<JsonObject>) =
+            JsonObject(doc + ("catalogs" to JsonObject(doc["catalogs"]!!.jsonObject + ("metric_options" to JsonArray(change(options)))))).toString().toByteArray()
+        fun newOption(type: String, label: String, value: Double) = JsonObject(
+            options.first().jsonObject + mapOf(
+                "id" to JsonPrimitive(Ids.newId()), "metric_type_code" to JsonPrimitive(type), "label" to JsonPrimitive(label),
+                "value" to JsonPrimitive(value), "position" to JsonPrimitive(9),
+            ),
+        )
+        val fresh = world()
+        val before = fresh.snapshot()
+        val n = options.size
+        assertEquals(ImportCheck.Rejected(ImportProblem.InvalidRow("metric_options", n + 1, "value")), fresh.exporter().import(withOptions { it + newOption("energy", "Desbordada", 11.0) }))
+        assertEquals(ImportCheck.Rejected(ImportProblem.InvalidRow("metric_options", n + 1, "label")), fresh.exporter().import(withOptions { it + newOption("hunger", "mucha", 8.0) }))
+        assertEquals(ImportCheck.Rejected(ImportProblem.InvalidRow("metric_options", n + 1, "value")), fresh.exporter().import(withOptions { it + newOption("hunger", "Feroz", 7.0) }))
+        // Una medición propia no numérica que viene en el mismo archivo no admite palabras.
+        val types = doc["catalogs"]!!.jsonObject["metric_types"]!!.jsonArray
+        val textType = JsonObject(types.first().jsonObject + mapOf("code" to JsonPrimitive("estado"), "is_numeric" to JsonPrimitive(false)))
+        val nonNumeric = JsonObject(
+            doc + ("catalogs" to JsonObject(doc["catalogs"]!!.jsonObject + mapOf("metric_types" to JsonArray(types + textType), "metric_options" to JsonArray(options + newOption("estado", "Bien", 1.0))))),
+        ).toString().toByteArray()
+        assertEquals(ImportCheck.Rejected(ImportProblem.InvalidRow("metric_options", n + 1, "metric_type_code")), fresh.exporter().import(nonNumeric))
         assertEquals(before, fresh.snapshot())
     }
 

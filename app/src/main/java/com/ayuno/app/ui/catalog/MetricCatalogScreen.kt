@@ -1,5 +1,14 @@
 package com.ayuno.app.ui.catalog
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -9,6 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,10 +36,12 @@ import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.PrimaryButton
 import com.ayuno.app.ui.components.ScreenScaffold
+import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.components.SecondaryButton
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
+import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.usecase.Outcome
 import com.ayuno.domain.usecase.SaveMetricType
@@ -86,6 +101,8 @@ fun MetricTypeEditorScreen(code: String?, onBack: () -> Unit, viewModel: MetricC
     var numeric by remember(existing) { mutableStateOf(existing?.isNumeric ?: true) }
     var min by remember(existing) { mutableStateOf(existing?.minValid?.let { Formats.number(it, 2) }.orEmpty()) }
     var max by remember(existing) { mutableStateOf(existing?.maxValid?.let { Formats.number(it, 2) }.orEmpty()) }
+    // H-049: las palabras se editan aquí y se guardan con «Guardar»; salir sin guardar las deja como estaban.
+    val words = remember(existing) { (existing?.options.orEmpty()).map { WordDraft(it.id, it.label, Formats.number(it.value, 2)) }.toMutableStateList() }
 
     ScreenScaffold(stringResource(if (existing == null) R.string.catalog_new_metric else R.string.catalog_edit_metric), onBack) {
         AyunoTextField(stringResource(R.string.field_name), name, { name = it })
@@ -98,13 +115,43 @@ fun MetricTypeEditorScreen(code: String?, onBack: () -> Unit, viewModel: MetricC
         if (numeric) {
             AyunoTextField(stringResource(R.string.field_min_valid), min, { min = it }, numeric = true)
             AyunoTextField(stringResource(R.string.field_max_valid), max, { max = it }, numeric = true)
+            WordsSection(words)
         }
         errors.forEach { FieldError(stringResource(it.message())) }
         PrimaryButton(stringResource(R.string.action_save), onClick = {
             viewModel.save(
-                SaveMetricType.Input(code, name, unit, numeric, Formats.parseNumber(min).takeIf { numeric }, Formats.parseNumber(max).takeIf { numeric }),
+                SaveMetricType.Input(
+                    code, name, unit, numeric, Formats.parseNumber(min).takeIf { numeric }, Formats.parseNumber(max).takeIf { numeric },
+                    options = words.map { SaveMetricType.OptionDraft(it.id, it.label, Formats.parseNumber(it.value) ?: Double.NaN) }.takeIf { numeric },
+                ),
                 onBack,
             )
         })
+    }
+}
+
+/** Palabra en edición: el número se guarda como texto hasta pulsar «Guardar». */
+private data class WordDraft(val id: String?, val label: String, val value: String)
+
+/** «Palabras para elegir» (H-049, `ajustes-catalogos.md`): texto y número, subir para ordenar, quitar, hasta 9. */
+@Composable
+private fun WordsSection(words: SnapshotStateList<WordDraft>) {
+    SectionTitle(stringResource(R.string.catalog_words_title))
+    Text(stringResource(R.string.catalog_words_help), style = MaterialTheme.typography.bodyLarge)
+    if (words.isEmpty()) Text(stringResource(R.string.catalog_words_empty), style = MaterialTheme.typography.bodyLarge)
+    words.forEachIndexed { i, w ->
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.spaceS)) {
+            AyunoTextField(stringResource(R.string.catalog_word_label), w.label, { words[i] = w.copy(label = it) }, Modifier.weight(1f))
+            AyunoTextField(stringResource(R.string.catalog_word_value), w.value, { words[i] = w.copy(value = it) }, Modifier.width(Dimens.tileSize), numeric = true)
+            IconButton(onClick = { words.add(i - 1, words.removeAt(i)) }, enabled = i > 0, modifier = Modifier.size(Dimens.touchMin)) {
+                Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.catalog_word_up, w.label))
+            }
+            IconButton(onClick = { words.removeAt(i) }, modifier = Modifier.size(Dimens.touchMin)) {
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.catalog_word_remove, w.label))
+            }
+        }
+    }
+    if (words.size < MetricType.MAX_OPTIONS) {
+        SecondaryButton(stringResource(R.string.catalog_word_add), onClick = { words.add(WordDraft(null, "", "")) })
     }
 }

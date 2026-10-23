@@ -2,7 +2,7 @@
 
 Fuente: `docs/SOLICITUD_app_movil_ayuno.md` (versión base, app genérica). Actor único: **la persona que ayuna**.
 
-Total: **48** historias · alta 33 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; H-048 con EV-004; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
+Total: **49** historias · alta 34 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; H-048 con EV-004; H-049 con EV-005; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
 
 ## Índice
 
@@ -56,6 +56,7 @@ Total: **48** historias · alta 33 · media 14 · baja 1. H-001 a H-043 son la v
 | H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
 | H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
 | H-048 | [Ver y corregir las mediciones del ayuno en curso](mediciones-048-ver-corregir-mediciones.md) | mediciones | alta | entregada (EV-004) |
+| H-049 | [Elegir con palabras en las escalas de cómo me siento](mediciones-049-escalas-con-palabras.md) | mediciones | alta | construida (EV-005; falta la verificación en el teléfono) |
 
 ## Épicas
 
@@ -172,3 +173,4 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | 2026-10-14 | EV-004: H-048 nueva (lista de mediciones del ayuno desde Inicio, con corrección y borrado); H-034 con reevaluación de reglas al corregir en curso y alcance por entregas (primero mediciones y presión); H-006 con el acceso desde Inicio; H-018 tocar un hecho lo abre | El humano necesita ver y corregir las mediciones de un ayuno en curso | Petición del humano (EV-004) |
 | 2026-10-14 | H-006 | Los hitos de Inicio pasan de lista vertical a la barra horizontal del wireframe; la fecha y hora de cada hito se ve bajo la barra (el siguiente por defecto, cualquiera al tocarlo). Sin cambio de criterios | Petición del humano |
 | 2026-10-14 | H-003 | La plantilla de ejemplo pasa de los hitos 12 y 24 a 24, 36 y 48 (con objetivo 36 h, el 48 queda después del objetivo). Las instalaciones existentes la reciben con la migración 6→7 (solo datos), salvo que la persona ya hubiera cambiado los hitos; los ayunos ya creados conservan los suyos | Petición del humano |
+| 2026-10-23 | EV-005: H-049 nueva (escalas con palabras que guardan un número, editables en Catálogos); H-007 y H-008 con el criterio de palabras; H-042 permite capturas de pantalla | El humano quiere elegir cómo se siente con palabras y poder hacer capturas de la app | Petición del humano (EV-005) |

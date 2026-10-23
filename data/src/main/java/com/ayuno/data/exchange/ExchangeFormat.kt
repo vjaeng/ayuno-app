@@ -28,7 +28,7 @@ import com.ayuno.domain.model.UserChoice
  */
 internal object ExchangeFormat {
     const val SCHEMA = "fasting-log"
-    const val VERSION = "1.0"
+    const val VERSION = "1.1"
     const val MAJOR = 1
 
     /** Columnas de fecha y hora local sin zona, con segundos (`2026-10-23T07:02:15`). */
@@ -71,6 +71,8 @@ internal object ExchangeFormat {
 
     val TABLES: List<Table> = listOf(
         Table("metric_type", "metric_types", catalog = true, pk = "code", booleans = setOf("is_numeric", "active")),
+        // 1.1 (EV-005): palabras de las mediciones; un archivo 1.0 no las trae.
+        Table("metric_option", "metric_options", catalog = true, refs = mapOf("metric_type_code" to "metric_type")),
         Table("symptom_type", "symptom_types", catalog = true, pk = "code", booleans = setOf("is_alarm", "active")),
         Table("intake_type", "intake_types", catalog = true, pk = "code", booleans = setOf("breaks_fast")),
         Table("product", "products", catalog = true, pk = "code", booleans = setOf("avoid", "active"), enums = mapOf("kind" to codes<ProductKind>())),

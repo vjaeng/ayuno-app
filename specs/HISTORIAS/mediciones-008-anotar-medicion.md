@@ -8,7 +8,7 @@
 
 ### Criterios de Aceptación
 - [ ] Desde la pantalla principal llego a guardar una medición en 3 toques o menos y en menos de 30 segundos.
-- [ ] El formulario usa teclado numérico para valores numéricos.
+- [ ] El formulario usa teclado numérico para valores numéricos; si la medición tiene palabras, muestra las palabras en su lugar (H-049).
 - [ ] La fecha y hora es «ahora» por defecto, con segundos, y se puede editar; cada medición admite nota opcional.
 - [ ] La glucosa indica su origen (sensor continuo o glucómetro), admite flecha de tendencia opcional y se puede anotar en mg/dL o mmol/L.
 - [ ] Un peso tecleado en lb se guarda en lb y también en kg; se muestran los dos y el tecleado nunca se sustituye por el convertido.
@@ -19,13 +19,14 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4): se guardan solo en el teléfono y no salen de él salvo exportación explícita. Toda entrada es hostil hasta validarse (S1).
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | mediciones activas en la rejilla | `metric_type.active` |  | ✓ |  |  |
 | orden de la rejilla (las del plan primero) | `plan_metric.metric_type_code` |  | ✓ |  |  |
 | tipo de medición | `measurement.metric_type_code` | ✓ |  |  |  |
 | teclado numérico para valores numéricos | `metric_type.is_numeric` |  | ✓ |  |  |
+| con palabras, las palabras en lugar del teclado (H-049) | `metric_option.label`, `metric_option.value`, `metric_option.position` |  | ✓ |  |  |
 | fecha y hora, por defecto ahora, con segundos | `measurement.taken_at` | ✓ |  | ✓ |  |
 | valor tecleado | `measurement.value_entered` | ✓ |  |  |  |
 | unidad en que se tecleó (mg/dL o mmol/L, lb…) | `measurement.unit_entered` | ✓ |  |  |  |

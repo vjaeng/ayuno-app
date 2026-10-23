@@ -87,7 +87,7 @@ class Batch4E2eTest {
     @Test
     fun `H040 un archivo de una version de formato mayor se rechaza con un mensaje claro`() {
         seededFast()
-        val newer = runBlocking { (app.container.exportData(null) as Outcome.Ok).value.json }.replace("\"schema_version\": \"1.0\"", "\"schema_version\": \"2.0\"")
+        val newer = runBlocking { (app.container.exportData(null) as Outcome.Ok).value.json }.replace(Regex("\"schema_version\": \"1\\.\\d+\""), "\"schema_version\": \"2.0\"")
         compose.activityRule.scenario.recreate()
         compose.tap("Más")
         compose.tap("Exportar e importar")

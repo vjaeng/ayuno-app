@@ -39,6 +39,7 @@ erDiagram
 
     FAST ||--o{ MEASUREMENT : "registra"
     METRIC_TYPE ||--o{ MEASUREMENT : "tipo"
+    METRIC_TYPE ||--o{ METRIC_OPTION : "palabras"
     FAST ||--o{ BLOOD_PRESSURE_READING : "registra"
     BLOOD_PRESSURE_READING |o--o| BLOOD_PRESSURE_READING : "de pie tras sentado"
     FAST ||--o{ SYMPTOM : "registra"
@@ -337,14 +338,14 @@ erDiagram
 | unit | TEXT | no nulo | Público | unidad del catálogo: la del valor convertido |
 | alt_unit | TEXT | opcional | Público | unidad alternativa aceptada al teclear |
 | entry_unit | TEXT | `unit` o `alt_unit`; default `unit` | Público | unidad por defecto del formulario; cambiarla no altera entradas guardadas |
-| is_numeric | BOOLEAN | no nulo | Público | numérico → teclado numérico |
+| is_numeric | BOOLEAN | no nulo | Público | numérico → teclado numérico, o sus palabras si tiene `metric_option` (H-049) |
 | min_valid | DECIMAL | opcional; < `max_valid` | Público | fuera de rango pide confirmación, no corrige |
 | max_valid | DECIMAL | opcional | Público | — |
 | active | BOOLEAN | default true | Público | desactivar no borra mediciones anotadas |
 
-*Justificación:* H-007 (catálogo precargado, desactivable, mediciones propias con nombre, unidad, numérica y rango; unidad principal y alternativa), H-008 (teclado numérico, rango válido), H-043 (unidades por defecto). El catálogo precargado incluye las escalas 0-10 de hambre, energía, ánimo y claridad mental como tipos numéricos con rango 0-10.
+*Justificación:* H-007 (catálogo precargado, desactivable, mediciones propias con nombre, unidad, numérica y rango; unidad principal y alternativa), H-008 (teclado numérico, rango válido), H-043 (unidades por defecto). El catálogo precargado incluye las escalas 0-10 de hambre, energía, ánimo y claridad mental como tipos numéricos con rango 0-10; desde EV-005 se anotan con sus palabras (`metric_option`, H-049).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-23, EV-005)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | R | name |
@@ -355,6 +356,26 @@ erDiagram
 | H-043 | R, U | alt_unit, entry_unit |
 | H-047 | R | active, unit, alt_unit, entry_unit, min_valid, max_valid |
 | H-048 | R | name, unit, alt_unit, is_numeric, min_valid, max_valid |
+| H-049 | R | name, is_numeric, min_valid, max_valid, entry_unit |
+
+#### METRIC_OPTION (dominio, catálogo)
+| Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
+|---|---|---|---|---|
+| metric_type_code | TEXT → METRIC_TYPE | no nulo; el tipo debe tener `is_numeric` | Público | medición a la que pertenece la palabra |
+| label | TEXT | no nulo, no vacío; único por tipo entre las no borradas | Público | palabra que se muestra al anotar y al leer («Mucha») |
+| value | DECIMAL | no nulo; entre `metric_type.min_valid` y `metric_type.max_valid` si existen; único por tipo entre las no borradas | Público | número que se guarda al elegir la palabra, en `metric_type.unit`; cambiar el rango del tipo (H-007) no se permite si deja palabras no borradas fuera |
+| position | INTEGER | no nulo | Público | orden de los botones; como mucho 9 palabras no borradas por tipo |
+
+*Justificación:* H-049 (palabras de fábrica para hambre, energía, ánimo y claridad mental; editables, ordenables y asignables a mediciones propias; la palabra se ve al leer), H-007 (una medición numérica puede tener palabras), H-008 (el formulario las muestra en lugar del teclado). Las unicidades se comprueban en el dominio, no en SQL, porque el borrado es blando (D-21).
+
+**Mapa de Consumo** (tejido el 2026-10-23, EV-005)
+| Historia | Operaciones | Campos |
+|---|---|---|
+| H-007 | R | metric_type_code |
+| H-008 | R | label, value, position |
+| H-036 | R | todos |
+| H-040 | C, U | todos |
+| H-049 | C, R, U, D | todos (D: `deleted_at`) |
 
 #### SYMPTOM_TYPE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -449,7 +470,7 @@ erDiagram
 
 *Justificación:* H-008 (anotar con fecha y hora editable, nota, origen y tendencia de la glucosa, unidad tecleada y equivalente, fuera de rango tal cual), H-017 (no se hizo con motivo, hora programada), H-020 y H-024 (lecturas para reglas sostenidas y al despertar). La presión arterial **no** se guarda aquí: tiene entidad propia (D-09).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-23, EV-005)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | metric_type_code, taken_at, value_entered, unit_entered; número del ayuno (`fast_id`) |
@@ -471,6 +492,7 @@ erDiagram
 | H-045 | R, D | todos |
 | H-047 | C, R | metric_type_code, taken_at, value_num, value_entered, unit_entered |
 | H-048 | R, U, D | R: metric_type_code, taken_at, value_entered, unit_entered, value_text, source, trend, on_waking, not_done_reason; U (vía H-034): esos + value_num, note; D (vía H-034): `deleted_at` |
+| H-049 | C, R, U | C: metric_type_code, taken_at, value_entered, value_num, unit_entered, on_waking, note, not_done_reason; R: metric_type_code, value_entered, value_num, unit_entered; U (vía H-034): value_entered, value_num, unit_entered |
 
 #### BLOOD_PRESSURE_READING (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -744,6 +766,7 @@ erDiagram
 | Franja del ayuno | planificado: de `last_meal_planned` al fin previsto · en curso: de `last_meal_actual` (o `last_meal_planned`) al mayor entre el fin previsto y ahora · terminado: de `last_meal_actual` (o `last_meal_planned`) a `end_actual` | H-004, H-044 |
 | Peso inicial, final y diferencia | sobre `measurement` del ayuno con `metric_type_code = weight` y `value_num` no nulo: inicial = la última con `taken_at` ≤ `fast.clock_start_actual` o, si no hay, la primera; final = la última con `taken_at` ≤ `fast.end_actual` y posterior a la inicial o, si no hay, la primera tras `end_actual`; diferencia = final − inicial en `metric_type.unit`, mostrada en `metric_type.entry_unit` (D-19) | H-030, H-033, H-047 |
 | Hora del ayuno («hora 33») | ahora o la hora de la entrada − `clock_start_actual` | H-018 |
+| Palabra de una medición | `metric_option.label` sin `deleted_at` del mismo `metric_type_code` cuyo `value` es igual a `measurement.value_num`; si no hay, el número con su unidad (`value_entered` + `unit_entered`, «4 de 0 a 10», como hasta ahora). Se muestra «palabra · número» (D-21) | H-049 (se ve en las pantallas de H-006, H-018, H-033, H-048 y en la alerta) |
 | Mediciones del ayuno | `measurement` y `blood_pressure_reading` sin `deleted_at` con el `fast_id` del ayuno, ordenadas por `taken_at` descendente y agrupadas por día; número = cuántas son; «corregida» = existe una fila de `edit_log` con su `row_id` y `action = edit` (D-20) | H-006, H-048 |
 
 ## 3. Estructuras de control
@@ -782,6 +805,7 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | Peso inicial / peso final / cuánto cambió | derivado «Peso inicial, final y diferencia» (§2.5) sobre `measurement` de `weight` | no son campos de `fast` (D-19) |
 | Toma de presión / presión arterial | `blood_pressure_reading` | «toma» sin más es de un producto (`product_log`) |
 | Tipo de medición | `metric_type` | — |
+| Palabra / lista de valores / opción de una escala | `metric_option` | «escala» = medición con palabras (hambre, energía, ánimo, claridad mental); la palabra mostrada en una medición es el derivado «Palabra de una medición» (§2.5) |
 | Síntoma | `symptom` / `symptom_type` | — |
 | Ingesta / líquido / electrolito | `intake` / `intake_type` | «líquidos y electrolitos» es el módulo; *ingesta* incluye caldo y comida |
 | Meta del día | `intake_goal` | — |
@@ -824,6 +848,7 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-18 | 2026-10-13 | La rejilla Anotar muestra toda medición con `metric_type.active`, esté o no en el plan del ayuno; `plan_metric` decide solo los recordatorios y el orden (las del plan primero). | Petición del humano: un ayuno desde cero (o creado antes de activar una medición) quedaba sin poder anotar mediciones, y el plan de un ayuno empezado no se edita. `measurement` nunca exigió `plan_metric`: sin cambio de esquema. |
 | D-19 | 2026-10-13 | EV-003 (H-047): el peso al empezar y al terminar es un `measurement` normal (`weight`); no hay campos de peso en `fast`. El de terminar se inserta en la transacción del fin con `taken_at = end_actual` y no evalúa reglas; el de empezar se guarda después como cualquier entrada y sí las evalúa. Inicial y final se derivan (§2.5). | Sin cambio de esquema; el peso se corrige, se borra y se exporta como el resto de mediciones. Una regla que ofrezca terminar no tiene sentido sobre un ayuno que ya termina. |
 | D-20 | 2026-10-14 | EV-004 (H-034, H-048): corregir una `measurement` o `blood_pressure_reading` actualiza la fila conservando su `id`, recalcula `value_num` desde `value_entered` + `unit_entered` y escribe una fila de `edit_log` por campo cambiado, todo en una transacción. Si el ayuno está `in_progress`, en esa misma transacción se evalúan las reglas con la entrada corregida (puede crear `alert`); las `alert` ya registradas no se modifican. Borrar (`deleted_at`) y restaurar escriben `edit_log` y no evalúan reglas. Guardar sin cambios no escribe nada. | Petición del humano: corregir un error de dedo durante el ayuno debe tener el mismo efecto de seguridad que anotarlo bien; las alertas pasadas son registro de seguridad (S8). `value_entered` sigue siendo «lo tecleado»: la corrección lo sustituye por lo nuevo tecleado y el anterior queda en `edit_log`. Sin cambio de esquema. |
+| D-21 | 2026-10-23 | EV-005 (H-049): las palabras de una medición viven en la entidad nueva `metric_option` (`metric_type_code`, `label`, `value`, `position`), con borrado blando. Elegir una palabra guarda en `measurement` solo el número: `value_entered = value_num = metric_option.value` y `unit_entered = metric_type.entry_unit`; no se guarda qué palabra se eligió, se deriva del número (§2.5). Editar o quitar palabras nunca reescribe mediciones. Se precargan 20 palabras (5 por escala, valores 0, 3, 5, 7, 10). Cambio **compatible**: tabla nueva; ninguna existente cambia. | Petición del humano: elegir con palabras sin perder el número que usan reglas, historial y exportación. Guardar solo el número deja intactas las mediciones ya anotadas (también las del ayuno en curso) y las reglas existentes; requisito transversal «Todo configurable» (HISTORIAS/README): las palabras son datos editables, no código. |
 
 ## 6. Preguntas para el humano
 

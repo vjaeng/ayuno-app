@@ -30,6 +30,7 @@ import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.OptionSelector
 import com.ayuno.app.ui.components.PrimaryButton
 import com.ayuno.app.ui.components.ScreenScaffold
+import com.ayuno.app.ui.components.WordSelector
 import com.ayuno.app.ui.components.SecondaryButton
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
@@ -40,6 +41,7 @@ import com.ayuno.domain.model.GlucoseSource
 import com.ayuno.domain.model.Trend
 import com.ayuno.domain.units.UnitConversions
 import com.ayuno.domain.usecase.RecordMeasurement
+import com.ayuno.domain.usecase.ValidationError
 import java.time.LocalDateTime
 
 /** H-008: formulario de una sola pantalla para una medición. */
@@ -58,6 +60,7 @@ fun MeasurementFormScreen(
 
     var takenAt by remember { mutableStateOf(scheduledFor ?: viewModel.now()) }
     var value by remember { mutableStateOf("") }
+    var optionId by remember { mutableStateOf<String?>(null) }
     var unit by remember { mutableStateOf<String?>(null) }
     // Origen preseleccionado (wireframe de UX-UI): anotar una glucosa cuesta 3 toques (H-008).
     var source by remember { mutableStateOf<GlucoseSource?>(GlucoseSource.CGM) }
@@ -71,12 +74,14 @@ fun MeasurementFormScreen(
     ScreenScaffold(current?.name ?: "", onBack) {
         if (current == null) { LoadingState(); return@ScreenScaffold }
         val selectedUnit = unit ?: current.entryUnit
+        // H-049: con palabras, se elige una en lugar de teclear el número.
+        val words = current.options.takeIf { current.isNumeric }.orEmpty()
         fun input(confirmed: Boolean = false, notDone: String? = null) = RecordMeasurement.Input(
             fastId = fastId,
             metricTypeCode = current.code,
             takenAt = takenAt,
             scheduledFor = scheduledFor,
-            valueEntered = if (current.isNumeric) Formats.parseNumber(value) else null,
+            valueEntered = if (current.isNumeric && words.isEmpty()) Formats.parseNumber(value) else null,
             unitEntered = selectedUnit.takeIf { current.isNumeric },
             valueText = value.takeIf { !current.isNumeric },
             source = source,
@@ -85,19 +90,24 @@ fun MeasurementFormScreen(
             note = note,
             notDoneReason = notDone,
             confirmedOutOfRange = confirmed,
+            metricOptionId = optionId.takeIf { words.isNotEmpty() && notDone == null },
         )
 
         LaunchedEffect(save) { (save as? SaveState.Saved)?.let { onSaved(it.alerts) } }
 
         DateTimeField(stringResource(R.string.field_taken_at), takenAt, { takenAt = it }, showSeconds = true)
-        AyunoTextField(
-            label = stringResource(R.string.field_value),
-            value = value,
-            onValueChange = { value = it },
-            numeric = current.isNumeric,
-            suffix = selectedUnit.takeIf { current.isNumeric },
-        )
-        if (current.isNumeric && current.altUnit != null) {
+        if (words.isNotEmpty()) {
+            WordSelector(words, optionId, { optionId = it.id }, stringResource(R.string.record_words_description, current.name))
+        } else {
+            AyunoTextField(
+                label = stringResource(R.string.field_value),
+                value = value,
+                onValueChange = { value = it },
+                numeric = current.isNumeric,
+                suffix = selectedUnit.takeIf { current.isNumeric },
+            )
+        }
+        if (current.isNumeric && current.altUnit != null && words.isEmpty()) {
             OptionSelector(listOf(current.unit to current.unit, current.altUnit!! to current.altUnit!!), selectedUnit, { unit = it })
             val number = Formats.parseNumber(value)
             if (number != null && selectedUnit != current.unit) {
@@ -111,7 +121,7 @@ fun MeasurementFormScreen(
         CheckRow(stringResource(R.string.field_on_waking), onWaking) { onWaking = it }
         AyunoTextField(stringResource(R.string.field_note), note, { note = it }, singleLine = false)
 
-        (save as? SaveState.Invalid)?.errors?.forEach { FieldError(stringResource(it.message())) }
+        (save as? SaveState.Invalid)?.errors?.forEach { FieldError(stringResource(it.messageWithWords(words.isNotEmpty()))) }
         PrimaryButton(stringResource(R.string.action_save), onClick = { viewModel.recordMeasurement(input()) }, enabled = save !is SaveState.Saving)
         SecondaryButton(stringResource(R.string.record_not_done), onClick = { notDoneDialog = true })
 
@@ -130,11 +140,16 @@ fun MeasurementFormScreen(
             NotDoneDialog(onDismiss = { notDoneDialog = false }) { reason ->
                 notDoneDialog = false
                 value = ""
+                optionId = null
                 viewModel.recordMeasurement(input(notDone = reason).copy(valueEntered = null, valueText = null))
             }
         }
     }
 }
+
+/** Sin valor, una medición con palabras pide elegir una (H-049) en lugar de escribir el valor. */
+fun ValidationError.messageWithWords(hasWords: Boolean): Int =
+    if (hasWords && this == ValidationError.VALUE_REQUIRED) R.string.error_choose_word else message()
 
 /** El diálogo pedido al abrir (desde Hoy o la notificación) espera a que la pantalla termine de entrar. */
 @Composable

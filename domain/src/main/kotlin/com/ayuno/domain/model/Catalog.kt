@@ -11,6 +11,8 @@ data class MetricType(
     val minValid: Double?,
     val maxValid: Double?,
     val active: Boolean,
+    /** H-049: palabras para elegir en lugar de teclear (sin las borradas), en orden de `position`. */
+    val options: List<MetricOption> = emptyList(),
 ) {
     val isBloodPressure: Boolean get() = code == BLOOD_PRESSURE_CODE
     val isGlucose: Boolean get() = code == GLUCOSE_CODE
@@ -18,12 +20,25 @@ data class MetricType(
     fun isOutOfRange(value: Double): Boolean =
         (minValid != null && value < minValid) || (maxValid != null && value > maxValid)
 
+    /** Derivado «Palabra de una medición» (MODELO §2.5, D-21): la palabra cuyo número es el guardado, si hay. */
+    fun optionFor(valueNum: Double?): MetricOption? = valueNum?.let { v -> options.firstOrNull { it.value == v } }
+
     companion object {
+        const val MAX_OPTIONS = 9
         const val BLOOD_PRESSURE_CODE = "blood_pressure"
         const val GLUCOSE_CODE = "glucose"
         const val WEIGHT_CODE = "weight"
     }
 }
+
+/** `metric_option` (H-049, D-21): palabra con el número que se guarda al elegirla. */
+data class MetricOption(
+    val id: String,
+    val metricTypeCode: String,
+    val label: String,
+    val value: Double,
+    val position: Int,
+)
 
 /** Rangos válidos de la presión, fuera del modelo (P-11, ADR-008). */
 data class BloodPressureRanges(

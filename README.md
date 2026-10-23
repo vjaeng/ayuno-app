@@ -57,7 +57,7 @@ La distribución es por APK (sin tienda). Al actualizar, la base de datos se mig
 ./gradlew connectedAndroidTest   # verificación en dispositivo
 ```
 
-El esquema `schema/fasting-log-1.0.schema.json` se genera desde la descripción del formato, y una prueba valida cada exportación contra él. Si el formato cambia, se regenera con:
+El esquema vigente `schema/fasting-log-1.1.schema.json` (el 1.0 queda publicado como referencia) se genera desde la descripción del formato, y una prueba valida cada exportación contra él. Si el formato cambia, se regenera con:
 
 ```bash
 ./gradlew :data:testDebugUnitTest -PregenerateSchema=true --tests '*ExchangeTest*'

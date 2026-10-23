@@ -104,12 +104,14 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación), EV-003 (peso al empezar y al terminar, con su diferencia) y EV-004 (ver y corregir las mediciones del ayuno en curso) cerradas; H-034 hecha para mediciones y presión. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación), EV-003 (peso al empezar y al terminar, con su diferencia), EV-004 (ver y corregir las mediciones del ayuno en curso) y EV-005 (capturas permitidas y escalas con palabras; falta verificarla en el teléfono) cerradas; H-034 hecha para mediciones y presión. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
 
 ## Decisiones Técnicas
 
 | Fecha | Decisión | Razón |
 |---|---|---|
+| 2026-10-23 | Las escalas se anotan con palabras de `metric_option` que guardan solo su número; la palabra se deriva (MODELO D-21); base de datos 8 y formato 1.1, ambos aditivos | EV-005: elegir cómo me siento con palabras sin tocar mediciones, reglas ni exportación, y sin perder los datos del ayuno en curso |
+| 2026-10-23 | Sin `FLAG_SECURE`: la app permite capturas de pantalla siempre (ADR-SEG-002 enmendado) | EV-005: decisión del humano; riesgo de privacidad aceptado |
 | 2026-10-14 | Corregir una entrada conserva su id, deja una fila de `edit_log` por campo y, con el ayuno en curso, vuelve a evaluar las reglas en la misma transacción; las alertas pasadas no se tocan (MODELO D-20) | EV-004: un error de dedo corregido debe tener el mismo efecto de seguridad que anotarlo bien (S8) |
 | 2026-10-13 | El peso al empezar y al terminar es una medición normal; inicial, final y diferencia se derivan (MODELO D-19) | EV-003: sin campos nuevos ni cambio de esquema; se corrige, borra y exporta como el resto |
 | 2026-10-13 | Anotar ofrece todas las mediciones activas del catálogo; el plan del ayuno solo decide recordatorios y orden (MODELO D-18) | Un ayuno desde cero quedaba sin mediciones que anotar |

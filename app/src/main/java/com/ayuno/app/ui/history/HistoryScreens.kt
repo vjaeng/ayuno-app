@@ -146,6 +146,7 @@ data class FastDetail(
     val endRuleName: String?,
     val days: List<TimelineDay>,
     val metricNames: Map<String, String>,
+    val metricTypes: Map<String, com.ayuno.domain.model.MetricType> = emptyMap(),
     val symptomNames: Map<String, String>,
     val intakeNames: Map<String, String>,
     val productNames: Map<String, String>,
@@ -188,6 +189,7 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
             endRuleName = source.ruleById(source.fast.endRuleId)?.name,
             days = days,
             metricNames = c.catalog.metricTypes().associate { it.code to it.name },
+            metricTypes = c.catalog.metricTypes().associateBy { it.code },
             symptomNames = c.catalog.symptomTypes().associate { it.code to it.name },
             intakeNames = intakeTypes.associate { it.code to it.name },
             productNames = c.catalog.products().associate { it.code to it.name },
@@ -352,7 +354,7 @@ private fun entryText(entry: TimelineEntry, d: FastDetail): String {
             val m = entry.value
             val name = d.metricNames[m.metricTypeCode] ?: m.metricTypeCode
             m.notDoneReason?.let { "$name · $notDone · $it" }
-                ?: "$name ${m.valueEntered?.let { Formats.number(it, 2) } ?: m.valueText.orEmpty()} ${m.unitEntered.orEmpty()}".trim()
+                ?: "$name ${Formats.measurementValue(m, d.metricTypes[m.metricTypeCode])}"
         }
         is TimelineEntry.OfBloodPressure -> {
             val r = entry.value

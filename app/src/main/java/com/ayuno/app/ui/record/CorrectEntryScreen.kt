@@ -39,6 +39,7 @@ import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.OptionSelector
 import com.ayuno.app.ui.components.PrimaryButton
 import com.ayuno.app.ui.components.ScreenScaffold
+import com.ayuno.app.ui.components.WordSelector
 import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
@@ -176,7 +177,7 @@ fun CorrectEntryScreen(kind: EntryKind, id: String, onBack: () -> Unit, onSaved:
     }
 
     if (confirmingDelete && loaded != null) {
-        val what = loaded.measurement?.let { "${loaded.type?.name.orEmpty()} ${it.valueEntered?.let { v -> Formats.number(v, 2) } ?: it.valueText.orEmpty()} ${it.unitEntered.orEmpty()}".trim() }
+        val what = loaded.measurement?.let { "${loaded.type?.name.orEmpty()} ${Formats.measurementValue(it, loaded.type)}".trim() }
             ?: loaded.reading?.let { "${loaded.type?.name.orEmpty()} ${it.systolic ?: ""}/${it.diastolic ?: ""}" }.orEmpty()
         val at = loaded.measurement?.takenAt ?: loaded.reading!!.takenAt
         // DialogoConfirmacion: la acción segura (Cancelar) a la derecha, sin rojo.
@@ -211,6 +212,10 @@ private fun MeasurementCorrection(fast: Fast, m: Measurement, type: MetricType, 
     var takenAt by remember(m.id) { mutableStateOf(m.takenAt) }
     val initialValue = m.valueEntered?.let { Formats.number(it, 4) } ?: m.valueText.orEmpty()
     var value by remember(m.id) { mutableStateOf(initialValue) }
+    // H-049: con palabras se corrige eligiendo otra; un número sin palabra empieza sin ninguna marcada.
+    val words = type.options.takeIf { type.isNumeric && m.notDoneReason == null }.orEmpty()
+    val initialOption = type.optionFor(m.valueNum)?.id
+    var optionId by remember(m.id) { mutableStateOf(initialOption) }
     var unit by remember(m.id) { mutableStateOf(m.unitEntered ?: type.entryUnit) }
     var source by remember(m.id) { mutableStateOf(m.source) }
     var trend by remember(m.id) { mutableStateOf(m.trend) }
@@ -223,7 +228,11 @@ private fun MeasurementCorrection(fast: Fast, m: Measurement, type: MetricType, 
     fun input(confirmed: Boolean = false) = CorrectMeasurement.Input(
         id = m.id,
         takenAt = takenAt,
-        valueEntered = if (!isNotDone && type.isNumeric) Formats.parseNumber(value) else null,
+        valueEntered = when {
+            isNotDone || !type.isNumeric -> null
+            words.isNotEmpty() -> m.valueEntered
+            else -> Formats.parseNumber(value)
+        },
         unitEntered = unit.takeIf { !isNotDone && type.isNumeric },
         valueText = value.takeIf { !isNotDone && !type.isNumeric },
         source = source,
@@ -233,8 +242,11 @@ private fun MeasurementCorrection(fast: Fast, m: Measurement, type: MetricType, 
         notDoneReason = notDone.takeIf { isNotDone },
         reason = reason,
         confirmedOutOfRange = confirmed,
+        metricOptionId = optionId.takeIf { words.isNotEmpty() && optionId != initialOption },
     )
-    val changed = takenAt != m.takenAt || value != initialValue || unit != (m.unitEntered ?: type.entryUnit) || source != m.source ||
+    // Con palabras, sin elegir otra se reenvía el número que había.
+    val valueChanged = if (words.isNotEmpty()) optionId != initialOption else value != initialValue
+    val changed = takenAt != m.takenAt || valueChanged || unit != (m.unitEntered ?: type.entryUnit) || source != m.source ||
         trend != m.trend || onWaking != m.onWaking || note != m.note.orEmpty() || notDone != m.notDoneReason.orEmpty()
 
     DateTimeField(stringResource(R.string.field_taken_at), takenAt, { takenAt = it }, showSeconds = true)
@@ -242,8 +254,12 @@ private fun MeasurementCorrection(fast: Fast, m: Measurement, type: MetricType, 
         Text(stringResource(R.string.correct_not_done_info), style = MaterialTheme.typography.bodyLarge)
         AyunoTextField(stringResource(R.string.field_reason), notDone, { notDone = it })
     } else {
-        AyunoTextField(stringResource(R.string.field_value), value, { value = it }, numeric = type.isNumeric, suffix = unit.takeIf { type.isNumeric })
-        if (type.isNumeric && type.altUnit != null) {
+        if (words.isNotEmpty()) {
+            WordSelector(words, optionId, { optionId = it.id }, stringResource(R.string.record_words_description, type.name))
+        } else {
+            AyunoTextField(stringResource(R.string.field_value), value, { value = it }, numeric = type.isNumeric, suffix = unit.takeIf { type.isNumeric })
+        }
+        if (type.isNumeric && type.altUnit != null && words.isEmpty()) {
             OptionSelector(listOf(type.unit to type.unit, type.altUnit!! to type.altUnit!!), unit, { unit = it })
             val number = Formats.parseNumber(value)
             if (number != null && unit != type.unit) {

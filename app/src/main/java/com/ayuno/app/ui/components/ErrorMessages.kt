@@ -36,6 +36,14 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.WEIGHT_OUT_OF_RANGE_UNCONFIRMED -> R.string.error_weight_out_of_range
     ValidationError.ENTRY_NOT_FOUND -> R.string.error_entry_not_found
     ValidationError.FIELD_NOT_EDITABLE -> R.string.error_field_not_editable
+    ValidationError.OPTION_NOT_FOUND -> R.string.error_option_not_found
+    ValidationError.OPTION_LABEL_REQUIRED -> R.string.error_option_label_required
+    ValidationError.OPTION_VALUE_REQUIRED -> R.string.error_option_value_required
+    ValidationError.OPTION_LABEL_DUPLICATED -> R.string.error_option_label_duplicated
+    ValidationError.OPTION_VALUE_DUPLICATED -> R.string.error_option_value_duplicated
+    ValidationError.OPTION_VALUE_OUT_OF_RANGE -> R.string.error_option_value_out_of_range
+    ValidationError.OPTIONS_TOO_MANY -> R.string.error_options_too_many
+    ValidationError.OPTIONS_NOT_NUMERIC -> R.string.error_options_not_numeric
     ValidationError.SOURCE_REQUIRED -> R.string.error_source_required
     ValidationError.DIASTOLIC_NOT_BELOW_SYSTOLIC -> R.string.error_diastolic
     ValidationError.PAIRED_READING_INVALID -> R.string.error_paired

@@ -24,6 +24,19 @@ data class MetricTypeEntity(
     @ColumnInfo(name = "deleted_at") val deletedAt: String?,
 )
 
+/** H-049 (D-21): palabra con su número; las unicidades por tipo las comprueba el dominio (borrado blando). */
+@Entity(tableName = "metric_option", indices = [Index("metric_type_code")])
+data class MetricOptionEntity(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "metric_type_code") val metricTypeCode: String,
+    val label: String,
+    val value: Double,
+    val position: Int,
+    @ColumnInfo(name = "created_at") val createdAt: String,
+    @ColumnInfo(name = "updated_at") val updatedAt: String?,
+    @ColumnInfo(name = "deleted_at") val deletedAt: String?,
+)
+
 @Entity(tableName = "template")
 data class TemplateEntity(
     @PrimaryKey val id: String,

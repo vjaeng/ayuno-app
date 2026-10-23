@@ -16,7 +16,7 @@ Registro de decisiones arquitectónicas (formato Nygard). Las decisiones con com
 | ADR-008 | Datos precargados y textos fuera del código | aceptada |
 | ADR-009 | Inyección de dependencias manual | aceptada |
 | ADR-SEG-001 | Base de datos cifrada con SQLCipher y clave en Android Keystore | aceptada |
-| ADR-SEG-002 | Bloqueo con la credencial del dispositivo | aceptada |
+| ADR-SEG-002 | Bloqueo con la credencial del dispositivo | aceptada (enmendada en EV-005: sin `FLAG_SECURE`) |
 | ADR-SEG-003 | Exportación de datos Críticos iniciada solo por la persona | aceptada |
 | ADR-SEG-004 | App sin permiso de red ni terceros | aceptada |
 | ADR-SEG-005 | Copia de seguridad cifrada con contraseña | aceptada |
@@ -153,6 +153,8 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 
 **Aclaración (EV-001, 2026-10-10).** Un plan reemplazado al cambiar la plantilla de un ayuno planificado viaja con `deleted_at` (MODELO-DATOS D-16); un ayuno borrado no viaja (D-15, borrado definitivo). Compatible: `schema_version` sigue en 1.0; registrado en `schema/CHANGELOG.md`.
 
+**Versión 1.1 (EV-005, 2026-10-23).** `catalogs` añade `metric_options` (MODELO-DATOS D-21). Cambio aditivo: `schema_version` pasa a **1.1** (menor); la app sigue importando archivos 1.0 (sin la lista: se conservan las palabras del teléfono) y rechaza una versión mayor 2.x. Esquema `schema/fasting-log-1.1.schema.json` y entrada en `schema/CHANGELOG.md`.
+
 ## ADR-008: Datos precargados y textos fuera del código
 **Fecha:** 2026-10-08 · **Estado:** aceptada
 
@@ -212,7 +214,7 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - `BiometricPrompt` con `BIOMETRIC_STRONG | DEVICE_CREDENTIAL` (huella o PIN/patrón del teléfono). La app no guarda ningún PIN.
 - Con el bloqueo activo: se pide al abrir en frío y al volver tras 5 minutos en segundo plano. Excepciones sin desbloqueo: pantalla de Seguridad (reglas y llamada) y la alerta roja (su mensaje y decisión), porque detenerse a autenticarse juega contra la seguridad física.
 - Datos personales, exportar e importar piden autenticación siempre.
-- `FLAG_SECURE` en todas las pantallas con datos de salud (oculta el contenido en multitarea y capturas).
+- ~~`FLAG_SECURE` en todas las pantallas con datos de salud (oculta el contenido en multitarea y capturas).~~ Retirado por la enmienda EV-005 (abajo).
 - Notificaciones con versión pública genérica en la pantalla de bloqueo («Tienes un recordatorio del ayuno»), sin valores.
 - Si el teléfono no tiene credencial configurada, el interruptor no se puede activar (falla cerrado, S6).
 
@@ -221,6 +223,11 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - Paga: `FLAG_SECURE` impide que la persona haga capturas de pantalla de sus datos; la excepción de la alerta roja muestra el mensaje de la regla a quien tenga el teléfono en la mano.
 
 **Alternativas consideradas.** PIN propio: exige guardar un hash Crítico y gestionar intentos (P-08 lo descartó). Bloquear también Seguridad y alertas: más privado, pero puede retrasar una decisión de seguridad física.
+
+*Enmienda EV-005 (2026-10-23, decisión del humano):* la app **no** usa `FLAG_SECURE` en ninguna pantalla: la persona puede hacer capturas y la vista de aplicaciones recientes muestra el contenido. El resto del ADR (bloqueo, excepciones, notificaciones genéricas en la pantalla de bloqueo, falla cerrado) no cambia.
+- Gana: la persona puede guardar o enviar a quien quiera una imagen de su reloj, sus mediciones o una alerta (H-042).
+- Paga (riesgo aceptado, S4): una captura sale del cifrado de la app (ADR-SEG-001), queda en la galería y el sistema puede copiarla a la nube; la miniatura de recientes muestra datos Crítico a quien tenga el teléfono, también con el bloqueo activo (el bloqueo pide credencial al volver, pero la miniatura ya es visible). La app no lo mitiga.
+- Alternativas: interruptor «Permitir capturas» en Ajustes, apagado o encendido de fábrica — descartadas por el humano en favor de permitir siempre.
 
 ## ADR-SEG-003: Exportación de datos Críticos iniciada solo por la persona
 **Fecha:** 2026-10-08 · **Estado:** aceptada · **Principios:** S4, S6, S8
@@ -317,4 +324,4 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - **Q-01 — Episodios de alerta (ADR-006).** Propuesta: una regla no se repite mientras su condición siga cumpliéndose; se rearma con una lectura dentro del umbral. **Aceptado.**
 - **Q-02 — Icono de alarma (ADR-005).** Usar alarmas de despertador muestra el icono de alarma en la barra de estado durante el ayuno. **Aceptado.**
 - **Q-03 — Excepción del bloqueo (ADR-SEG-002).** La alerta roja y la pantalla de Seguridad se muestran sin desbloquear. **Aceptado.**
-- **Q-04 — Capturas de pantalla (ADR-SEG-002).** `FLAG_SECURE` impide hacer capturas de los datos. **Se aplica siempre** en pantallas con datos de salud.
+- **Q-04 — Capturas de pantalla (ADR-SEG-002).** `FLAG_SECURE` impide hacer capturas de los datos. **Se aplica siempre** en pantallas con datos de salud. *Revertida el 2026-10-23 (EV-005): las capturas se permiten siempre; ver la enmienda de ADR-SEG-002.*

@@ -6,6 +6,7 @@ import com.ayuno.data.db.EditLogEntity
 import com.ayuno.data.db.FastEntity
 import com.ayuno.data.db.MeasurementEntity
 import com.ayuno.data.db.MetricScheduleEntity
+import com.ayuno.data.db.MetricOptionEntity
 import com.ayuno.data.db.MetricTypeEntity
 import com.ayuno.data.db.PlanMetricEntity
 import com.ayuno.data.db.RuleEntity
@@ -23,6 +24,7 @@ import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.GlucoseSource
 import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricSchedule
+import com.ayuno.domain.model.MetricOption
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.PlanMetric
 import com.ayuno.domain.model.PlanOwner
@@ -60,7 +62,12 @@ internal fun String.localDateTime(): LocalDateTime = LocalTimes.parse(this)
 internal fun LocalTime.text(): String = toString().take(5)
 internal fun String.localTime(): LocalTime = LocalTime.parse(this)
 
-internal fun MetricTypeEntity.toDomain() = MetricType(code, name, unit, altUnit, entryUnit, isNumeric, minValid, maxValid, active)
+internal fun MetricTypeEntity.toDomain(options: List<MetricOptionEntity> = emptyList()) = MetricType(
+    code, name, unit, altUnit, entryUnit, isNumeric, minValid, maxValid, active,
+    options = options.filter { it.metricTypeCode == code && it.deletedAt == null }.sortedBy { it.position }.map { it.toDomain() },
+)
+
+internal fun MetricOptionEntity.toDomain() = MetricOption(id, metricTypeCode, label, value, position)
 
 internal fun MetricType.toEntity(createdAt: String, updatedAt: String?) =
     MetricTypeEntity(code, name, unit, altUnit, entryUnit, isNumeric, minValid, maxValid, active, createdAt, updatedAt, null)

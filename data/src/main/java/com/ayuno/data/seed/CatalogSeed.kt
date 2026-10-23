@@ -29,6 +29,12 @@ object CatalogSeed {
     )
 
     @Serializable
+    private data class SeedOption(val label: String, val value: Double)
+
+    @Serializable
+    private data class SeedMetricOptions(@SerialName("metric_type_code") val metricTypeCode: String, val options: List<SeedOption>)
+
+    @Serializable
     private data class SeedSymptomType(
         val code: String,
         val name: String,
@@ -102,9 +108,37 @@ object CatalogSeed {
                 },
             )
         }
+        insertMetricOptions(db, context, now)
         insertCatalogs(db, context, now)
         insertExampleTemplate(db, context, now)
     }
+
+    /**
+     * H-049: palabras de fábrica de las escalas, con identificadores fijos (restaurar en otro teléfono no las duplica).
+     * También la usa la migración 7→8: solo para tipos que existen, son numéricos y aún no tienen palabras; no toca
+     * ninguna otra tabla.
+     */
+    fun insertMetricOptions(db: SupportSQLiteDatabase, context: Context, now: String) {
+        json.decodeFromString<List<SeedMetricOptions>>(read(context, "seed/metric_options.json")).forEach { group ->
+            val numeric = db.query("SELECT is_numeric FROM metric_type WHERE code = ?", arrayOf(group.metricTypeCode))
+                .use { it.moveToFirst() && it.getInt(0) == 1 }
+            val hasOptions = db.query("SELECT COUNT(*) FROM metric_option WHERE metric_type_code = ?", arrayOf(group.metricTypeCode))
+                .use { it.moveToFirst() && it.getInt(0) > 0 }
+            if (!numeric || hasOptions) return@forEach
+            group.options.forEachIndexed { i, o ->
+                db.insert(
+                    "metric_option",
+                    SQLiteDatabase.CONFLICT_IGNORE,
+                    ContentValues().apply {
+                        put("id", seedId("metric_option/${group.metricTypeCode}/$i")); put("metric_type_code", group.metricTypeCode)
+                        put("label", o.label); put("value", o.value); put("position", i); put("created_at", now)
+                    },
+                )
+            }
+        }
+    }
+
+    private fun seedId(path: String): String = UUID.nameUUIDFromBytes("ayuno-catalogo/$path".toByteArray()).toString()
 
     /** Identificadores fijos: la plantilla de ejemplo es la misma en cada instalación y no se duplica al importar. */
     private fun exampleId(path: String): String = UUID.nameUUIDFromBytes("ayuno-ejemplo/$path".toByteArray()).toString()

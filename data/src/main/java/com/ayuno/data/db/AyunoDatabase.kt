@@ -41,8 +41,9 @@ import java.time.Clock
         RefeedCheckEntity::class,
         MealEntity::class,
         PersonProfileEntity::class,
+        MetricOptionEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class AyunoDatabase : RoomDatabase() {

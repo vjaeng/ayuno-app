@@ -54,7 +54,7 @@
 | Fecha del día y rango de horas del ayuno | hora del ayuno | derivado |
 | Lista de pendientes y su estado (hecho, pendiente, atrasado, no hecho) | pendientes del día y su estado | derivado |
 | Hora programada | `metric_schedule.time_of_day`, `product_schedule.time_of_day`, `refeed_check.scheduled_at`, recordatorio de regla | lectura / derivado |
-| Valor anotado (hechos) | `measurement.value_entered` + `measurement.unit_entered`; `blood_pressure_reading.systolic`/`diastolic`/`position`; `product_log.amount` | lectura |
+| Valor anotado (hechos) | `measurement.value_entered` + `measurement.unit_entered` (con palabras: derivado «Palabra de una medición», EV-005); `blood_pressure_reading.systolic`/`diastolic`/`position`; `product_log.amount` | lectura |
 | Hora real (hechos) | `measurement.taken_at`, `blood_pressure_reading.taken_at`, `product_log.taken_at`, `refeed_check.done_at` | lectura |
 | Motivo (no hechos) | `measurement.not_done_reason`, `blood_pressure_reading.not_done_reason`, `product_log.reason` | lectura |
 | Productos que salen (sección gris al pie) | `plan_product.during_fast = stops`, `product.name` | lectura |
@@ -75,3 +75,5 @@
 - ¿Cuándo pasa un pendiente a «atrasado»? Propuesta: 15 minutos después de su hora (configurable en un futuro).
 
 *Cambio EV-004 (2026-10-14):* tocar una medición o presión hecha abre su Detalle de entrada (antes no hacía nada). Motivo: corregir desde donde se ve el hecho (H-018, H-048).
+
+*Cambio EV-005 (2026-10-23):* el valor de un hecho de una escala con palabras se muestra con su palabra y número («Mucha · 7») (H-049).

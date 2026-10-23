@@ -71,11 +71,17 @@ class CorrectMeasurement(
         val notDoneReason: String? = null,
         val reason: String? = null,
         val confirmedOutOfRange: Boolean = false,
+        /** H-049: palabra elegida; su número sustituye a [valueEntered]. */
+        val metricOptionId: String? = null,
     )
 
-    suspend operator fun invoke(input: Input): Outcome<RecordResult<Measurement>> = transactions.inTransaction {
-        val old = records.measurement(input.id) ?: return@inTransaction invalid(ValidationError.ENTRY_NOT_FOUND)
+    suspend operator fun invoke(request: Input): Outcome<RecordResult<Measurement>> = transactions.inTransaction {
+        val old = records.measurement(request.id) ?: return@inTransaction invalid(ValidationError.ENTRY_NOT_FOUND)
         val type = catalog.metricType(old.metricTypeCode) ?: return@inTransaction invalid(ValidationError.METRIC_NOT_FOUND)
+        val input = request.metricOptionId?.let { id ->
+            val option = type.options.firstOrNull { it.id == id } ?: return@inTransaction invalid(ValidationError.OPTION_NOT_FOUND)
+            request.copy(valueEntered = option.value, unitEntered = type.entryUnit)
+        } ?: request
         val takenAt = input.takenAt.withNano(0)
         val notDone = input.notDoneReason?.trim()?.ifEmpty { null }
         val hasValue = if (type.isNumeric) input.valueEntered != null else !input.valueText.isNullOrBlank()

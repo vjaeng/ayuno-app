@@ -15,9 +15,10 @@
 ### Consideraciones de Seguridad
 Toda entrada es hostil hasta validarse (S1); fallar cerrado (S6) ante versión incompatible.
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | ayunos restaurados | `fast.*` | ✓ |  |  |  |
 | plantillas restauradas | `template.*` | ✓ |  |  |  |
 | entradas restauradas con las horas al segundo | `measurement.*` | ✓ |  |  |  |
+| palabras de las mediciones restauradas (EV-005; un archivo 1.0 no las trae) | `metric_option.*` | ✓ |  | ✓ |  |

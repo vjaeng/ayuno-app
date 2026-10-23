@@ -1,6 +1,6 @@
 # TRX: Guardar una entrada y evaluar reglas
 
-**Historias:** H-008, H-009, H-010, H-012, H-019, H-020, H-021, H-022, H-027 · **Disparador:** «Guardar» en un formulario de Anotar
+**Historias:** H-008, H-009, H-010, H-012, H-019, H-020, H-021, H-022, H-027, H-049 · **Disparador:** «Guardar» en un formulario de Anotar
 **Entidades tocadas:** `measurement`, `blood_pressure_reading`, `symptom` o `intake` (C), `alert` (C, una por regla cumplida)
 
 ## Secuencia
@@ -19,10 +19,13 @@ sequenceDiagram
     UI->>UI: 7. mostrar la alerta (si hay) o volver a Inicio; reprogramar recordatorios
 ```
 
+**Medición con palabras (EV-005, H-049):** en el paso 1 llega el `id` de la `metric_option` elegida en lugar de un valor tecleado. En el paso 2 se comprueba que la opción existe, no está borrada y es del mismo `metric_type_code`; su `value` pasa a `value_entered` y `value_num`, y `unit_entered = metric_type.entry_unit`. El resto de la secuencia (reglas incluidas) es idéntico. No se guarda el `id` de la opción (D-21).
+
 ## Manejo de fallos
 | Falla en paso | Estado resultante | Acción |
 |---|---|---|
 | 2 | Validación o valor fuera de rango sin confirmar | Nada se escribe; el formulario conserva lo tecleado |
+| 2 | La palabra elegida se quitó (o no es de esa medición) | `OPTION_NOT_FOUND`; nada se escribe; el formulario pide elegir otra |
 | 3–6 | Fallo a mitad | Rollback: no queda una lectura sin su alerta (ni al revés) |
 | 7 | La app se cierra antes de mostrar la alerta | La alerta queda sin decisión y Inicio la vuelve a mostrar al abrir (H-027) |
 

@@ -35,6 +35,7 @@ import com.ayuno.domain.derived.FastMeasurements
 import com.ayuno.domain.derived.MeasurementItem
 import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.Fast
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.GlucoseSource
 import com.ayuno.domain.model.Position
@@ -56,6 +57,7 @@ sealed interface MeasurementsUi {
         val items: List<MeasurementItem>,
         val deleted: List<MeasurementItem>,
         val names: Map<String, String>,
+        val types: Map<String, MetricType> = emptyMap(),
     ) : MeasurementsUi
 }
 
@@ -76,6 +78,7 @@ class FastMeasurementsViewModel(private val container: AppContainer, private val
             items = FastMeasurements.of(visible.first, visible.second, edited),
             deleted = FastMeasurements.of(deleted.first, deleted.second, edited),
             names = types.associate { it.code to it.name },
+            types = types.associateBy { it.code },
         ) as MeasurementsUi
     }
         .catch { emit(MeasurementsUi.Error) }
@@ -129,7 +132,7 @@ fun FastMeasurementsScreen(
                         SectionTitle(Formats.date(day.atStartOfDay()))
                         items.forEach { item ->
                             ListRow(
-                                title = measurementTitle(item, s.names),
+                                title = measurementTitle(item, s.names, s.types),
                                 supporting = measurementSupporting(s.fast, item),
                                 onClick = { onOpen(item.kind, item.id) },
                                 trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
@@ -142,7 +145,7 @@ fun FastMeasurementsScreen(
                     if (showDeleted) {
                         SectionTitle(stringResource(R.string.measurements_deleted_title))
                         s.deleted.forEach { item ->
-                            ListRow(measurementTitle(item, s.names), measurementSupporting(s.fast, item), onClick = {}) {
+                            ListRow(measurementTitle(item, s.names, s.types), measurementSupporting(s.fast, item), onClick = {}) {
                                 TextButton(onClick = { viewModel.restore(item) }, modifier = Modifier.heightIn(min = Dimens.touchMin)) {
                                     Text(stringResource(R.string.measurements_restore))
                                 }
@@ -157,13 +160,13 @@ fun FastMeasurementsScreen(
 
 /** Tipo y valor tecleado con su unidad; «no se hizo» si no hay valor. */
 @Composable
-fun measurementTitle(item: MeasurementItem, names: Map<String, String>): String {
+fun measurementTitle(item: MeasurementItem, names: Map<String, String>, types: Map<String, MetricType> = emptyMap()): String {
     val name = names[item.metricTypeCode] ?: item.metricTypeCode
     val notDone = stringResource(R.string.measurements_not_done)
     return when (item) {
         is MeasurementItem.OfMeasurement -> {
             val m = item.value
-            if (m.notDoneReason != null) "$name · $notDone" else "$name ${m.valueEntered?.let { Formats.number(it, 2) } ?: m.valueText.orEmpty()} ${m.unitEntered.orEmpty()}".trim()
+            if (m.notDoneReason != null) "$name · $notDone" else "$name ${Formats.measurementValue(m, types[m.metricTypeCode])}"
         }
         is MeasurementItem.OfBloodPressure -> {
             val r = item.value
