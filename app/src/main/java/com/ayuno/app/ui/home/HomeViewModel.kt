@@ -40,7 +40,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 data class NextPending(val kind: PendingKind, val label: String, val code: String, val at: LocalDateTime, val late: Boolean)
-data class LastMeasurement(val metricName: String, val value: String, val unit: String, val at: LocalDateTime)
+data class LastMeasurement(val metricName: String, val value: String, val at: LocalDateTime)
 
 sealed interface HomeUiState {
     data object Loading : HomeUiState
@@ -144,9 +144,9 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
                 NextPending(s.item.kind, label, s.item.code, s.item.scheduledAt, s.state == PendingState.LATE)
             }
         val lastMeasurement = measurements.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
-            ?.let { m -> LastMeasurement(names[m.metricTypeCode] ?: m.metricTypeCode, m.valueEntered?.let { Formats.number(it, 2) } ?: m.valueText.orEmpty(), m.unitEntered.orEmpty(), m.takenAt) }
+            ?.let { m -> LastMeasurement(names[m.metricTypeCode] ?: m.metricTypeCode, Formats.measurementValue(m, types.firstOrNull { it.code == m.metricTypeCode }), m.takenAt) }
         val lastReading = readings.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
-            ?.let { r -> LastMeasurement(names[MetricType.BLOOD_PRESSURE_CODE] ?: "", "${r.systolic}/${r.diastolic}", "mmHg", r.takenAt) }
+            ?.let { r -> LastMeasurement(names[MetricType.BLOOD_PRESSURE_CODE] ?: "", "${r.systolic}/${r.diastolic} mmHg", r.takenAt) }
         val stage = StageWindows.stageAt(StageWindows.of(fast, source.plan), now)
         return HomeUiState.InProgress(
             fast = fast,

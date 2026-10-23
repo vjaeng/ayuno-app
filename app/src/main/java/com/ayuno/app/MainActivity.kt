@@ -2,7 +2,6 @@ package com.ayuno.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,8 +20,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Todas las pantallas muestran o pueden mostrar datos de salud (ADR-SEG-002, Q-04).
-        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        // Sin FLAG_SECURE: la persona puede hacer capturas de sus datos (ADR-SEG-002, enmienda EV-005).
         enableEdgeToEdge()
         deepLink = intent.toDeepLink()
         setContent {

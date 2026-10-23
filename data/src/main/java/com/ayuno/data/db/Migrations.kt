@@ -100,6 +100,22 @@ object Migrations {
         }
     }
 
-    fun all(context: Context, clock: Clock): Array<Migration> =
-        arrayOf(From1To2(context, clock), From2To3, From3To4, From4To5(context, clock), From5To6(context, clock), From6To7(context, clock))
+    /**
+     * Versión 7 → 8 (EV-005, H-049): tabla nueva `metric_option` con las palabras de fábrica de las escalas. Solo
+     * añade: ninguna tabla existente cambia, así que un ayuno en curso y sus mediciones quedan intactos.
+     */
+    class From7To8(private val context: Context, private val clock: Clock) : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """CREATE TABLE IF NOT EXISTS `metric_option` (`id` TEXT NOT NULL, `metric_type_code` TEXT NOT NULL, `label` TEXT NOT NULL, `value` REAL NOT NULL, `position` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+            )
+            db.execSQL("""CREATE INDEX IF NOT EXISTS `index_metric_option_metric_type_code` ON `metric_option` (`metric_type_code`)""")
+            CatalogSeed.insertMetricOptions(db, context, LocalTimes.format(LocalTimes.now(clock)))
+        }
+    }
+
+    fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(
+        From1To2(context, clock), From2To3, From3To4, From4To5(context, clock), From5To6(context, clock), From6To7(context, clock),
+        From7To8(context, clock),
+    )
 }

@@ -11,11 +11,12 @@
 - [ ] Puedo añadir una medición propia con nombre, unidad, si es numérica y rango válido.
 - [ ] Cada tipo define su unidad principal y, si aplica, una alternativa (mg/dL o mmol/L, kg o lb, cm o in, °C o °F).
 - [ ] Desactivar un tipo no borra las mediciones ya anotadas.
+- [ ] Una medición numérica puede tener una lista de palabras con su número, que se elige al anotar en lugar de teclear (H-049).
 
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | nombre de la medición (precargada o propia) | `metric_type.name` | ✓ | ✓ | ✓ |  |
@@ -27,3 +28,4 @@
 | rango válido (máximo) | `metric_type.max_valid` | ✓ | ✓ | ✓ |  |
 | activar o desactivar el tipo | `metric_type.active` | ✓ | ✓ | ✓ |  |
 | mediciones ya anotadas no se borran | `measurement.metric_type_code` |  | ✓ |  |  |
+| una medición numérica puede tener palabras (H-049) | `metric_option.metric_type_code` |  | ✓ |  |  |

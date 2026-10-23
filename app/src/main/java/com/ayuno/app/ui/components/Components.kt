@@ -1,6 +1,14 @@
 package com.ayuno.app.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import com.ayuno.app.ui.format.Formats
+import com.ayuno.domain.model.MetricOption
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.material3.FilterChipDefaults
@@ -214,6 +222,41 @@ fun <T> FilterChips(options: List<Pair<T, String>>, selected: T?, allLabel: Stri
                     selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
             )
+        }
+    }
+}
+
+/**
+ * SelectorPalabras (EV-005, H-049): palabras de una escala a ancho completo, con su número a la derecha; selección
+ * única. Sin color por valor: la elegida solo cambia a `primary_container` con borde `primary`.
+ */
+@Composable
+fun WordSelector(options: List<MetricOption>, selectedId: String?, onSelect: (MetricOption) -> Unit, description: String) {
+    val colors = AyunoThemeTokens.colors
+    Column(
+        Modifier.fillMaxWidth().selectableGroup().semantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(Dimens.spaceS),
+    ) {
+        options.forEach { option ->
+            val isSelected = option.id == selectedId
+            val shape = RoundedCornerShape(Dimens.radiusM)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = Dimens.buttonHeight)
+                    .clip(shape)
+                    .background(if (isSelected) colors.primaryContainer else colors.surface)
+                    .border(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.primary else colors.outline, shape)
+                    .selectable(selected = isSelected, role = Role.RadioButton) { onSelect(option) }
+                    .padding(horizontal = Dimens.spaceL),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceM),
+            ) {
+                RadioButton(selected = isSelected, onClick = null)
+                val text = if (isSelected) colors.onPrimaryContainer else colors.onSurface
+                Text(option.label, style = MaterialTheme.typography.labelLarge, color = text, modifier = Modifier.weight(1f))
+                Text(Formats.number(option.value), style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"), color = if (isSelected) text else colors.onSurfaceVariant)
+            }
         }
     }
 }

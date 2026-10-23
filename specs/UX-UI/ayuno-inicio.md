@@ -79,7 +79,7 @@ La sección de vuelta a comer (H-031) y las reintroducciones pendientes, cuando 
 | Botón «Corregir hora de inicio» (detalle) | `fast.clock_start_actual`, `edit_log.reason` | escritura (motivo obligatorio) |
 | Próximo pendiente | pendientes del día | derivado |
 | Totales frente a metas | totales del día, `intake_goal.daily_amount`, `intake_goal.unit` | derivado / lectura |
-| Última medición | `measurement.metric_type_code`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.taken_at` | lectura |
+| Última medición | `measurement.metric_type_code`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.taken_at`; con palabras, derivado «Palabra de una medición» («Hambre: Mucha · 7», EV-005) | lectura |
 | Fila «Mediciones de este ayuno» con su número (FilaLista) | derivado «Mediciones del ayuno» (número) | acción → [historial-revisar.md](historial-revisar.md#pantalla-mediciones-de-este-ayuno) (H-048) |
 | Avisos fijos de la etapa | `stage_notice.text` (si la etapa actual está en `stage_notice.stage_kinds`) | lectura |
 | Botón «Seguridad» | — | acción → [seguridad-alertas.md](seguridad-alertas.md) |
@@ -129,3 +129,5 @@ Diálogo de Material 3 (sin hoja inferior en la guía). Se abre una sola vez sob
 *Cambio EV-004 (2026-10-14):* bajo la última medición, la FilaLista «Mediciones de este ayuno · N anotadas ›» abre la lista del ayuno en curso para verlas y corregirlas ([historial-revisar.md](historial-revisar.md)). Motivo: el humano necesita repasar y corregir las mediciones sin esperar a que termine el ayuno (H-048). Es acceso secundario: no compite con «Anotar» (Hick).
 
 *Implementación (2026-10-14):* los hitos se construyeron como lista vertical con fecha y hora y ocupaban demasiado; se rehacen como **BarraHitos** horizontal, como en el wireframe (puntos rellenos alcanzados, huecos pendientes, horas debajo). Debajo de la barra, una línea con la fecha y hora del hito elegido: por defecto el siguiente; tocar un punto muestra el suyo. El lector de pantalla anuncia cada hito con su fecha y hora. Petición del humano tras verlo en el teléfono.
+
+*Cambio EV-005 (2026-10-23):* la última medición de una escala con palabras se muestra con su palabra y número («Mucha · 7»); un número sin palabra, como hasta ahora («4 de 0 a 10») (H-049).

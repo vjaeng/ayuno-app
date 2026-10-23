@@ -60,7 +60,7 @@
     <string name="home_clock_description">%1$s y %2$s de ayuno</string>
     <string name="home_next_pending">Próximo pendiente</string>
     <string name="home_last_measurement">Última medición</string>
-    <string name="home_last_measurement_value">%1$s: %2$s %3$s · %4$s</string>
+    <string name="home_last_measurement_value">%1$s: %2$s · %3$s</string>
     <string name="home_notes">Notas: %1$s</string>
     <string name="home_record">Anotar</string>
     <string name="pending_at">A las %1$s</string>
@@ -584,6 +584,25 @@
     <string name="correct_save_error">No se pudo guardar. Inténtalo de nuevo; lo que cambiaste sigue aquí.</string>
     <string name="error_entry_not_found">Esta medición ya no existe o está borrada. Vuelve a la lista.</string>
     <string name="error_field_not_editable">Ese dato no se puede cambiar aquí. Para anotar un valor nuevo, usa «Anotar».</string>
+    <!-- EV-005 · H-049: escalas con palabras -->
+    <string name="error_option_not_found">Esa opción ya no existe. Elige otra.</string>
+    <string name="error_option_label_required">Escribe la palabra.</string>
+    <string name="error_option_value_required">Escribe el número de cada palabra.</string>
+    <string name="error_option_label_duplicated">Ya hay una palabra con ese texto.</string>
+    <string name="error_option_value_duplicated">Ya hay una palabra con ese número.</string>
+    <string name="error_option_value_out_of_range">El número de cada palabra debe estar dentro del rango válido. Si cambias el rango, cambia antes las palabras que quedan fuera.</string>
+    <string name="error_options_too_many">Puedes tener como mucho 9 palabras.</string>
+    <string name="error_options_not_numeric">Solo las mediciones numéricas pueden tener palabras.</string>
+    <string name="error_choose_word">Elige una opción o marca «No se hizo».</string>
+    <string name="record_words_description">Opciones de %1$s</string>
+    <string name="catalog_words_title">Palabras para elegir</string>
+    <string name="catalog_words_help">Al anotar, tocas una palabra y se guarda su número. Cambiarlas no altera lo ya anotado.</string>
+    <string name="catalog_words_empty">Sin palabras: se anota tecleando el número.</string>
+    <string name="catalog_word_add">Palabra</string>
+    <string name="catalog_word_label">Palabra</string>
+    <string name="catalog_word_value">Número</string>
+    <string name="catalog_word_remove">Quitar %1$s</string>
+    <string name="catalog_word_up">Subir %1$s</string>
     <string name="field_label_taken_at">Hora</string>
     <string name="field_label_unit">Unidad</string>
     <string name="field_label_value_num">Valor equivalente</string>

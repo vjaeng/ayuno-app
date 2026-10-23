@@ -1,7 +1,9 @@
 package com.ayuno.data.repository
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.ayuno.data.db.AyunoDatabase
+import com.ayuno.data.db.MetricOptionEntity
 import com.ayuno.data.seed.CatalogSeed
 import com.ayuno.domain.model.Alert
 import com.ayuno.domain.model.BloodPressureRanges
@@ -44,14 +46,25 @@ class RoomCatalogRepository(
     private val dao get() = database.catalogDao()
     private val ranges by lazy { CatalogSeed.bloodPressureRanges(context) }
 
-    override fun observeMetricTypes(): Flow<List<MetricType>> = dao.observeMetricTypes().map { l -> l.map { it.toDomain() } }
-    override suspend fun metricTypes(): List<MetricType> = dao.metricTypes().map { it.toDomain() }
-    override suspend fun metricType(code: String): MetricType? = dao.metricType(code)?.toDomain()
+    override fun observeMetricTypes(): Flow<List<MetricType>> =
+        combine(dao.observeMetricTypes(), dao.observeMetricOptions()) { types, options -> types.map { it.toDomain(options) } }
+    override suspend fun metricTypes(): List<MetricType> { val options = dao.metricOptions(); return dao.metricTypes().map { it.toDomain(options) } }
+    override suspend fun metricType(code: String): MetricType? = dao.metricType(code)?.toDomain(dao.optionsOf(code))
 
-    override suspend fun saveMetricType(type: MetricType) {
+    /** Guarda el tipo y sus palabras (H-049); las palabras que ya no están se borran en blando. */
+    override suspend fun saveMetricType(type: MetricType) = database.withTransaction {
         val existing = dao.metricType(type.code)
         val now = clock.stamp()
         dao.upsertMetricType(type.toEntity(existing?.createdAt ?: now, if (existing != null) now else null))
+        val old = dao.optionsOf(type.code).associateBy { it.id }
+        val changed = type.options.filter { o -> old[o.id]?.let { it.deletedAt != null || it.label != o.label || it.value != o.value || it.position != o.position } ?: true }
+        dao.upsertMetricOptions(changed.map { o ->
+            MetricOptionEntity(
+                o.id, type.code, o.label, o.value, o.position,
+                createdAt = old[o.id]?.createdAt ?: now, updatedAt = if (old.containsKey(o.id)) now else null, deletedAt = null,
+            )
+        })
+        dao.softDeleteMetricOptions(type.code, type.options.map { it.id }, now)
     }
 
     override suspend fun bloodPressureRanges(): BloodPressureRanges = ranges

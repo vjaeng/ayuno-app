@@ -6,7 +6,7 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 |---|---|---|---|
 | Crear ayuno desde plantilla | [crear-ayuno.md](crear-ayuno.md) | H-004 | construida |
 | Empezar el ayuno | [empezar-ayuno.md](empezar-ayuno.md) | H-005 | construida |
-| Guardar una entrada y evaluar reglas | [guardar-entrada.md](guardar-entrada.md) | H-008, H-009, H-010, H-012, H-019–H-022, H-027 | construida |
+| Guardar una entrada y evaluar reglas | [guardar-entrada.md](guardar-entrada.md) | H-008, H-009, H-010, H-012, H-019–H-022, H-027, H-049 | construida (palabra elegida, EV-005) |
 | «Algo no va bien» | [algo-no-va-bien.md](algo-no-va-bien.md) | H-023, H-027 | construida |
 | Corregir una hora del ayuno con bitácora | [corregir-hora.md](corregir-hora.md) | H-005 | construida |
 | Terminar el ayuno | [terminar-ayuno.md](terminar-ayuno.md) | H-030, H-031 | construida |
@@ -14,7 +14,7 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 | Importar o restaurar | [importar.md](importar.md) | H-039, H-040 | construida |
 | Cambiar un ayuno planificado | [cambiar-ayuno.md](cambiar-ayuno.md) | H-044 | construida |
 | Borrar un ayuno para siempre | [borrar-ayuno.md](borrar-ayuno.md) | H-045 | construida |
-| Corregir, borrar o restaurar una entrada | [corregir-entrada.md](corregir-entrada.md) | H-034, H-048 | construida (mediciones y presión, EV-004) |
+| Corregir, borrar o restaurar una entrada | [corregir-entrada.md](corregir-entrada.md) | H-034, H-048, H-049 | construida (mediciones y presión, EV-004; con palabra, EV-005) |
 
 Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, copia cifrada.
 

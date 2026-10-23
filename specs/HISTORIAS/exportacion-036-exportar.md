@@ -20,7 +20,7 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4): la exportación es la única vía de salida y la decide el usuario.
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | fecha del inicio real del reloj (nombre del archivo) | `fast.clock_start_actual` |  | ✓ |  |  |
@@ -38,6 +38,7 @@ Datos de salud (S4): la exportación es la única vía de salida y la decide el 
 | plan: reglas | `rule.*` |  | ✓ |  |  |
 | plan: vuelta a comer | `refeed_step.*` |  | ✓ |  |  |
 | catálogo de mediciones | `metric_type.*` |  | ✓ |  |  |
+| palabras de las mediciones (EV-005, formato 1.1) | `metric_option.*` |  | ✓ |  |  |
 | catálogo de síntomas | `symptom_type.*` |  | ✓ |  |  |
 | catálogo de ingestas | `intake_type.*` |  | ✓ |  |  |
 | catálogo de productos | `product.*` |  | ✓ |  |  |

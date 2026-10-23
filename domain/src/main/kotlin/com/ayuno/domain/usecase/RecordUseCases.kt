@@ -7,6 +7,7 @@ import com.ayuno.domain.model.BloodPressureReading
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.GlucoseSource
 import com.ayuno.domain.model.Measurement
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Position
 import com.ayuno.domain.model.Trend
 import com.ayuno.domain.port.AlertRepository
@@ -85,10 +86,13 @@ class RecordMeasurement(
         val note: String? = null,
         val notDoneReason: String? = null,
         val confirmedOutOfRange: Boolean = false,
+        /** H-049: palabra elegida; su número sustituye a [valueEntered] y se guarda en la unidad del formulario. */
+        val metricOptionId: String? = null,
     )
 
-    suspend operator fun invoke(input: Input): Outcome<RecordResult<Measurement>> {
-        val type = catalog.metricType(input.metricTypeCode) ?: return invalid(ValidationError.METRIC_NOT_FOUND)
+    suspend operator fun invoke(request: Input): Outcome<RecordResult<Measurement>> {
+        val type = catalog.metricType(request.metricTypeCode) ?: return invalid(ValidationError.METRIC_NOT_FOUND)
+        val input = request.withOption(type) ?: return invalid(ValidationError.OPTION_NOT_FOUND)
         val notDone = input.notDoneReason?.trim()?.ifEmpty { null }
         val hasValue = if (type.isNumeric) input.valueEntered != null else !input.valueText.isNullOrBlank()
         when {
@@ -129,6 +133,13 @@ class RecordMeasurement(
             Outcome.Ok(RecordResult.Saved(measurement, recorder.evaluate(source)))
         }
     }
+}
+
+/** H-049 (D-21): la palabra elegida pasa a ser el valor; nulo si no es una palabra vigente de ese tipo. */
+private fun RecordMeasurement.Input.withOption(type: MetricType): RecordMeasurement.Input? {
+    val id = metricOptionId ?: return this
+    val option = type.options.firstOrNull { it.id == id } ?: return null
+    return copy(valueEntered = option.value, unitEntered = type.entryUnit)
 }
 
 /** H-009: anotar la presión sentado y de pie, con la toma de pie vinculada a la sentada. */

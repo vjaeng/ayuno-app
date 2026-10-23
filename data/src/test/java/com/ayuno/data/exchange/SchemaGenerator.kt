@@ -10,7 +10,7 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/** Genera `schema/fasting-log-1.0.schema.json` (JSON Schema draft 2020-12) desde [ExchangeFormat]. */
+/** Genera `schema/fasting-log-<versión>.schema.json` (JSON Schema draft 2020-12) desde [ExchangeFormat]. */
 internal object SchemaGenerator {
     private const val DATETIME = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
     private const val DATE = "^\\d{4}-\\d{2}-\\d{2}$"

@@ -33,9 +33,10 @@ class NavigationShellE2eTest {
         compose.onNode(hasText("Hoy") and isSelectable()).assertIsSelected()
     }
 
+    /** EV-005 (H-042, ADR-SEG-002 enmendado): la persona puede hacer capturas de pantalla. */
     @Test
-    fun `la ventana lleva FLAG_SECURE`() {
+    fun `la ventana no lleva FLAG_SECURE y permite capturas`() {
         val flags = compose.activity.window.attributes.flags
-        assertTrue(flags and WindowManager.LayoutParams.FLAG_SECURE != 0)
+        assertTrue(flags and WindowManager.LayoutParams.FLAG_SECURE == 0)
     }
 }

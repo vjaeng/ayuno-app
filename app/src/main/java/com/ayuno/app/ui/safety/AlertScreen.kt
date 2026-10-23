@@ -86,7 +86,7 @@ class AlertViewModel(private val container: AppContainer, private val alertId: S
             val symptoms = container.records.symptoms(alert.fastId).associateBy { it.id }
             val intakes = container.records.intakes(alert.fastId).associateBy { it.id }
             val triggers = alert.triggerEntryIds.mapNotNull { id ->
-                measurements[id]?.let { "${names[it.metricTypeCode]} ${it.valueEntered?.let(Formats::number) ?: ""} ${it.unitEntered.orEmpty()} · ${Formats.time(it.takenAt)}" }
+                measurements[id]?.let { m -> "${names[m.metricTypeCode]} ${Formats.measurementValue(m, types.firstOrNull { it.code == m.metricTypeCode }, decimals = 1)} · ${Formats.time(m.takenAt)}" }
                     ?: readings[id]?.let { "${names[MetricType.BLOOD_PRESSURE_CODE]} ${it.systolic}/${it.diastolic} · ${Formats.time(it.takenAt)}" }
                     ?: symptoms[id]?.let { s -> "${symptomTypes.firstOrNull { it.code == s.symptomTypeCode }?.name} ${s.severity}/10 · ${Formats.time(s.takenAt)}" }
                     ?: intakes[id]?.let { i -> "${intakeTypes.firstOrNull { it.code == i.intakeTypeCode }?.name} ${Formats.number(i.amount)} ${i.unit} · ${Formats.time(i.takenAt)}" }

@@ -248,7 +248,7 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
     }
     state.last?.let { last ->
         SectionTitle(stringResource(R.string.home_last_measurement))
-        Text(stringResource(R.string.home_last_measurement_value, last.metricName, last.value, last.unit, Formats.dateTime(last.at)), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.home_last_measurement_value, last.metricName, last.value, Formats.dateTime(last.at)), style = MaterialTheme.typography.bodyLarge)
     }
     // H-048: acceso secundario a todas las mediciones del ayuno, bajo la última (no compite con «Anotar»).
     com.ayuno.app.ui.components.ListRow(

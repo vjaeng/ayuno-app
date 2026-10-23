@@ -64,7 +64,7 @@
 | Línea de peso (H-047) | peso inicial, final y diferencia (derivado, D-19) | derivado; sin pesos no aparece; texto neutro, sin colores |
 | Notas del ayuno | `fast.notes` | lectura / escritura (editar) |
 | Totales por día | totales del día, sodio | derivado |
-| Entrada: medición | `measurement.taken_at`, `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.not_done_reason` | lectura |
+| Entrada: medición | `measurement.taken_at`, `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.not_done_reason`; con palabras, derivado «Palabra de una medición» (EV-005) | lectura |
 | Entrada: presión | `blood_pressure_reading.taken_at`, `.systolic`, `.diastolic`, `.pulse`, `.position` | lectura |
 | Entrada: síntoma | `symptom.noted_at`, `symptom_type.name`, `symptom.severity` | lectura |
 | Entrada: ingesta | `intake.taken_at`, `intake_type.name`, `intake.amount`, `intake.unit` | lectura |
@@ -131,7 +131,7 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 | Filtro por tipo (FiltroTipos: «Todas» + un chip por tipo con mediciones en el ayuno; «Presión» si hay tomas) | `measurement.metric_type_code` → `metric_type.name`; `blood_pressure_reading` | lectura |
 | Encabezado de día | `measurement.taken_at` / `blood_pressure_reading.taken_at` (fecha con día de la semana) | lectura |
 | Fila: hora real y hora del ayuno | `measurement.taken_at`, hora del ayuno | lectura / derivado |
-| Fila medición: tipo, valor y unidad | `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.value_text` | lectura |
+| Fila medición: tipo, valor y unidad | `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.value_text`; con palabras, derivado «Palabra de una medición» («Mucha · 7»; sin coincidencia, «4 de 0 a 10») (EV-005) | lectura |
 | Fila medición: detalle | `measurement.source`, `measurement.trend`, `measurement.on_waking` | lectura |
 | Fila medición no hecha | `measurement.not_done_reason` | lectura |
 | Fila presión | `blood_pressure_reading.taken_at`, `.systolic`, `.diastolic`, `.pulse`, `.position`, `.on_waking`, `.not_done_reason` | lectura |
@@ -163,7 +163,7 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 **Campos:**
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
-| Campos de la entrada | los del formulario correspondiente en [registro-anotar.md](registro-anotar.md) | escritura |
+| Campos de la entrada | los del formulario correspondiente en [registro-anotar.md](registro-anotar.md) (una medición con palabras usa el formulario con palabras, con la palabra de su número marcada; si su número no coincide con ninguna, ninguna marcada hasta elegir, EV-005) | escritura |
 | Motivo del cambio | `edit_log.reason` | escritura (opcional; obligatorio para la hora de inicio del ayuno) |
 | Historial de cambios | `edit_log.edited_at`, `edit_log.field`, `edit_log.old_value`, `edit_log.new_value`, `edit_log.reason`, `edit_log.action` | lectura |
 | Menú ⋮ → «Borrar» (MenuAcciones) | `edit_log.action = delete` (+ control `deleted_at`) | acción (DialogoConfirmacion) |
@@ -196,3 +196,5 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 *Cambio EV-004 (2026-10-14):* pantalla nueva «Mediciones de este ayuno» (desde Inicio en curso) con filtro por tipo y marca «corregida»; en el Detalle de entrada, «Borrar» pasa al menú ⋮ (una sola acción principal) y, con el ayuno en curso, corregir vuelve a evaluar las reglas (D-20). Alcance de esta entrega: mediciones y presión; el resto de entradas sigue sin poder corregirse hasta completar H-034. Motivo: el humano necesita ver y corregir las mediciones del ayuno en curso (H-048). Mockup: https://claude.ai/artifact/YPvGTb3NZyPPo7S6Bvn3qx
 
 *Implementación (EV-004, 2026-10-14):* «Borradas (n)» de las mediciones se despliega en la misma lista (como en Plantillas) en vez de abrir otra pantalla. Tras guardar se vuelve a la lista sin Snackbar: la app no tiene ese componente construido y la marca «corregida» ya confirma el cambio. El filtro solo ofrece los tipos que tienen mediciones y vuelve a «Todas» si un tipo se queda vacío, así que el estado «No hay mediciones de este tipo» no puede darse y no se construyó. El detalle del ayuno añade la fila «Mediciones de este ayuno ›» (también para ayunos terminados) y sus mediciones y presiones de la línea de tiempo se pueden tocar para corregirlas; el resto de entradas, cuando se complete H-034.
+
+*Cambio EV-005 (2026-10-23):* línea de tiempo, «Mediciones de este ayuno» y el Detalle de entrada muestran las escalas con su palabra y número; corregir una de ellas usa los botones de palabras (H-049). Mockup: https://claude.ai/artifact/ERYg3yGCNPWG7x6tdGkjCq

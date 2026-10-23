@@ -1,10 +1,21 @@
 # Formato `fasting-log` — registro de cambios
 
-El esquema `fasting-log-1.0.schema.json` (JSON Schema draft 2020-12) se **genera** desde la descripción del
+El esquema vigente `fasting-log-1.1.schema.json` (JSON Schema draft 2020-12) se **genera** desde la descripción del
 formato en `data/src/main/java/com/ayuno/data/exchange/ExchangeFormat.kt`; una prueba (`ExchangeTest`) falla si el
 archivo publicado no coincide. Para regenerarlo: `./gradlew :data:testDebugUnitTest -PregenerateSchema=true --tests '*ExchangeTest*'`
-(reescribe también `fasting-log-1.0.example.json`, un ayuno simulado completo). Un cambio incompatible sube la
-versión mayor; la app rechaza importar una versión mayor que la suya (ADR-007).
+(reescribe también `fasting-log-1.1.example.json`, un ayuno simulado completo). Un cambio incompatible sube la
+versión mayor; la app rechaza importar una versión mayor que la suya (ADR-007). Los archivos de versiones anteriores
+(`fasting-log-1.0.*`) se conservan como referencia.
+
+## 1.1 — 2026-10-23 (EV-005, app 0.13.0)
+
+- **Palabras de las mediciones** (MODELO-DATOS D-21, H-049): `catalogs.metric_options`, una fila por palabra con
+  `metric_type_code`, `label`, `value`, `position` y las columnas de control. Las 20 de fábrica (hambre, energía, ánimo y
+  claridad mental) tienen identificadores fijos, así que restaurar en otro teléfono no las duplica.
+- Cambio **aditivo**: la app sigue importando archivos 1.0 (sin la lista se conservan las palabras del teléfono).
+  Al importar se rechaza el archivo entero si alguna palabra es de una medición no numérica, queda fuera de su rango o
+  repite texto o número en su medición.
+- Las mediciones no cambian: una medición anotada con palabra guarda su número en `value_entered` y `value_num`.
 
 ## 1.0 — aclaración 2026-10-10 (EV-001, sin cambio de versión)
 

@@ -148,7 +148,7 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
                         ?.let { r -> r.notDoneReason ?: "${r.systolic}/${r.diastolic} · ${Formats.time(r.takenAt)}" }
                 } else {
                     measurements.lastOrNull { it.metricTypeCode == item.code && (it.scheduledFor == item.scheduledAt || (item.fromRule && it.takenAt.isAfter(item.answeredAfter))) }
-                        ?.let { m -> m.notDoneReason ?: "${m.valueEntered?.let { Formats.number(it, 2) } ?: m.valueText.orEmpty()} ${m.unitEntered.orEmpty()} · ${Formats.time(m.takenAt)}" }
+                        ?.let { m -> m.notDoneReason ?: "${Formats.measurementValue(m, types.firstOrNull { it.code == m.metricTypeCode })} · ${Formats.time(m.takenAt)}" }
                 }
             }
             TodayRow(item, s.state, label, detail, FastClock.fastHour(source.fast, item.scheduledAt), answer.takeIf { s.state == PendingState.DONE || s.state == PendingState.NOT_DONE })

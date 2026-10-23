@@ -20,6 +20,20 @@ interface CatalogDao {
 
     @Upsert
     suspend fun upsertMetricType(entity: MetricTypeEntity)
+
+    @Query("SELECT * FROM metric_option WHERE deleted_at IS NULL ORDER BY position")
+    fun observeMetricOptions(): Flow<List<MetricOptionEntity>>
+
+    @Query("SELECT * FROM metric_option WHERE deleted_at IS NULL ORDER BY position")
+    suspend fun metricOptions(): List<MetricOptionEntity>
+
+    @Query("SELECT * FROM metric_option WHERE metric_type_code = :code")
+    suspend fun optionsOf(code: String): List<MetricOptionEntity>
+
+    @Upsert suspend fun upsertMetricOptions(entities: List<MetricOptionEntity>)
+
+    @Query("UPDATE metric_option SET deleted_at = :now, updated_at = :now WHERE metric_type_code = :code AND deleted_at IS NULL AND id NOT IN (:keep)")
+    suspend fun softDeleteMetricOptions(code: String, keep: List<String>, now: String)
 }
 
 @Dao

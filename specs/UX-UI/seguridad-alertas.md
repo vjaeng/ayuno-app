@@ -74,7 +74,7 @@
 | Nivel (amarillo / rojo pantalla completa) | `rule.level` | lectura |
 | Hora | `alert.fired_at` | escritura al dispararse / lectura |
 | Mensaje tal cual | `rule.message` | lectura |
-| «Por:» lecturas que la dispararon | `alert.trigger_entry_ids` → `measurement.*`, `blood_pressure_reading.*`, `symptom.*`, `intake.*` | lectura |
+| «Por:» lecturas que la dispararon | `alert.trigger_entry_ids` → `measurement.*` (con palabras, derivado «Palabra de una medición», EV-005), `blood_pressure_reading.*`, `symptom.*`, `intake.*` | lectura |
 | Regla | `alert.rule_id` → `rule.name` | lectura |
 | Aviso de recordatorio programado | `rule.action = schedule_measurement`, `rule.action_minutes` | lectura / derivado |
 | Botón «Termino el ayuno» | `alert.user_choice = end_fast` | escritura → [fin-terminar.md](fin-terminar.md) con motivo «regla de alerta» prellenado |
@@ -96,3 +96,5 @@
 - **Bloqueo y seguridad:** con el bloqueo de la app activo, ¿la pantalla de Seguridad y la llamada de emergencia deben abrirse sin huella ni PIN? Propuesta: sí (solo muestran reglas y el contacto, no registros de salud).
 - **«Algo no va bien» sin regla manual definida:** propuesta: alerta roja genérica con un texto fijo de la app. Alternativa: el botón no aparece hasta definir la regla. (La app no aconseja, por eso el texto propuesto es neutro.)
 - **Alerta sin decisión:** ¿se repite la notificación cada N minutos hasta que se decida? Propuesta: sí, cada 5 minutos durante 30 minutos para alertas rojas.
+
+*Cambio EV-005 (2026-10-23):* en «Por:», una lectura de una escala con palabras se muestra con su palabra y número (H-049). El umbral de la regla sigue siendo un número ([reglas-editar.md](reglas-editar.md) sin cambios, decisión E5-3).

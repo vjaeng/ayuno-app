@@ -1,5 +1,7 @@
 package com.ayuno.app.ui.format
 
+import com.ayuno.domain.model.Measurement
+import com.ayuno.domain.model.MetricType
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -32,6 +34,15 @@ object Formats {
     fun number(value: Double, decimals: Int = 1): String {
         val rounded = String.format(spanish, "%.${decimals}f", value)
         return if (decimals == 0) rounded else rounded.trimEnd('0').trimEnd(',', '.')
+    }
+
+    /**
+     * Valor anotado de una medición: «Mucha · 7» si su número tiene palabra (H-049, D-21); si no, lo tecleado con su
+     * unidad («64 mg/dL», «4 de 0 a 10») o el texto de un tipo no numérico.
+     */
+    fun measurementValue(m: Measurement, type: MetricType?, decimals: Int = 2): String {
+        type?.optionFor(m.valueNum)?.let { return "${it.label} · ${number(it.value, decimals)}" }
+        return "${m.valueEntered?.let { number(it, decimals) } ?: m.valueText.orEmpty()} ${m.unitEntered.orEmpty()}".trim()
     }
 
     /** Lee un número escrito con coma o punto decimal. */

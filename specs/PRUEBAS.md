@@ -38,8 +38,8 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-004 | Crear un ayuno desde una plantilla con dos datos | alta | 12 | 24 | U + I + E2E | en verde |
 | H-005 | Empezar el ayuno con un toque | alta | 5 | 16 | U + I + E2E | en verde |
 | H-006 | Ver de un vistazo dónde estoy | alta | 9 | 17 | U + E2E | en verde (parcial) |
-| H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 4 | 9 | U + I + E2E | en verde |
-| H-008 | Anotar una medición en tres toques | alta | 8 | 21 | U + I + E2E | en verde |
+| H-007 | Ajustar el catálogo de mediciones a lo que uso | alta | 5 | 10 | U + I + E2E | en verde |
+| H-008 | Anotar una medición en tres toques | alta | 8 | 22 | U + I + E2E | en verde |
 | H-009 | Anotar la presión sentado y de pie | alta | 4 | 6 | U + I + E2E | en verde |
 | H-010 | Marcar síntomas de mi propio catálogo | alta | 5 | 8 | U + I + E2E | en verde |
 | H-011 | Definir mis tipos de líquidos y electrolitos | alta | 3 | 4 | U + I + E2E | en verde |
@@ -73,13 +73,14 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-039 | Importar plantillas y mi lista de productos | media | 3 | 3 | U + I | en verde |
 | H-040 | Restaurar todo desde un archivo exportado | alta | 4 | 3 | U + I + E2E | en verde |
 | H-041 | Usar la app entera sin internet ni cuenta | alta | 3 | 7 | U + I + E2E | pendiente |
-| H-042 | Proteger mis datos en el teléfono y en copias | media | 4 | 1 | U + I | pendiente |
+| H-042 | Proteger mis datos en el teléfono y en copias | media | 5 | 1 | U + I + E2E | pendiente |
 | H-043 | Elegir mis unidades por defecto | media | 2 | 3 | U + I | pendiente |
 | H-044 | Cambiar un ayuno que aún no ha empezado | media | 9 | 27 | U + I (+ E2E de acceso) | en verde |
 | H-045 | Borrar un ayuno para siempre con todos sus datos | alta | 7 | 22 | U + I + E2E | en verde (parcial: caso D) |
 | H-046 | Ver mis ayunos planificados y elegir uno | alta | 8 | 12 | U + E2E | en verde |
 | H-047 | Anotar mi peso al empezar y al terminar y ver cuánto cambió | media | 7 | 13 | U + I + E2E | en verde |
 | H-048 | Ver y corregir las mediciones del ayuno en curso | alta | 7 | 23 | U + I + E2E | en verde |
+| H-049 | Elegir con palabras en las escalas de cómo me siento | alta | 9 | 16 | U + I + E2E | en verde; falta el caso D de actualizar sobre la instalada |
 
 ## 4. Casos transversales
 
@@ -116,11 +117,21 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 
 ### 4.4 Intercambio (H-036 a H-040)
 
-- Cada exportación generada en pruebas valida contra `schema/fasting-log-1.0.schema.json`.
+- Cada exportación generada en pruebas valida contra el esquema vigente (`schema/fasting-log-1.1.schema.json` desde EV-005).
 - Un campo no anotado se exporta como `null` (nunca `0` ni `""`); números como números con punto decimal; sin BOM.
 - Reexportar el mismo ayuno produce los mismos `id`; editar una entrada conserva su `id` y deja la fila en `edit_log`.
 - Exportar → borrar datos → importar restaura todo con horas al segundo; importar dos veces no duplica.
 - Archivo con campos desconocidos: se importa y se listan; `schema_version` mayor: se rechaza sin modificar nada; fallo a mitad: no queda nada importado.
+- EV-005: la exportación 1.1 lleva `catalogs.metric_options`; un archivo 1.0 sin ella se importa y conserva las palabras del teléfono; restaurar en un teléfono nuevo no duplica las 20 de fábrica; palabras con tipo inexistente, no numérico, número fuera de rango o duplicadas se rechazan sin modificar nada.
+
+### 4.4b Actualizar la base sin perder datos (EV-005, H-049)
+
+Restricción del humano: la app instalada tiene un ayuno en curso. Casos de integración (`MigrationTest`), obligatorios antes de generar el APK:
+
+- Base en versión 7 con un ayuno `in_progress`, plantillas, mediciones de las cuatro escalas (con números que coinciden y que no coinciden con las palabras de fábrica), presión, síntomas, ingestas, reglas, alertas con y sin decisión, `edit_log` y borradas en blando → migración 7→8 → cada fila de cada tabla existente es idéntica (comparación columna a columna), el ayuno sigue `in_progress` con su `clock_start_actual`, y `metric_option` tiene las 20 palabras de fábrica.
+- La migración no siembra palabras de un tipo que no exista o que la persona haya hecho no numérico, y no duplica si se ejecuta sobre una base que ya las tiene.
+- La cadena completa 1→8 sigue pasando; `ReleasedSchemasTest` registra la versión 8; Room valida el esquema 8 exportado (`8.json`).
+- Un fallo dentro de la migración deja la base en la versión 7 sin cambios (transacción de Room).
 
 ### 4.5 Seguridad (S1-S8)
 
@@ -133,7 +144,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | Exportar sin opt-in: `person` vacío; con opt-in: incluido; `emergency_contact` nunca | S4, ADR-SEG-003 | I |
 | Con bloqueo activo: Historial, Anotar, exportar e importar piden autenticación; Seguridad y la alerta roja no | ADR-SEG-002 | E2E |
 | Activar bloqueo sin credencial en el teléfono: no se activa | S6 | U + E2E |
-| Pantallas con datos de salud con `FLAG_SECURE` (bandera presente: E2E; captura bloqueada: D) | S4 | E2E + D |
+| La ventana **no** lleva `FLAG_SECURE`: capturas permitidas (bandera ausente: E2E; captura posible: D). Riesgo aceptado, EV-005 | S4, ADR-SEG-002 | E2E + D |
 | Copia cifrada con contraseña incorrecta o archivo alterado: mensaje único, nada se restaura | S6, ADR-SEG-005 | I |
 | Importación de archivo malicioso (tipos erróneos, referencias rotas, 60 MB, XOR de propietario violado): rechazo sin cambios | S1, ADR-SEG-006 | I |
 | Alertas no editables ni borrables; toda corrección deja fila en `edit_log` | S8 | U + I |
@@ -153,10 +164,11 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 | Alarmas suenan con la app cerrada; se reprograman tras reinicio real y cambio de hora | H-016, ADR-005 |
 | Notificaciones reales con acciones directas (anotar, posponer, no se hizo) | H-017 |
 | Autenticación real con huella o PIN del teléfono | H-042, ADR-SEG-002 |
-| Captura de pantalla bloqueada (`FLAG_SECURE`) | ADR-SEG-002 |
+| Captura de pantalla posible y vista de recientes con contenido (EV-005) | H-042, ADR-SEG-002 |
 | Reloj visible en < 1 s en arranque en frío | H-006 |
 | Prueba manual de 3 días de recordatorios | H-016 |
 | Las notificaciones visibles de un ayuno borrado desaparecen | H-045 |
+| Actualizar sobre la versión instalada (sin desinstalar) con un ayuno en curso: el ayuno, su reloj, sus mediciones y sus recordatorios siguen igual; las escalas muestran sus palabras (EV-005) | H-049, ADR-003 |
 
 **Verificaciones manuales registradas:**
 
@@ -164,7 +176,7 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 |---|---|---|---|
 | 2026-10-08 | Teléfono de la persona, Android 16 (APK `ayuno-0.1.0-debug`) | La app abre (base cifrada con SQLCipher y clave en Keystore) y permite registrar un ayuno | Correcto. Sin verificar aún: alarmas con la app cerrada, reinicio real, 3 días, `FLAG_SECURE`, arranque < 1 s |
 
-**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017, H-042 y H-045.
+**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017, H-042, H-045 y H-049.
 
 ## 5. Excepciones registradas
 

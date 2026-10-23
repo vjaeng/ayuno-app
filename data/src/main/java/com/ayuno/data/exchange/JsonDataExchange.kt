@@ -12,6 +12,7 @@ import com.ayuno.domain.model.ImportCount
 import com.ayuno.domain.model.ImportPreview
 import com.ayuno.domain.model.ImportProblem
 import com.ayuno.domain.model.ImportResult
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.port.DataExchange
 import com.ayuno.domain.time.LocalTimes
 import kotlinx.serialization.json.Json
@@ -285,8 +286,56 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
                 }
             }
         }
+        metricOptionProblem(rows)?.let { return reject(it) }
         return ImportCheck.Ok(Parsed(rows, ignored.distinct()))
     }
+
+    /**
+     * H-049 (S1): las palabras que quedarían tras importar (gana la fila más reciente, como al escribir) deben ser de un
+     * tipo numérico, caber en su rango y no repetir texto ni número en su tipo, como mucho [MetricType.MAX_OPTIONS].
+     */
+    private fun metricOptionProblem(rows: Map<String, List<JsonObject>>): ImportProblem? {
+        val fileOptions = rows["metric_option"].orEmpty()
+        if (fileOptions.isEmpty()) return null
+        fun JsonObject.str(key: String) = (this[key] as? JsonPrimitive)?.contentOrNull
+        fun JsonObject.num(key: String) = (this[key] as? JsonPrimitive)?.doubleOrNull
+        data class Type(val numeric: Boolean, val min: Double?, val max: Double?)
+        val types = db.query("SELECT code, is_numeric, min_valid, max_valid FROM metric_type").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), Type(c.getInt(1) == 1, c.getDoubleOrNull(2), c.getDoubleOrNull(3))) }
+        }.toMutableMap()
+        rows["metric_type"].orEmpty().forEach { t ->
+            types[t.str("code")!!] = Type((t["is_numeric"] as? JsonPrimitive)?.booleanOrNull == true, t.num("min_valid"), t.num("max_valid"))
+        }
+        data class Option(val id: String, val type: String, val label: String, val value: Double, val deleted: Boolean, val stamp: String, val index: Int)
+        val merged = db.query("SELECT id, metric_type_code, label, value, deleted_at, COALESCE(updated_at, created_at) FROM metric_option").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), Option(c.getString(0), c.getString(1), c.getString(2), c.getDouble(3), !c.isNull(4), c.getString(5), 0)) }
+        }.toMutableMap()
+        fileOptions.forEachIndexed { i, o ->
+            val option = Option(o.str("id")!!, o.str("metric_type_code")!!, o.str("label")!!, o.num("value")!!, !o.isNull("deleted_at"), stamp(o), i + 1)
+            val local = merged[option.id]
+            if (local == null || option.stamp > local.stamp) merged[option.id] = option
+        }
+        val list = "metric_options"
+        merged.values.filter { it.index > 0 }.forEach { o ->
+            val type = types[o.type] ?: return ImportProblem.InvalidRow(list, o.index, "metric_type_code")
+            if (o.label.isBlank()) return ImportProblem.InvalidRow(list, o.index, "label")
+            if (!type.numeric) return ImportProblem.InvalidRow(list, o.index, "metric_type_code")
+            if ((type.min != null && o.value < type.min) || (type.max != null && o.value > type.max)) return ImportProblem.InvalidRow(list, o.index, "value")
+        }
+        merged.values.filterNot { it.deleted }.groupBy { it.type }.values.forEach { group ->
+            val first = group.filter { it.index > 0 }.minByOrNull { it.index } ?: return@forEach
+            if (group.size > MetricType.MAX_OPTIONS) return ImportProblem.InvalidRow(list, first.index, "metric_type_code")
+            group.groupBy { it.label.trim().lowercase() }.values.firstOrNull { it.size > 1 }?.let { dup ->
+                return ImportProblem.InvalidRow(list, dup.filter { it.index > 0 }.minOfOrNull { it.index } ?: first.index, "label")
+            }
+            group.groupBy { it.value }.values.firstOrNull { it.size > 1 }?.let { dup ->
+                return ImportProblem.InvalidRow(list, dup.filter { it.index > 0 }.minOfOrNull { it.index } ?: first.index, "value")
+            }
+        }
+        return null
+    }
+
+    private fun Cursor.getDoubleOrNull(i: Int): Double? = if (isNull(i)) null else getDouble(i)
 
     private fun JsonObject.isNull(key: String) = this[key] == null || this[key] is JsonNull
 
