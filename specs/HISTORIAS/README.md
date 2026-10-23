@@ -56,7 +56,7 @@ Total: **49** historias · alta 34 · media 14 · baja 1. H-001 a H-043 son la v
 | H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
 | H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
 | H-048 | [Ver y corregir las mediciones del ayuno en curso](mediciones-048-ver-corregir-mediciones.md) | mediciones | alta | entregada (EV-004) |
-| H-049 | [Elegir con palabras en las escalas de cómo me siento](mediciones-049-escalas-con-palabras.md) | mediciones | alta | construida (EV-005; falta la verificación en el teléfono) |
+| H-049 | [Elegir con palabras en las escalas de cómo me siento](mediciones-049-escalas-con-palabras.md) | mediciones | alta | entregada (EV-005) |
 
 ## Épicas
 

@@ -80,7 +80,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-046 | Ver mis ayunos planificados y elegir uno | alta | 8 | 12 | U + E2E | en verde |
 | H-047 | Anotar mi peso al empezar y al terminar y ver cuánto cambió | media | 7 | 13 | U + I + E2E | en verde |
 | H-048 | Ver y corregir las mediciones del ayuno en curso | alta | 7 | 23 | U + I + E2E | en verde |
-| H-049 | Elegir con palabras en las escalas de cómo me siento | alta | 9 | 16 | U + I + E2E | en verde; falta el caso D de actualizar sobre la instalada |
+| H-049 | Elegir con palabras en las escalas de cómo me siento | alta | 9 | 16 | U + I + E2E + D | en verde |
 
 ## 4. Casos transversales
 
@@ -164,19 +164,20 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 | Alarmas suenan con la app cerrada; se reprograman tras reinicio real y cambio de hora | H-016, ADR-005 |
 | Notificaciones reales con acciones directas (anotar, posponer, no se hizo) | H-017 |
 | Autenticación real con huella o PIN del teléfono | H-042, ADR-SEG-002 |
-| Captura de pantalla posible y vista de recientes con contenido (EV-005) | H-042, ADR-SEG-002 |
+| Captura de pantalla posible y vista de recientes con contenido (EV-005) — **verificado 2026-10-23** | H-042, ADR-SEG-002 |
 | Reloj visible en < 1 s en arranque en frío | H-006 |
 | Prueba manual de 3 días de recordatorios | H-016 |
 | Las notificaciones visibles de un ayuno borrado desaparecen | H-045 |
-| Actualizar sobre la versión instalada (sin desinstalar) con un ayuno en curso: el ayuno, su reloj, sus mediciones y sus recordatorios siguen igual; las escalas muestran sus palabras (EV-005) | H-049, ADR-003 |
+| Actualizar sobre la versión instalada (sin desinstalar) con un ayuno en curso: el ayuno, su reloj, sus mediciones y sus recordatorios siguen igual; las escalas muestran sus palabras (EV-005) — **verificado 2026-10-23** | H-049, ADR-003 |
 
 **Verificaciones manuales registradas:**
 
 | Fecha | Dispositivo | Qué se verificó | Resultado |
 |---|---|---|---|
 | 2026-10-08 | Teléfono de la persona, Android 16 (APK `ayuno-0.1.0-debug`) | La app abre (base cifrada con SQLCipher y clave en Keystore) y permite registrar un ayuno | Correcto. Sin verificar aún: alarmas con la app cerrada, reinicio real, 3 días, `FLAG_SECURE`, arranque < 1 s |
+| 2026-10-23 | Teléfono de la persona, Android 16 (APK `ayuno-0.13.0-debug`, instalado encima de 0.12.0 con un ayuno en curso) | EV-005: actualización de la base 7→8 sin desinstalar; ayuno en curso, reloj, mediciones y recordatorios intactos; captura de pantalla posible; las escalas se anotan y se ven con sus palabras | Correcto (confirmado por la persona) |
 
-**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017, H-042, H-045 y H-049.
+**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017, H-042 y H-045.
 
 ## 5. Excepciones registradas
 
