@@ -12,6 +12,9 @@
 - [ ] Tras forzar el cierre de la app y reiniciar el teléfono, el tiempo transcurrido es el correcto (se calcula desde la hora de inicio guardada).
 - [ ] La pantalla aparece en menos de 1 segundo al abrir la app.
 - [ ] Durante el ayuno, los botones «Anotar» y de seguridad están siempre visibles.
+- [ ] Durante el ayuno, por cada meta de ingesta con cifra, «llevas X de Y» y, si el tipo tiene factor de sodio, su sodio frente al de la meta («Sal: llevas 0.6 de 2.5 g · sodio 0.24 de 1 g»), sin colores de juicio (EV-006).
+- [ ] Junto a cada meta, cuánto tocaría llevar a esta hora si la meta se reparte por igual entre el fin y el inicio del silencio nocturno («a esta hora: 1.2 g»); antes de levantarse es 0 y tras dormirse, la meta entera; sin silencio configurado no se muestra. Es una cuenta, no un consejo (EV-006).
+- [ ] Durante el ayuno, los botones rápidos de H-051 están en Inicio, sin quitar protagonismo a «Anotar» (EV-006).
 - [ ] Durante el ayuno, bajo la última medición, «Mediciones de este ayuno» con su número lleva a la lista de H-048 (EV-004).
 - [ ] Sin ayuno en curso se muestran el próximo planificado y el último terminado (si existen). Del próximo se ven la fecha y hora de la última comida, el inicio previsto y el objetivo, con una única acción principal «Empieza el ayuno ahora» y un acceso secundario «Ver y preparar este ayuno» a su detalle (H-046) (EV-002).
 - [ ] Preparar, cambiar, borrar y planificar ayunos no están en Inicio, sino en la pestaña Planificados (H-046) (EV-002).
@@ -20,7 +23,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002; re-tejida el 2026-10-14, EV-004)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002; re-tejida el 2026-10-14, EV-004; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | tiempo transcurrido desde la hora de inicio guardada | `fast.clock_start_actual` |  | ✓ |  |  |

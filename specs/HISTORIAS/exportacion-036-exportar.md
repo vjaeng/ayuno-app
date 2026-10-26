@@ -15,12 +15,13 @@
 - [ ] Cada entrada lleva un identificador estable: reexportar el mismo ayuno da los mismos identificadores.
 - [ ] Los catálogos y la plantilla usada viajan dentro del archivo.
 - [ ] El archivo valida contra el esquema publicado.
+- [ ] El formato 1.2 lleva lo tecleado y su medida en cada ingesta, el grupo del agua con sal, el catálogo de medidas caseras, los segundos de pie de cada lectura, la marca de partida, las condiciones nuevas de las reglas y su marca «de ejemplo», y la lista de pendientes con que se empezó cada ayuno; todo es añadido: un lector de 1.1 sigue funcionando si ignora lo nuevo (EV-006).
 - [ ] La app no sube nada por su cuenta.
 
 ### Consideraciones de Seguridad
 Datos de salud (S4): la exportación es la única vía de salida y la decide el usuario.
 
-### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | fecha del inicio real del reloj (nombre del archivo) | `fast.clock_start_actual` |  | ✓ |  |  |

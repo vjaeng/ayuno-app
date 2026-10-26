@@ -8,14 +8,15 @@
 
 ### Criterios de Aceptación
 - [ ] Cada toma registra sistólica, diastólica, pulso y posición.
-- [ ] Al guardar la toma sentado, la app ofrece anotar la de pie.
-- [ ] La toma sentado y la de pie quedan vinculadas y la app muestra la diferencia calculada, no tecleada.
+- [ ] Al guardar la toma sentado, la app ofrece anotar la de pie, con el temporizador de H-053 o sin esperar (EV-006).
+- [ ] La toma sentado y la de pie quedan vinculadas y la app muestra la diferencia calculada, no tecleada, de las tres cifras (arriba, abajo y pulso) (EV-006).
+- [ ] Una toma sentado puede tener varias de pie vinculadas (por ejemplo, a 1 y a 3 minutos), cada una con su diferencia (EV-006).
 - [ ] Puedo guardar solo la toma sentado.
 
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | sistólica | `blood_pressure_reading.systolic` | ✓ | ✓ |  |  |

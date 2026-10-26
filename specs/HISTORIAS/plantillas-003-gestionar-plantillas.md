@@ -11,11 +11,14 @@
 - [ ] Borrar una plantilla no borra los ayunos creados desde ella, que conservan el plan con que se crearon; la plantilla borrada se puede restaurar.
 - [ ] Al instalar existe una plantilla de ejemplo con etapas, mediciones y estructura de reglas, sin umbrales de alerta ni dosis de productos.
 - [ ] La plantilla de ejemplo se puede duplicar, editar o borrar como cualquier otra.
+- [ ] Las reglas del ejemplo están marcadas como «de ejemplo» por la app, no por su texto; una regla deja de serlo al cambiar su nombre, su mensaje o su cifra, también en sus copias (H-057) (EV-006).
+- [ ] El ejemplo trae metas de agua y sal sin cifra, que preguntan tras 6 horas sin anotar (H-052), y la regla desactivada y sin cifras «Sal por debajo de ___ % de la meta a las ___» (H-022) (EV-006).
+- [ ] Al actualizar la app, el ejemplo ya instalado recibe esas marcas, metas y regla solo si sigue sin tocar en esa parte; ninguna plantilla propia ni ningún ayuno cambia (EV-006).
 
 ### Consideraciones de Seguridad
 La app no aconseja: ningún valor clínico precargado.
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | duplicar la plantilla con todo su contenido | `template.name` | ✓ | ✓ |  |  |

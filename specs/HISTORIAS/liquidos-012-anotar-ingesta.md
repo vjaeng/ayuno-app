@@ -8,6 +8,7 @@
 
 ### Criterios de Aceptación
 - [ ] Cada ingesta guarda hora, tipo, cantidad, unidad y nota opcional.
+- [ ] La cantidad se anota en la unidad del tipo o en una de sus medidas caseras (H-050); totales, sodio, metas y reglas usan siempre el equivalente en la unidad del tipo (EV-006).
 - [ ] 5 g de sal muestran 1.97 g de sodio, calculado y no tecleado.
 - [ ] Con meta se muestra «llevas X de Y»; sin meta, solo el total; sin colores de juicio.
 - [ ] Anotar durante el ayuno un tipo marcado «rompe el ayuno» pregunta si lo estoy terminando.
@@ -16,7 +17,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | hora de la ingesta | `intake.taken_at` | ✓ |  |  |  |

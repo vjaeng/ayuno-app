@@ -8,6 +8,8 @@
 
 ### Criterios de Aceptación
 - [ ] Cada meta es opcional y se define por tipo de ingesta con su unidad; un tipo sin meta solo muestra el total del día.
+- [ ] Una meta puede quedar sin cifra («por llenar»): no muestra «llevas X de Y» y la revisión antes de empezar la señala (H-057) (EV-006).
+- [ ] Cada meta puede tener «preguntar tras N horas sin anotar» (H-052); vacío = no pregunta (EV-006).
 - [ ] Los elementos de la lista previa son texto libre (p. ej. «comprar sal», «cargar el tensiómetro») y se pueden marcar.
 - [ ] Dejar elementos de la lista sin marcar no impide empezar el ayuno; la app solo informa cuántos faltan.
 - [ ] Cada aviso fijo se asocia a una o varias etapas y solo se muestra mientras dura alguna de ellas.
@@ -15,7 +17,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | meta diaria por tipo de ingesta | `intake_goal.intake_type_code` | ✓ | ✓ |  | ✓ |

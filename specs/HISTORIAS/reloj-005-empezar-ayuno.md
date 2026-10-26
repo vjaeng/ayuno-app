@@ -13,12 +13,12 @@
 - [ ] Solo puede haber un ayuno en curso a la vez.
 - [ ] Puedo registrar la hora real de la última comida (por defecto, la planificada) y corregirla después.
 
-*Se empieza desde Inicio (el próximo planificado) o desde el detalle de cualquier planificado (H-046, EV-002). Empezar antes de tiempo se permite aunque deje a otro planificado a menos de una semana: la separación es una regla de planificación (H-004). Justo después de empezar se ofrece anotar el peso, que se puede saltar (H-047, EV-003).*
+*Se empieza desde Inicio (el próximo planificado) o desde el detalle de cualquier planificado (H-046, EV-002). Empezar antes de tiempo se permite aunque deje a otro planificado a menos de una semana: la separación es una regla de planificación (H-004). Justo después de empezar se ofrece anotar el peso, que se puede saltar (H-047, EV-003). Si el plan tiene pendientes, el toque pasa antes por la revisión de H-057; sin pendientes sigue siendo un solo toque (EV-006).*
 
 ### Consideraciones de Seguridad
 Lo crítico deja rastro (S8): la corrección de la hora de inicio queda en la bitácora de cambios.
 
-### Matriz CRUD (tejida el 2026-10-08)
+### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | hora real de inicio, con segundos | `fast.clock_start_actual` | ✓ |  | ✓ |  |

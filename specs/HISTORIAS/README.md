@@ -1,8 +1,8 @@
 # Historias de usuario — ayuno-app
 
-Fuente: `docs/SOLICITUD_app_movil_ayuno.md` (versión base, app genérica). Actor único: **la persona que ayuna**.
+Fuente: `docs/SOLICITUD_app_movil_ayuno.md` (versión base, app genérica) y, desde EV-006, `health-tracker/informes/ayuno/SOLICITUD_app_movil_ayuno_mejoras.md` (mejoras tras el primer ayuno real). Actor único: **la persona que ayuna**.
 
-Total: **49** historias · alta 34 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; H-048 con EV-004; H-049 con EV-005; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
+Total: **57** historias · alta 42 · media 14 · baja 1. H-001 a H-043 son la versión base; H-044 y H-045 llegan con EV-001; H-046 con EV-002; H-047 con EV-003; H-048 con EV-004; H-049 con EV-005; H-050 a H-057 con EV-006; *alta* marca el núcleo de fiabilidad y seguridad (objeto de E2E según `.claude/rules/pruebas-e2e.md`).
 
 ## Índice
 
@@ -52,17 +52,25 @@ Total: **49** historias · alta 34 · media 14 · baja 1. H-001 a H-043 son la v
 | H-042 | [Proteger mis datos en el teléfono y en copias](privacidad-042-proteger-datos.md) | privacidad | media | tejida |
 | H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | tejida |
 | H-044 | [Cambiar un ayuno que aún no ha empezado](ayuno-044-cambiar-ayuno-planificado.md) | ayuno | media | entregada (EV-001) |
-| H-045 | [Borrar un ayuno para siempre con todos sus datos](historial-045-borrar-ayuno.md) | historial | alta | en construcción (EV-001) |
+| H-045 | [Borrar un ayuno para siempre con todos sus datos](historial-045-borrar-ayuno.md) | historial | alta | entregada (EV-001) |
 | H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
 | H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
 | H-048 | [Ver y corregir las mediciones del ayuno en curso](mediciones-048-ver-corregir-mediciones.md) | mediciones | alta | entregada (EV-004) |
 | H-049 | [Elegir con palabras en las escalas de cómo me siento](mediciones-049-escalas-con-palabras.md) | mediciones | alta | entregada (EV-005) |
+| H-050 | [Anotar lo que tomo en mis medidas caseras](liquidos-050-medidas-caseras.md) | liquidos | alta | nueva (EV-006) |
+| H-051 | [Anotar agua y sal con un toque desde el reloj](liquidos-051-anotar-en-un-toque.md) | liquidos | alta | nueva (EV-006) |
+| H-052 | [Que la app me pregunte si llevo horas sin anotar lo que pide mi plan](recordatorios-052-preguntar-si-no-anoto.md) | recordatorios | alta | nueva (EV-006) |
+| H-053 | [Medir la presión de pie a su tiempo con un temporizador](mediciones-053-temporizador-de-pie.md) | mediciones | alta | nueva (EV-006) |
+| H-054 | [Definir una regla sobre la diferencia al ponerme de pie](reglas-054-regla-diferencia-de-pie.md) | reglas | alta | nueva (EV-006) |
+| H-055 | [Definir una regla sobre el cambio respecto a mi valor de partida](reglas-055-regla-cambio-desde-partida.md) | reglas | alta | nueva (EV-006) |
+| H-056 | [Definir una regla de tendencia](reglas-056-regla-tendencia.md) | reglas | alta | nueva (EV-006) |
+| H-057 | [Revisar lo que falta antes de empezar y empezar igual si quiero](reloj-057-revision-antes-de-empezar.md) | reloj | alta | nueva (EV-006) |
 
 ## Épicas
 
 Agrupaciones de 5+ historias con módulo y objetivo comunes (sin criterios propios). Tras la consolidación solo el motor de reglas, que se mantiene deliberadamente desglosado, llega a 5:
 
-- **Motor de reglas de alerta (decidir parar con la regla propia a la vista):** H-019, H-020, H-021, H-022, H-023, H-024, H-025, H-026, H-027, H-028, H-029.
+- **Motor de reglas de alerta (decidir parar con la regla propia a la vista):** H-019, H-020, H-021, H-022, H-023, H-024, H-025, H-026, H-027, H-028, H-029, H-054, H-055, H-056.
 
 ## Requisitos transversales (no son historias)
 
@@ -93,12 +101,15 @@ Sinónimos detectados en la solicitud (no resueltos aquí; candidatos a nudo N3 
 
 La sección *Después de la versión base* de la solicitud no genera historias todavía (entrarán como Evolución): gráficas y comparación entre ayunos, widget, importar lecturas del sensor continuo, Apple Salud / Health Connect, nota de voz, ventana diaria de comidas, envío a un servidor propio.
 
+De la solicitud de mejoras, EV-006 cubre solo la Prioridad 1 (M1-M5). La Prioridad 2 (M6-M11: glucosa en pareja, contexto del peso, despertares, hambre en un solo sitio, aparatos y cumplimiento del plan, resumen al terminar) y la Prioridad 3 (M12-M14: vuelta a comer que se cumpla sola, importar suplementos, motivo en las ediciones) serán las siguientes evoluciones; la **nota de voz** (M15) va aparte, con su ADR `SEG-` sobre micrófono y reconocimiento sin red (decisión del humano, 2026-10-25).
+
 ## Preguntas abiertas que afectan a las historias
 
 - **Contacto de emergencia** en la versión base o después: H-029 queda en prioridad media hasta decidirlo.
 - **Unidades por defecto** (mg/dL o mmol/L, kg o lb, °C o °F): la historia de unidades las deja configurables; falta el valor inicial.
 - **Plataforma** (Android, iPhone o ambos): no cambia las historias, pero condiciona la viabilidad de los recordatorios fiables.
-- ¿Entra ya algún punto de *Después de la versión base*? Si sí, se añade como historia nueva.
+- ¿Entra ya algún punto de *Después de la versión base*? Si sí, se añade como historia nueva. *(EV-006: la nota de voz se adelanta a una evolución propia, tras P2 y P3.)*
+- Equivalencias propias de la pizca y del vaso (solicitud de mejoras): conviene pesarlas una vez; las de fábrica son de ejemplo y editables (H-050).
 
 ## Tejido (completo, 2026-10-08)
 
@@ -131,7 +142,6 @@ Recorrido mínimo: plantillas, crear y empezar el ayuno, reloj, anotar medicione
 | H-006 | Reloj en < 1 s → verificación en dispositivo (PRUEBAS §4.7). Los totales del día ya funcionan. |
 | H-017 | Acciones de la notificación con la app cerrada → verificación en dispositivo (PRUEBAS §4.7). «No se hizo» ya viaja en la exportación. |
 | H-016 | Verificación en dispositivo (alarma real con la app cerrada, reinicio real, 3 días). Ya incluye tomas de productos y pasos de la vuelta a comer. |
-| H-045 | Retirar las notificaciones visibles de un ayuno borrado → verificación en dispositivo (PRUEBAS §4.7). El borrado, la confirmación y el recálculo de recordatorios ya funcionan (EV-001). |
 
 ## Construcción — tanda 2a (2026-10-08)
 
@@ -166,6 +176,7 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | Fecha | Historia | Cambio | Origen |
 |---|---|---|---|
 | 2026-10-08 | H-004 | El objetivo se calcula entre el inicio y el fin previstos (antes se tecleaba); nuevo criterio de fin posterior al inicio. Sin cambios de modelo: `fast.target_hours` se sigue guardando | Petición del humano |
+| 2026-10-10 | EV-001: H-044 nueva (cambiar un ayuno planificado: horas, notas y plantilla); H-045 nueva (borrar un ayuno para siempre con todos sus datos, sin restaurar ni traza; ADR-SEG-007) | El humano necesitaba corregir un ayuno antes de empezarlo y quitar del teléfono un ayuno creado por error o unos datos de salud que no quiere conservar; el derecho a borrar sus propios datos prevalece sobre la trazabilidad (S8). Verificado en el teléfono el 2026-10-25 | Petición del humano (EV-001) |
 | 2026-10-11 | EV-002: H-046 nueva (pestaña Planificados con lista y detalle); H-006 deja en Inicio solo el próximo ayuno con una acción principal; H-004 y H-044 exigen una semana de separación entre ayunos (D-17). Motivo: Inicio era confuso con todas las opciones juntas y no había dónde elegir qué ayuno planificado cambiar | Petición del humano (EV-002) |
 | 2026-10-13 | H-003 | La plantilla de ejemplo incluye todas las mediciones del catálogo (antes solo glucosa, peso y presión); solo esas tres llevan horario, las demás se anotan sin recordatorio. Las instalaciones existentes las reciben con la migración 5→6 (sin cambios de esquema). Los ayunos ya creados conservan su plan | Petición del humano |
 | 2026-10-13 | H-001, H-008, H-004 | Anotar muestra todas las mediciones activas del catálogo (las del plan primero): el plan decide los recordatorios, no qué se puede anotar. Al planificar viene propuesta la primera plantilla en vez de «desde cero». Motivo: un ayuno desde cero quedaba sin mediciones y no había forma de añadirlas | Petición del humano |
@@ -174,3 +185,4 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | 2026-10-14 | H-006 | Los hitos de Inicio pasan de lista vertical a la barra horizontal del wireframe; la fecha y hora de cada hito se ve bajo la barra (el siguiente por defecto, cualquiera al tocarlo). Sin cambio de criterios | Petición del humano |
 | 2026-10-14 | H-003 | La plantilla de ejemplo pasa de los hitos 12 y 24 a 24, 36 y 48 (con objetivo 36 h, el 48 queda después del objetivo). Las instalaciones existentes la reciben con la migración 6→7 (solo datos), salvo que la persona ya hubiera cambiado los hitos; los ayunos ya creados conservan los suyos | Petición del humano |
 | 2026-10-23 | EV-005: H-049 nueva (escalas con palabras que guardan un número, editables en Catálogos); H-007 y H-008 con el criterio de palabras; H-042 permite capturas de pantalla | El humano quiere elegir cómo se siente con palabras y poder hacer capturas de la app | Petición del humano (EV-005) |
+| 2026-10-25 | EV-006: H-050 a H-057 nuevas (medidas caseras, botones rápidos y agua con sal, pregunta tras horas sin anotar, temporizador de pie, reglas de diferencia, de partida y de tendencia, revisión antes de empezar); H-002, H-003, H-005, H-006, H-009, H-012, H-022, H-028, H-036 y H-040 editadas | El primer ayuno real (57 h) dejó sin registrar agua y sal, midió la presión de pie a los pocos segundos, no tenía regla que viera la subida del pulso al levantarse y empezó con reglas de relleno: la app tiene que notar lo que falta antes que la persona | Petición del humano (EV-006) |
