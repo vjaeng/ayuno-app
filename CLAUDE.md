@@ -104,7 +104,7 @@ Laws of UX (Hick, Jakob, Fitts, Miller) en cada pantalla; lenguaje llano sin sig
 
 ## Estado Actual del Proyecto
 
-Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos) en construcción, pendiente del caso D de H-045; EV-002 (pestaña Planificados, Inicio simplificado, semana de separación), EV-003 (peso al empezar y al terminar, con su diferencia), EV-004 (ver y corregir las mediciones del ayuno en curso) y EV-005 (capturas permitidas y escalas con palabras, verificada en el teléfono) cerradas; H-034 hecha para mediciones y presión. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
+Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta abierta, Diseño aprobado). Construcción (paso 7) en curso: tandas 1, 2a, 2b, 3 y 4 y H-003 hechas. Evoluciones: EV-001 (cambiar y borrar ayunos, verificada en el teléfono), EV-002 (pestaña Planificados, Inicio simplificado, semana de separación), EV-003 (peso al empezar y al terminar, con su diferencia), EV-004 (ver y corregir las mediciones del ayuno en curso) y EV-005 (capturas permitidas y escalas con palabras, verificada en el teléfono) cerradas; H-034 hecha para mediciones y presión. Estado por historia en `specs/HISTORIAS/README.md`. Pendiente: verificación en dispositivo y siguientes tandas.
 
 ## Decisiones Técnicas
 
@@ -117,6 +117,7 @@ Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta a
 | 2026-10-13 | Anotar ofrece todas las mediciones activas del catálogo; el plan del ayuno solo decide recordatorios y orden (MODELO D-18) | Un ayuno desde cero quedaba sin mediciones que anotar |
 | 2026-10-11 | Navegación con 5 pestañas (Inicio, Planificados, Hoy, Historial, Más); los ayunos planificados se gestionan en su pestaña, no en Inicio | EV-002: Inicio confuso con todas las opciones; elegir qué ayuno cambiar |
 | 2026-10-11 | Al menos 7 días entre ayunos, fijos en el código (D-17) | Decisión del humano (EV-002); configurable solo con otra evolución |
+| 2026-10-10 | Borrar un ayuno es definitivo: se eliminan físicamente él y todo lo que cuelga de él, sin traza (MODELO D-15, ADR-SEG-007) | EV-001: el derecho de la persona a borrar sus propios datos de salud prevalece sobre la trazabilidad (S8) |
 | 2026-10-08 | Nombres canónicos en inglés y `snake_case` | Coinciden con las claves del archivo de exportación (MODELO-DATOS D-01) |
 | 2026-10-08 | Sin API: `specs/CONTRATO-API/` no aplica | App sin servidor; el formato del archivo se especifica en Diseño |
 | 2026-10-08 | Soporte desde Android 10 (API 29); `compileSdk`/`targetSdk` 35 | Decisión del humano: mínimo Android 10; se compila con la plataforma instalada (`android-35`, build-tools 35.0.0); la app corre en su teléfono con Android 16 |
