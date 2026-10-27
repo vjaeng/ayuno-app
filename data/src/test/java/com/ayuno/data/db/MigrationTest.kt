@@ -157,9 +157,11 @@ class MigrationTest {
     }
 
     /** Columnas de cada tabla del esquema 7 tal como Room lo exportó: lo que hay en el teléfono antes de EV-005. */
-    private fun v7Tables(): Map<String, List<Pair<String, String>>> {
+    private fun v7Tables() = tablesOf(7)
+
+    private fun tablesOf(version: Int): Map<String, List<Pair<String, String>>> {
         val assets = ApplicationProvider.getApplicationContext<android.content.Context>().assets
-        val schema = assets.open("com.ayuno.data.db.AyunoDatabase/7.json").bufferedReader().use { it.readText() }
+        val schema = assets.open("com.ayuno.data.db.AyunoDatabase/$version.json").bufferedReader().use { it.readText() }
         val entities = Json.parseToJsonElement(schema).jsonObject.getValue("database").jsonObject.getValue("entities").jsonArray
         return entities.associate { e ->
             val o = e.jsonObject
@@ -171,6 +173,13 @@ class MigrationTest {
 
     private fun SupportSQLiteDatabase.snapshot(tables: Collection<String>): Map<String, List<List<String?>>> = tables.associateWith { table ->
         query("SELECT * FROM `$table` ORDER BY rowid").use { c ->
+            buildList { while (c.moveToNext()) add((0 until c.columnCount).map { c.getString(it) }) }
+        }
+    }
+
+    /** Solo las columnas que ya existían, para comparar antes y después de una migración que añade columnas. */
+    private fun SupportSQLiteDatabase.snapshot(tables: Map<String, List<Pair<String, String>>>): Map<String, List<List<String?>>> = tables.mapValues { (table, cols) ->
+        query("SELECT ${cols.joinToString { "`${it.first}`" }} FROM `$table` ORDER BY rowid").use { c ->
             buildList { while (c.moveToNext()) add((0 until c.columnCount).map { c.getString(it) }) }
         }
     }
@@ -267,5 +276,112 @@ class MigrationTest {
         } finally {
             database.close()
         }
+    }
+
+    // ---------- EV-006: base 8 → 9 ----------
+
+    /** La base 8 del teléfono: catálogos y plantilla de ejemplo de fábrica, una plantilla propia con presión y un ayuno en curso con meta e ingesta. */
+    private fun createV8(context: android.content.Context, withFiller: Boolean): Map<String, List<Pair<String, String>>> {
+        val tables = tablesOf(8)
+        helper.createDatabase(dbName, 8).apply {
+            val now = "2026-10-08T10:00:00"
+            execSQL(
+                "INSERT INTO metric_type (code, name, unit, entry_unit, is_numeric, min_valid, max_valid, active, created_at) " +
+                    "VALUES ('blood_pressure', 'Presión', 'mmHg', 'mmHg', 1, 0, 300, 1, '$now')",
+            )
+            com.ayuno.data.seed.CatalogSeed.insertCatalogs(this, context, now)
+            com.ayuno.data.seed.CatalogSeed.insertExampleTemplate(this, context, now)
+            // La persona cambió el mensaje de la regla manual de ejemplo: ya no es «de ejemplo».
+            execSQL("UPDATE rule SET message = 'Mi mensaje' WHERE name = (SELECT name FROM rule WHERE condition_kind = 'manual' LIMIT 1)")
+            execSQL("INSERT INTO template (id, name, target_hours, milestone_hours, created_at) VALUES ('t-mia', 'Mía', 36.0, '[]', '$now')")
+            execSQL("INSERT INTO plan_metric (id, template_id, metric_type_code, created_at) VALUES ('pm-bp', 't-mia', 'blood_pressure', '$now')")
+            execSQL(
+                "INSERT INTO fast (id, template_id, status, target_hours, milestone_hours, last_meal_planned, clock_start_planned, " +
+                    "clock_start_actual, tz_offset, created_at) VALUES ('f-en-curso', 't-mia', 'in_progress', 36.0, '[]', " +
+                    "'2026-10-25T18:00:00', '2026-10-25T22:00:00', '2026-10-25T22:05:10', '-05:00', '2026-10-25T18:00:00')",
+            )
+            execSQL("INSERT INTO intake_goal (id, fast_id, intake_type_code, daily_amount, unit, created_at) VALUES ('g-sal', 'f-en-curso', 'salt', 4.0, 'g', '$now')")
+            execSQL(
+                "INSERT INTO intake (id, fast_id, intake_type_code, taken_at, amount, unit, note, created_at) " +
+                    "VALUES ('i-sal', 'f-en-curso', 'salt', '2026-10-26T08:00:00', 1.5, 'g', NULL, '2026-10-26T08:00:01')",
+            )
+            if (withFiller) {
+                tables.forEach { (table, cols) ->
+                    if (table == "settings" || table == "person_profile") return@forEach
+                    repeat(2) { n ->
+                        val values = cols.map { (name, affinity) ->
+                            when {
+                                name == "template_id" -> "NULL"
+                                name == "fast_id" -> "'f-en-curso'"
+                                affinity == "INTEGER" -> "${n + 1}"
+                                affinity == "REAL" -> "${n + 1}.25"
+                                else -> "'$table-$name-$n'"
+                            }
+                        }
+                        execSQL("INSERT INTO `$table` (${cols.joinToString { "`${it.first}`" }}) VALUES (${values.joinToString()})")
+                    }
+                }
+            }
+            close()
+        }
+        return tables
+    }
+
+    @Test
+    fun `la migracion 8 a 9 conserva cada fila y columna, el ayuno en curso y copia lo tecleado de cada ingesta`() {
+        val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        val tables = createV8(context, withFiller = true)
+        val before = helper.runMigrationsAndValidate(dbName, 8, false).use { it.snapshot(tables) }
+        val db = helper.runMigrationsAndValidate(dbName, 9, true, Migrations.From8To9(context, Clock.systemDefaultZone()))
+        // Las filas añadidas por la semilla (reglas, metas, medidas) son nuevas; las de antes quedan idénticas.
+        val after = db.snapshot(tables).mapValues { (table, rows) -> rows.take(before.getValue(table).size) }
+        assertEquals(before, after)
+        db.query("SELECT status, clock_start_actual FROM fast WHERE id = 'f-en-curso'").use {
+            it.moveToFirst(); assertEquals("in_progress", it.getString(0)); assertEquals("2026-10-25T22:05:10", it.getString(1))
+        }
+        db.query("SELECT amount_entered, unit_entered, group_id FROM intake WHERE id = 'i-sal'").use {
+            it.moveToFirst(); assertEquals(1.5, it.getDouble(0), 0.0); assertEquals("g", it.getString(1)); assertTrue(it.isNull(2))
+        }
+        db.query("SELECT standing_check_seconds FROM plan_metric WHERE id = 'pm-bp'").use { it.moveToFirst(); assertEquals("[60,180]", it.getString(0)) }
+        db.query("SELECT daily_amount, nudge_after_hours FROM intake_goal WHERE id = 'g-sal'").use {
+            it.moveToFirst(); assertEquals(4.0, it.getDouble(0), 0.0); assertTrue(it.isNull(1))
+        }
+        db.query("SELECT COUNT(*) FROM measurement WHERE is_baseline = 1").use { it.moveToFirst(); assertEquals(0, it.getInt(0)) }
+        // La meta reconstruida sigue exigiendo exactamente un propietario.
+        val orphan = runCatching {
+            db.execSQL("INSERT INTO intake_goal (id, intake_type_code, daily_amount, unit, created_at) VALUES ('g-x', 'salt', NULL, 'g', '2026-10-26T09:00:00')")
+        }
+        assertTrue(orphan.isFailure)
+    }
+
+    @Test
+    fun `la migracion 8 a 9 siembra medidas, boton rapido y revision del ejemplo sin duplicar ni tocar lo cambiado`() {
+        val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        createV8(context, withFiller = false)
+        val clock = Clock.systemDefaultZone()
+        val db = helper.runMigrationsAndValidate(dbName, 9, true, Migrations.From8To9(context, clock))
+        // Volver a sembrar (p. ej. al crear la base nueva sobre lo mismo) no duplica nada.
+        com.ayuno.data.seed.CatalogSeed.insertHouseholdUnits(db, context, "2026-10-26T10:00:00")
+        com.ayuno.data.seed.CatalogSeed.updateExampleForReview(db, context, "2026-10-26T10:00:00")
+        fun units(type: String) = db.query("SELECT code, equivalent, imprecise FROM household_unit WHERE intake_type_code = '$type' ORDER BY position").use { c ->
+            buildList { while (c.moveToNext()) add(Triple(c.getString(0), c.getDouble(1), c.getInt(2) == 1)) }
+        }
+        assertEquals(listOf("glass", "cup"), units("water").map { it.first })
+        assertTrue(units("salt").single { it.first == "pinch" }.third)
+        db.query("SELECT code, quick_unit_code FROM intake_type WHERE quick_unit_code IS NOT NULL ORDER BY code").use { c ->
+            val quick = buildMap { while (c.moveToNext()) put(c.getString(0), c.getString(1)) }
+            assertEquals(mapOf("salt" to "pinch", "water" to "glass"), quick)
+        }
+        db.query("SELECT condition_kind, is_placeholder FROM rule WHERE template_id IS NOT NULL AND template_id != 't-mia' ORDER BY condition_kind").use { c ->
+            val rules = buildMap { while (c.moveToNext()) put(c.getString(0), c.getInt(1) == 1) }
+            // La manual cambió su mensaje: deja de ser «de ejemplo»; las otras dos siguen idénticas a la semilla.
+            assertEquals(mapOf("intake_below_goal" to true, "manual" to false, "metric_below" to true), rules)
+        }
+        db.query("SELECT intake_type_code, daily_amount, nudge_after_hours FROM intake_goal WHERE template_id IS NOT NULL ORDER BY intake_type_code").use { c ->
+            val goals = buildList { while (c.moveToNext()) add(Triple(c.getString(0), c.isNull(1), c.getDouble(2))) }
+            assertEquals(listOf(Triple("salt", true, 6.0), Triple("water", true, 6.0)), goals)
+        }
+        // La plantilla propia y el ayuno no reciben metas ni reglas.
+        db.query("SELECT COUNT(*) FROM intake_goal WHERE template_id = 't-mia' OR fast_id = 'f-en-curso'").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
     }
 }

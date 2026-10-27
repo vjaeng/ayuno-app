@@ -78,7 +78,7 @@ class Repositories2Test {
         )
         val fastId = fastWith(plan)
         val copy = w.fasts.get(fastId)!!.plan
-        assertEquals(4.0, copy.goals.single().dailyAmount, 0.0)
+        assertEquals(4.0, copy.goals.single().dailyAmount!!, 0.0)
         assertEquals("Comprar sal", copy.checklist.single().text)
         assertEquals(listOf(StageKind.FAST, StageKind.POST), copy.notices.single().stageKinds)
         assertEquals(DuringFast.CONTINUES, copy.products.single().duringFast)

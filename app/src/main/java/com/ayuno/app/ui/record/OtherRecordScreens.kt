@@ -1,5 +1,9 @@
 package com.ayuno.app.ui.record
 
+import androidx.compose.foundation.layout.heightIn
+import com.ayuno.domain.model.IntakeType
+import com.ayuno.app.ui.components.CheckRow
+import com.ayuno.domain.derived.HouseholdMeasures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
@@ -83,17 +87,32 @@ fun SymptomFormScreen(fastId: String, onBack: () -> Unit, onSaved: (List<Alert>)
     }
 }
 
-/** H-012: líquido o electrolito con cantidad; sodio calculado; total del día frente a la meta. */
+/**
+ * H-012, H-050, H-051: líquido o electrolito en su unidad o en una medida casera, con equivalente, sodio, total del día
+ * y «Lleva sal disuelta». [initialType] y [initialUnit] llegan de la pulsación larga en un BotonRapido.
+ */
 @Composable
-fun IntakeFormScreen(fastId: String, onBack: () -> Unit, onSaved: (alerts: List<Alert>, endFastAt: LocalDateTime?) -> Unit) {
+fun IntakeFormScreen(
+    fastId: String,
+    onBack: () -> Unit,
+    initialType: String? = null,
+    initialUnit: String? = null,
+    onSaved: (alerts: List<Alert>, endFastAt: LocalDateTime?) -> Unit,
+) {
     val viewModel: IntakeViewModel = viewModel(key = "intake-$fastId", factory = containerFactory { IntakeViewModel(it, fastId) })
     val types by viewModel.types.collectAsStateWithLifecycle()
     val totals by viewModel.totals.collectAsStateWithLifecycle()
+    val goals by viewModel.goals.collectAsStateWithLifecycle()
     val save by viewModel.save.collectAsStateWithLifecycle()
     var takenAt by remember { mutableStateOf(viewModel.now()) }
-    var selected by remember { mutableStateOf<String?>(null) }
-    var amount by remember { mutableStateOf("") }
+    var selected by remember { mutableStateOf(initialType) }
+    var unitCode by remember { mutableStateOf(initialUnit) }
+    var amount by remember { mutableStateOf(if (initialUnit != null) "1" else "") }
     var note by remember { mutableStateOf("") }
+    var dissolved by remember { mutableStateOf(false) }
+    var dissolvedType by remember { mutableStateOf<String?>(null) }
+    var dissolvedAmount by remember { mutableStateOf("") }
+    var dissolvedUnit by remember { mutableStateOf<String?>(null) }
     var askEnd by remember { mutableStateOf<SimpleSave.Saved?>(null) }
     LaunchedEffect(save) {
         val saved = save as? SimpleSave.Saved ?: return@LaunchedEffect
@@ -104,18 +123,39 @@ fun IntakeFormScreen(fastId: String, onBack: () -> Unit, onSaved: (alerts: List<
     ScreenScaffold(stringResource(R.string.record_intake), onBack) {
         val list = types ?: run { LoadingState(); return@ScreenScaffold }
         DateTimeField(stringResource(R.string.field_taken_at), takenAt, { takenAt = it }, showSeconds = true)
-        RadioList(list.map { it.code to "${it.name} (${it.unit})" }, selected, { selected = it })
+        RadioList(list.map { it.code to "${it.name} (${it.unit})" }, selected, { selected = it; unitCode = null; dissolved = false })
         val type = list.firstOrNull { it.code == selected }
-        AyunoTextField(stringResource(R.string.field_amount), amount, { amount = it }, numeric = true, suffix = type?.unit)
         val number = Formats.parseNumber(amount)
-        if (type?.sodiumFactor != null && number != null) {
-            Text(stringResource(R.string.intake_sodium, Formats.number(number * type.sodiumFactor!!, 2)), style = MaterialTheme.typography.bodyLarge)
+        if (type != null) {
+            val unit = unitCode ?: type.unit
+            MeasureAmount(stringResource(R.string.field_amount), type, amount, { amount = it }, unit, { unitCode = it })
+            type.unit(unit)?.let { measure ->
+                HouseholdMeasures.impreciseLine(type, measure, goals.firstOrNull { it.intakeTypeCode == type.code })?.let { ImpreciseText(it, type.unit) }
+            }
+            EquivalentText(type, number, unit)
+            // «Lleva sal disuelta» (H-051): solo en un tipo sin sodio y si hay alguno con factor; nombra ese tipo.
+            val salty = list.filter { it.sodiumFactor != null && !it.breaksFast }
+            if (type.sodiumFactor == null && salty.isNotEmpty()) {
+                CheckRow(stringResource(R.string.intake_dissolved, salty.first().name.lowercase()), dissolved) { on ->
+                    dissolved = on
+                    if (on && dissolvedType == null) dissolvedType = salty.first().code
+                }
+                if (dissolved) {
+                    if (salty.size > 1) RadioList(salty.map { it.code to it.name }, dissolvedType, { dissolvedType = it; dissolvedUnit = null })
+                    salty.firstOrNull { it.code == dissolvedType }?.let { second ->
+                        val secondUnit = dissolvedUnit ?: second.unit
+                        MeasureAmount(second.name, second, dissolvedAmount, { dissolvedAmount = it }, secondUnit, { dissolvedUnit = it })
+                        EquivalentText(second, Formats.parseNumber(dissolvedAmount), secondUnit)
+                    }
+                }
+            }
         }
         totals.firstOrNull { it.intakeType.code == selected }?.let { Text(totalText(it), style = MaterialTheme.typography.bodyLarge) }
         AyunoTextField(stringResource(R.string.field_note), note, { note = it }, singleLine = false)
         (save as? SimpleSave.Invalid)?.errors?.forEach { FieldError(stringResource(it.message())) }
         PrimaryButton(stringResource(R.string.action_save), enabled = type != null && save !is SimpleSave.Saving, onClick = {
-            viewModel.record(RecordIntake.Input(fastId, type!!.code, takenAt, number, null, note))
+            val part = if (dissolved && dissolvedType != null) RecordIntake.Part(dissolvedType!!, Formats.parseNumber(dissolvedAmount), dissolvedUnit) else null
+            viewModel.record(RecordIntake.Input(fastId, type!!.code, takenAt, number, unitCode, note, alongside = part))
         })
     }
     askEnd?.let { saved ->
@@ -127,6 +167,47 @@ fun IntakeFormScreen(fastId: String, onBack: () -> Unit, onSaved: (alerts: List<
             dismissButton = { TextButton(onClick = { askEnd = null; onSaved(saved.alerts, null) }) { Text(stringResource(R.string.intake_breaks_no)) } },
         )
     }
+}
+
+/** Cantidad y medida: la unidad del tipo y sus medidas caseras, en orden (H-050). */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun MeasureAmount(label: String, type: IntakeType, amount: String, onAmount: (String) -> Unit, unit: String, onUnit: (String) -> Unit) {
+    AyunoTextField(label, amount, onAmount, numeric = true)
+    if (type.units.isNotEmpty()) {
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.spaceS)) {
+            (listOf(type.unit to type.unit) + type.units.map { it.code to it.name }).forEach { (code, label) ->
+                androidx.compose.material3.FilterChip(
+                    selected = code == unit,
+                    onClick = { onUnit(code) },
+                    label = { Text(label, style = MaterialTheme.typography.bodyLarge) },
+                    modifier = Modifier.heightIn(min = Dimens.touchMin),
+                )
+            }
+        }
+    }
+}
+
+/** «= 0.3 g · sodio 0.12 g»: el equivalente solo con una medida; el sodio si el tipo tiene factor. */
+@Composable
+private fun EquivalentText(type: IntakeType, number: Double?, unit: String) {
+    val equivalent = number?.let { HouseholdMeasures.equivalent(type, it, unit) } ?: return
+    val parts = listOfNotNull(
+        stringResource(R.string.intake_equivalent, Formats.number(equivalent, 2), type.unit).takeIf { unit != type.unit },
+        type.sodiumFactor?.let { stringResource(R.string.intake_sodium, Formats.number(equivalent * it, 2)) },
+    )
+    if (parts.isNotEmpty()) Text(parts.joinToString(" · "), style = MaterialTheme.typography.bodyLarge)
+}
+
+/** Línea fija de la medida imprecisa: cuánto es una y, con meta, a cuántas equivale (D-22, sin juicio). */
+@Composable
+private fun ImpreciseText(line: HouseholdMeasures.ImpreciseLine, typeUnit: String) {
+    val first = stringResource(R.string.intake_imprecise, line.unit.name, Formats.number(line.unit.equivalent, 2), typeUnit)
+    val goal = line.goalInUnits?.let { n ->
+        val largest = line.goalInLargest?.let { (u, amount) -> stringResource(R.string.intake_imprecise_largest, Formats.quarters(amount), u.name) }.orEmpty()
+        stringResource(R.string.intake_imprecise_goal, n) + largest + "."
+    }.orEmpty()
+    Text(listOf(first, goal).filter { it.isNotEmpty() }.joinToString(" "), style = MaterialTheme.typography.bodyLarge)
 }
 
 /** H-015: tomas pendientes primero; los que salen en gris; aviso si es «a evitar». */

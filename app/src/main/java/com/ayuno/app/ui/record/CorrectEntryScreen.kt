@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,6 +32,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
+import com.ayuno.app.ui.components.Badge
 import com.ayuno.app.ui.components.AyunoTextField
 import com.ayuno.app.ui.components.CheckRow
 import com.ayuno.app.ui.components.DateTimeField
@@ -106,6 +110,8 @@ class CorrectEntryViewModel(private val container: AppContainer, private val kin
                 val paired = reading.pairedReadingId != null || r.bloodPressure(reading.fastId).any { it.pairedReadingId == reading.id }
                 EntryUi.Loaded(fast, null, reading, container.catalog.metricType(MetricType.BLOOD_PRESSURE_CODE), paired, changes)
             }
+            // Las ingestas solo se deshacen desde el Snackbar (H-051); corregirlas llegará con H-034 para ingestas.
+            EntryKind.INTAKE -> EntryUi.NotFound
         }
     }
 
@@ -120,6 +126,24 @@ class CorrectEntryViewModel(private val container: AppContainer, private val kin
     fun correctBloodPressure(input: CorrectBloodPressure.Input) = launch { container.correctBloodPressure(input) }
 
     fun reset() { _save.value = SaveState.Idle }
+
+    /** H-055: escribe al momento; con el ayuno en curso vuelve a evaluar las reglas de partida (D-24). */
+    private val _baselineMarked = MutableStateFlow<Boolean?>(null)
+    val baselineMarked: StateFlow<Boolean?> = _baselineMarked.asStateFlow()
+
+    fun markBaseline(baseline: Boolean, onAlerts: (List<Alert>) -> Unit) {
+        viewModelScope.launch {
+            when (val result = container.markBaseline(kind, id, baseline)) {
+                is Outcome.Ok -> {
+                    reload.value++
+                    if (result.value.isNotEmpty()) onAlerts(result.value) else _baselineMarked.value = baseline
+                }
+                is Outcome.Invalid -> _save.value = SaveState.Invalid(result.errors)
+            }
+        }
+    }
+
+    fun baselineShown() { _baselineMarked.value = null }
 
     fun delete(onDeleted: () -> Unit) {
         viewModelScope.launch {
@@ -155,20 +179,48 @@ fun CorrectEntryScreen(kind: EntryKind, id: String, onBack: () -> Unit, onSaved:
     val state by viewModel.state.collectAsStateWithLifecycle()
     val save by viewModel.save.collectAsStateWithLifecycle()
     val deleteFailed by viewModel.deleteFailed.collectAsStateWithLifecycle()
+    val baselineMarked by viewModel.baselineMarked.collectAsStateWithLifecycle()
     var confirmingDelete by remember { mutableStateOf(false) }
     LaunchedEffect(save) { (save as? SaveState.Saved)?.let { onSaved(it.alerts) } }
 
     val loaded = state as? EntryUi.Loaded
+    val what = loaded?.let { l ->
+        l.measurement?.let { "${l.type?.name.orEmpty()} ${Formats.measurementValue(it, l.type)}".trim() }
+            ?: l.reading?.let { "${l.type?.name.orEmpty()} ${it.systolic ?: ""}/${it.diastolic ?: ""}" }.orEmpty()
+    }.orEmpty()
+    val snackbar = remember { SnackbarHostState() }
+    val markedText = stringResource(R.string.baseline_marked, what)
+    val unmarkedText = stringResource(R.string.baseline_unmarked, what)
+    val snackbarScope = rememberCoroutineScope()
+    LaunchedEffect(baselineMarked) {
+        val marked = baselineMarked ?: return@LaunchedEffect
+        val text = if (marked) markedText else unmarkedText
+        viewModel.baselineShown()
+        // En su propio ámbito: consumir el aviso relanza este efecto y no debe cerrar el Snackbar.
+        snackbarScope.launch { snackbar.showSnackbar(text) }
+    }
+    // Solo una entrada con valor puede ser la de partida.
+    val baseline = loaded?.let { l -> l.measurement?.takeIf { it.valueNum != null }?.isBaseline ?: l.reading?.takeIf { it.systolic != null }?.isBaseline }
     ScreenScaffold(
         loaded?.type?.name.orEmpty(),
         onBack,
-        actions = { if (loaded != null) EntryMenu(onDelete = { confirmingDelete = true }) },
+        actions = {
+            if (loaded != null) {
+                EntryMenu(
+                    baseline = baseline,
+                    onBaseline = { viewModel.markBaseline(it, onAlerts = onSaved) },
+                    onDelete = { confirmingDelete = true },
+                )
+            }
+        },
+        snackbarHost = { SnackbarHost(snackbar) },
     ) {
         when (val s = state) {
             EntryUi.Loading -> LoadingState()
             EntryUi.NotFound -> EmptyState(stringResource(R.string.error_entry_not_found), stringResource(R.string.action_back), onBack)
             is EntryUi.Loaded -> {
                 if (deleteFailed) FieldError(stringResource(R.string.correct_save_error))
+                if (baseline == true) Badge(stringResource(R.string.badge_baseline))
                 s.measurement?.let { m -> s.type?.let { MeasurementCorrection(s.fast, m, it, save, viewModel) } }
                 s.reading?.let { BloodPressureCorrection(s.fast, it, s.paired, save, viewModel) }
                 Changes(s.changes)
@@ -177,8 +229,6 @@ fun CorrectEntryScreen(kind: EntryKind, id: String, onBack: () -> Unit, onSaved:
     }
 
     if (confirmingDelete && loaded != null) {
-        val what = loaded.measurement?.let { "${loaded.type?.name.orEmpty()} ${Formats.measurementValue(it, loaded.type)}".trim() }
-            ?: loaded.reading?.let { "${loaded.type?.name.orEmpty()} ${it.systolic ?: ""}/${it.diastolic ?: ""}" }.orEmpty()
         val at = loaded.measurement?.takenAt ?: loaded.reading!!.takenAt
         // DialogoConfirmacion: la acción segura (Cancelar) a la derecha, sin rojo.
         AlertDialog(
@@ -193,15 +243,24 @@ fun CorrectEntryScreen(kind: EntryKind, id: String, onBack: () -> Unit, onSaved:
     }
 }
 
-/** MenuAcciones: «Borrar» (acción rara y destructiva, lejos de «Guardar»). */
+/**
+ * MenuAcciones: «Marcar como de partida» / «Quitar de partida» (H-055; [baseline] nulo = sin valor, no se ofrece) y
+ * «Borrar» (acción rara y destructiva, lejos de «Guardar»).
+ */
 @Composable
-private fun EntryMenu(onDelete: () -> Unit) {
+private fun EntryMenu(baseline: Boolean?, onBaseline: (Boolean) -> Unit, onDelete: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }, modifier = Modifier.size(Dimens.touchMin)) {
             Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.correct_menu))
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            if (baseline != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(if (baseline) R.string.baseline_unmark else R.string.baseline_mark)) },
+                    onClick = { open = false; onBaseline(!baseline) },
+                )
+            }
             DropdownMenuItem(text = { Text(stringResource(R.string.correct_delete)) }, onClick = { open = false; onDelete() })
         }
     }
@@ -318,6 +377,8 @@ private fun BloodPressureCorrection(fast: Fast, r: BloodPressureReading, paired:
     DateTimeField(stringResource(R.string.field_taken_at), takenAt, { takenAt = it }, showSeconds = true)
     if (paired) {
         Text(positionText(position), style = MaterialTheme.typography.titleMedium)
+        // H-053: calculados al medir; al cambiar la hora se recalculan, no se teclean.
+        com.ayuno.app.ui.history.standingText(r)?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
         Text(stringResource(R.string.correct_paired_info), style = MaterialTheme.typography.bodyLarge)
     } else {
         OptionSelector(

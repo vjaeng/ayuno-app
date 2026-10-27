@@ -17,7 +17,11 @@ class ReminderReceiver : BroadcastReceiver() {
         val pending = goAsync()
         app.appScope.launch {
             try {
-                if (intent.action == ACTION_SNOOZED) handleSnoozed(app, intent) else handle(app, intent.getStringExtra(EXTRA_SCHEDULED_AT)?.let { LocalTimes.parse(it) })
+                when (intent.action) {
+                    ACTION_SNOOZED -> handleSnoozed(app, intent)
+                    ACTION_STANDING -> ReminderNotifier.notifyStanding(app, intent)
+                    else -> handle(app, intent.getStringExtra(EXTRA_SCHEDULED_AT)?.let { LocalTimes.parse(it) })
+                }
             } finally {
                 pending.finish()
             }
@@ -28,6 +32,7 @@ class ReminderReceiver : BroadcastReceiver() {
         const val ACTION = "com.ayuno.app.REMINDER"
         const val EXTRA_SCHEDULED_AT = "scheduled_at"
         const val ACTION_SNOOZED = "com.ayuno.app.REMINDER_SNOOZED"
+        const val ACTION_STANDING = "com.ayuno.app.STANDING"
 
         /** Aviso pospuesto: se repite solo si sigue sin hacerse. */
         suspend fun handleSnoozed(app: AyunoApplication, intent: Intent) {
@@ -52,6 +57,12 @@ class ReminderReceiver : BroadcastReceiver() {
             val c = app.container
             if (at != null) {
                 c.reminders.dueAt(at).forEach { due -> ReminderNotifier.notifyReminder(app, due, label(app, due)) }
+                // H-052: una sola vez por hueco, justo a su hora.
+                val types = c.catalog.intakeTypes()
+                c.reminders.nudges().filter { (_, n) -> n.at == at }.forEach { (fastId, n) ->
+                    val name = types.firstOrNull { it.code == n.intakeTypeCode }?.name ?: n.intakeTypeCode
+                    ReminderNotifier.notifyNudge(app, fastId, n, name)
+                }
             }
             c.fasts.all().firstOrNull { it.status == FastStatus.IN_PROGRESS }?.let { fast ->
                 val rules = c.fasts.get(fast.id)?.plan?.rules.orEmpty().associateBy { it.id }

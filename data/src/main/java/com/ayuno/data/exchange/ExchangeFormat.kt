@@ -18,6 +18,9 @@ import com.ayuno.domain.model.RuleConditionKind
 import com.ayuno.domain.model.RuleLevel
 import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.Trend
+import com.ayuno.domain.model.TrendOf
+import com.ayuno.domain.model.RuleDirection
+import com.ayuno.domain.model.WarningKind
 import com.ayuno.domain.model.UserChoice
 
 /**
@@ -28,13 +31,14 @@ import com.ayuno.domain.model.UserChoice
  */
 internal object ExchangeFormat {
     const val SCHEMA = "fasting-log"
-    const val VERSION = "1.1"
+    const val VERSION = "1.2"
     const val MAJOR = 1
 
     /** Columnas de fecha y hora local sin zona, con segundos (`2026-10-23T07:02:15`). */
     private val DATETIME = setOf("last_meal_planned", "last_meal_actual", "clock_start_planned", "clock_start_actual", "end_actual", "scheduled_for")
 
-    enum class Kind { TEXT, INTEGER, REAL, BOOLEAN, DATETIME, DATE, TIME, STRING_LIST, NUMBER_LIST }
+    /** [OBJECT_LIST]: lista de objetos con su propio formato (`fast.started_with_warnings`, D-25). */
+    enum class Kind { TEXT, INTEGER, REAL, BOOLEAN, DATETIME, DATE, TIME, STRING_LIST, NUMBER_LIST, INTEGER_LIST, OBJECT_LIST }
 
     data class Table(
         val table: String,
@@ -45,6 +49,8 @@ internal object ExchangeFormat {
         val booleans: Set<String> = emptySet(),
         val stringLists: Set<String> = emptySet(),
         val numberLists: Set<String> = emptySet(),
+        val integerLists: Set<String> = emptySet(),
+        val objectLists: Set<String> = emptySet(),
         /** Valores admitidos (en las listas, de cada elemento). */
         val enums: Map<String, Set<String>> = emptyMap(),
         /** Columna → tabla a la que apunta (por su clave primaria). */
@@ -56,6 +62,8 @@ internal object ExchangeFormat {
             column in booleans -> Kind.BOOLEAN
             column in stringLists -> Kind.STRING_LIST
             column in numberLists -> Kind.NUMBER_LIST
+            column in integerLists -> Kind.INTEGER_LIST
+            column in objectLists -> Kind.OBJECT_LIST
             column in DATETIME || column.endsWith("_at") -> Kind.DATETIME
             column == "birth_date" -> Kind.DATE
             column == "time_of_day" || column == "check_time" -> Kind.TIME
@@ -75,11 +83,13 @@ internal object ExchangeFormat {
         Table("metric_option", "metric_options", catalog = true, refs = mapOf("metric_type_code" to "metric_type")),
         Table("symptom_type", "symptom_types", catalog = true, pk = "code", booleans = setOf("is_alarm", "active")),
         Table("intake_type", "intake_types", catalog = true, pk = "code", booleans = setOf("breaks_fast")),
+        // 1.2 (EV-006): medidas caseras; `intake_type.quick_unit_code` e `intake.unit_entered` apuntan a su `code` por tipo.
+        Table("household_unit", "household_units", catalog = true, booleans = setOf("imprecise"), refs = mapOf("intake_type_code" to "intake_type")),
         Table("product", "products", catalog = true, pk = "code", booleans = setOf("avoid", "active"), enums = mapOf("kind" to codes<ProductKind>())),
         Table("product_schedule", "product_schedules", catalog = true, refs = mapOf("product_code" to "product")),
         Table("template", "templates", numberLists = setOf("milestone_hours")),
         Table(
-            "fast", "fasts", numberLists = setOf("milestone_hours"),
+            "fast", "fasts", numberLists = setOf("milestone_hours"), objectLists = setOf("started_with_warnings"),
             enums = mapOf("status" to codes<FastStatus>(), "end_reason" to codes<EndReason>()),
             refs = mapOf("template_id" to "template", "end_rule_id" to "rule"),
         ),
@@ -87,11 +97,12 @@ internal object ExchangeFormat {
             "stage", "stages", planOwned = true, refs = PLAN_OWNER,
             enums = mapOf("kind" to codes<StageKind>(), "duration_unit" to codes<DurationUnit>()),
         ),
-        Table("plan_metric", "plan_metrics", planOwned = true, refs = PLAN_OWNER + ("metric_type_code" to "metric_type")),
+        Table("plan_metric", "plan_metrics", planOwned = true, integerLists = setOf("standing_check_seconds"), refs = PLAN_OWNER + ("metric_type_code" to "metric_type")),
         Table("metric_schedule", "metric_schedules", enums = mapOf("stage_kind" to codes<StageKind>()), refs = mapOf("plan_metric_id" to "plan_metric")),
         Table(
-            "rule", "rules", planOwned = true, booleans = setOf("active", "filter_on_waking"), stringLists = setOf("filter_stage_kinds"),
+            "rule", "rules", planOwned = true, booleans = setOf("active", "filter_on_waking", "is_placeholder"), stringLists = setOf("filter_stage_kinds"),
             enums = mapOf(
+                "direction" to codes<RuleDirection>(), "trend_of" to codes<TrendOf>(),
                 "condition_kind" to codes<RuleConditionKind>(), "bp_component" to codes<BpComponent>(), "filter_stage_kinds" to codes<StageKind>(),
                 "filter_position" to codes<Position>(), "level" to codes<RuleLevel>(), "action" to codes<RuleAction>(),
             ),
@@ -106,12 +117,12 @@ internal object ExchangeFormat {
         ),
         Table("refeed_step", "refeed_steps", planOwned = true, enums = mapOf("kind" to codes<RefeedStepKind>()), refs = PLAN_OWNER),
         Table(
-            "measurement", "measurements", booleans = setOf("on_waking"),
+            "measurement", "measurements", booleans = setOf("on_waking", "is_baseline"),
             enums = mapOf("source" to codes<GlucoseSource>(), "trend" to codes<Trend>()),
             refs = mapOf("fast_id" to "fast", "metric_type_code" to "metric_type"),
         ),
         Table(
-            "blood_pressure_reading", "blood_pressure_readings", booleans = setOf("on_waking"),
+            "blood_pressure_reading", "blood_pressure_readings", booleans = setOf("on_waking", "is_baseline"),
             enums = mapOf("position" to codes<Position>()), refs = mapOf("fast_id" to "fast", "paired_reading_id" to "blood_pressure_reading"),
         ),
         Table("symptom", "symptoms", refs = mapOf("fast_id" to "fast", "symptom_type_code" to "symptom_type")),
@@ -125,6 +136,26 @@ internal object ExchangeFormat {
     )
 
     val BY_TABLE: Map<String, Table> = TABLES.associateBy { it.table }
+
+    /** `fast.started_with_warnings`: claves de cada elemento y valores de `kind`. */
+    val WARNING_KINDS: Set<String> = codes<WarningKind>()
+
+    /**
+     * Valores de los campos de 1.2 en un archivo 1.0 o 1.1 (importar.md): lo tecleado de una ingesta es su cantidad y
+     * unidad; las marcas, false; los tiempos de pie de la presión, los de fábrica; el resto, nulo.
+     */
+    fun defaultFor(table: String, column: String, row: Map<String, kotlinx.serialization.json.JsonElement>): kotlinx.serialization.json.JsonElement? = when ("$table.$column") {
+        "intake.amount_entered" -> row["amount"]
+        "intake.unit_entered" -> row["unit"]
+        "rule.is_placeholder", "measurement.is_baseline", "blood_pressure_reading.is_baseline" -> kotlinx.serialization.json.JsonPrimitive(false)
+        "plan_metric.standing_check_seconds" ->
+            if ((row["metric_type_code"] as? kotlinx.serialization.json.JsonPrimitive)?.content == com.ayuno.domain.model.MetricType.BLOOD_PRESSURE_CODE) {
+                kotlinx.serialization.json.JsonArray(com.ayuno.domain.model.PlanMetric.DEFAULT_STANDING_SECONDS.map { kotlinx.serialization.json.JsonPrimitive(it) })
+            } else {
+                null
+            }
+        else -> null
+    }
 
     /** Claves de la cabecera (`person` lleva los campos canónicos de `person_profile`). */
     val HEADER = listOf("schema", "schema_version", "app_version", "exported_at", "tz_offset", "person", "catalogs")

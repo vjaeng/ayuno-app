@@ -37,6 +37,10 @@ import com.ayuno.domain.model.Stage
 import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.Template
 import com.ayuno.domain.model.Trend
+import com.ayuno.domain.model.TrendOf
+import com.ayuno.domain.model.RuleDirection
+import com.ayuno.domain.model.StartWarning
+import com.ayuno.domain.model.WarningKind
 import com.ayuno.domain.model.UserChoice
 import com.ayuno.domain.model.codeOf
 import com.ayuno.domain.time.LocalTimes
@@ -56,6 +60,16 @@ internal fun List<Double>.toJson(): String = json.encodeToString(doubles, this)
 internal fun String.toDoubleList(): List<Double> = json.decodeFromString(doubles, this)
 internal fun List<String>.toJsonStrings(): String = json.encodeToString(strings, this)
 internal fun String.toStringList(): List<String> = json.decodeFromString(strings, this)
+private val ints = ListSerializer(Int.serializer())
+internal fun List<Int>.toJsonInts(): String = json.encodeToString(ints, this)
+internal fun String.toIntList(): List<Int> = json.decodeFromString(ints, this)
+
+/** `fast.started_with_warnings`: lista JSON de `{kind, ref_id, text}` (D-25). */
+@kotlinx.serialization.Serializable
+private data class WarningJson(val kind: String, @kotlinx.serialization.SerialName("ref_id") val refId: String, val text: String)
+private val warnings = ListSerializer(WarningJson.serializer())
+internal fun List<StartWarning>.toJsonWarnings(): String = json.encodeToString(warnings, map { WarningJson(it.kind.code, it.refId, it.text) })
+internal fun String.toWarnings(): List<StartWarning> = json.decodeFromString(warnings, this).map { StartWarning(codeOf<WarningKind>(it.kind), it.refId, it.text) }
 
 internal fun LocalDateTime.text(): String = LocalTimes.format(this)
 internal fun String.localDateTime(): LocalDateTime = LocalTimes.parse(this)
@@ -81,12 +95,12 @@ internal fun Stage.toEntity(owner: PlanOwner, now: String) = StageEntity(
 )
 
 internal fun PlanMetricEntity.toDomain(schedules: List<MetricScheduleEntity>) =
-    PlanMetric(id, metricTypeCode, schedules.filter { it.planMetricId == id }.map { it.toDomain() })
+    PlanMetric(id, metricTypeCode, schedules.filter { it.planMetricId == id }.map { it.toDomain() }, standingCheckSeconds?.toIntList())
 
 internal fun MetricScheduleEntity.toDomain() = MetricSchedule(id, codeOf<StageKind>(stageKind), timeOfDay.localTime())
 
 internal fun PlanMetric.toEntity(owner: PlanOwner, now: String) =
-    PlanMetricEntity(id, owner.templateId(), owner.fastId(), metricTypeCode, now, null, null)
+    PlanMetricEntity(id, owner.templateId(), owner.fastId(), metricTypeCode, standingCheckSeconds?.toJsonInts(), now, null, null)
 
 internal fun MetricSchedule.toEntity(planMetricId: String, now: String) =
     MetricScheduleEntity(id, planMetricId, stageKind.code, timeOfDay.text(), now, null, null)
@@ -110,6 +124,11 @@ internal fun RuleEntity.toDomain() = Rule(
     message = message,
     action = codeOf<RuleAction>(action),
     actionMinutes = actionMinutes,
+    direction = direction?.let { codeOf<RuleDirection>(it) },
+    trendCount = trendCount,
+    trendOf = trendOf?.let { codeOf<TrendOf>(it) },
+    goalPercent = goalPercent,
+    isPlaceholder = isPlaceholder,
 )
 
 internal fun Rule.toEntity(owner: PlanOwner, now: String) = RuleEntity(
@@ -133,6 +152,11 @@ internal fun Rule.toEntity(owner: PlanOwner, now: String) = RuleEntity(
     message = message,
     action = action.code,
     actionMinutes = actionMinutes,
+    direction = direction?.code,
+    trendCount = trendCount,
+    trendOf = trendOf?.code,
+    goalPercent = goalPercent,
+    isPlaceholder = isPlaceholder,
     createdAt = now,
     updatedAt = null,
     deletedAt = null,
@@ -154,6 +178,7 @@ internal fun FastEntity.toDomain() = Fast(
     endRuleId = endRuleId,
     tzOffset = tzOffset,
     notes = notes,
+    startedWithWarnings = startedWithWarnings?.toWarnings(),
 )
 
 internal fun Fast.toEntity(createdAt: String, updatedAt: String?) = FastEntity(
@@ -172,6 +197,7 @@ internal fun Fast.toEntity(createdAt: String, updatedAt: String?) = FastEntity(
     endRuleId = endRuleId,
     tzOffset = tzOffset,
     notes = notes,
+    startedWithWarnings = startedWithWarnings?.toJsonWarnings(),
     createdAt = createdAt,
     updatedAt = updatedAt,
     deletedAt = null,
@@ -179,22 +205,22 @@ internal fun Fast.toEntity(createdAt: String, updatedAt: String?) = FastEntity(
 
 internal fun MeasurementEntity.toDomain() = Measurement(
     id, fastId, metricTypeCode, takenAt.localDateTime(), scheduledFor?.localDateTime(), valueNum, valueText, valueEntered,
-    unitEntered, source?.let { codeOf<GlucoseSource>(it) }, trend?.let { codeOf<Trend>(it) }, onWaking, notDoneReason, note,
+    unitEntered, source?.let { codeOf<GlucoseSource>(it) }, trend?.let { codeOf<Trend>(it) }, onWaking, notDoneReason, note, isBaseline,
 )
 
 internal fun Measurement.toEntity(now: String) = MeasurementEntity(
     id, fastId, metricTypeCode, takenAt.text(), scheduledFor?.text(), valueNum, valueText, valueEntered, unitEntered,
-    source?.code, trend?.code, onWaking, notDoneReason, note, now, null, null,
+    source?.code, trend?.code, onWaking, notDoneReason, note, isBaseline, now, null, null,
 )
 
 internal fun BloodPressureReadingEntity.toDomain() = BloodPressureReading(
     id, fastId, takenAt.localDateTime(), scheduledFor?.localDateTime(), systolic, diastolic, pulse, codeOf<Position>(position),
-    onWaking, pairedReadingId, notDoneReason, note,
+    onWaking, pairedReadingId, notDoneReason, note, secondsStanding, isBaseline,
 )
 
 internal fun BloodPressureReading.toEntity(now: String) = BloodPressureReadingEntity(
     id, fastId, takenAt.text(), scheduledFor?.text(), systolic, diastolic, pulse, position.code, onWaking, pairedReadingId,
-    notDoneReason, note, now, null, null,
+    notDoneReason, note, secondsStanding, isBaseline, now, null, null,
 )
 
 internal fun AlertEntity.toDomain() = Alert(

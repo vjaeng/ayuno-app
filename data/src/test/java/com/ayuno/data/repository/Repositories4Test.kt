@@ -35,8 +35,12 @@ class Repositories4Test {
         // Todas las mediciones del catálogo; solo glucosa, peso y presión con horario.
         assertEquals(w.catalog.metricTypes().map { it.code }.toSet(), plan.metrics.map { it.metricTypeCode }.toSet())
         assertEquals(setOf("glucose", "weight", "blood_pressure"), plan.metrics.filter { it.schedules.isNotEmpty() }.map { it.metricTypeCode }.toSet())
-        assertEquals(setOf(RuleConditionKind.METRIC_BELOW, RuleConditionKind.MANUAL), plan.rules.map { it.conditionKind }.toSet())
+        assertEquals(setOf(RuleConditionKind.METRIC_BELOW, RuleConditionKind.MANUAL, RuleConditionKind.INTAKE_BELOW_GOAL), plan.rules.map { it.conditionKind }.toSet())
         assertTrue(plan.rules.all { it.threshold == null })
+        // EV-006 (H-003): todas «de ejemplo»; metas de agua y sal sin cifra y con pregunta tras 6 h.
+        assertTrue(plan.rules.all { it.isPlaceholder })
+        assertEquals(setOf("water", "salt"), plan.goals.map { it.intakeTypeCode }.toSet())
+        assertTrue(plan.goals.all { it.dailyAmount == null && it.nudgeAfterHours == 6.0 })
         assertTrue(plan.products.isEmpty())
         // Se edita como cualquier otra: guardar sin tocar nada es válido.
         assertTrue(w.saveTemplate(w.templates.get(example().id)!!) is Outcome.Ok)

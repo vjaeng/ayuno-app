@@ -81,16 +81,20 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-047 | Anotar mi peso al empezar y al terminar y ver cuánto cambió | media | 7 | 13 | U + I + E2E | en verde |
 | H-048 | Ver y corregir las mediciones del ayuno en curso | alta | 7 | 23 | U + I + E2E | en verde |
 | H-049 | Elegir con palabras en las escalas de cómo me siento | alta | 9 | 16 | U + I + E2E + D | en verde |
-| H-050 | Anotar lo que tomo en mis medidas caseras | alta | 7 | 15 | U + I + E2E | pendiente (EV-006) |
-| H-051 | Anotar agua y sal con un toque desde el reloj | alta | 7 | 11 | U + I + E2E | pendiente (EV-006) |
-| H-052 | Que la app me pregunte si llevo horas sin anotar lo que pide mi plan | alta | 7 | 9 | U + I + E2E + D | pendiente (EV-006) |
-| H-053 | Medir la presión de pie a su tiempo con un temporizador | alta | 7 | 8 | U + I + E2E + D | pendiente (EV-006) |
-| H-054 | Definir una regla sobre la diferencia al ponerme de pie | alta | 5 | 8 | U + I + E2E | pendiente (EV-006) |
-| H-055 | Definir una regla sobre el cambio respecto a mi valor de partida | alta | 5 | 10 | U + I + E2E | pendiente (EV-006) |
-| H-056 | Definir una regla de tendencia | alta | 6 | 9 | U + I + E2E | pendiente (EV-006) |
-| H-057 | Revisar lo que falta antes de empezar y empezar igual si quiero | alta | 6 | 10 | U + I + E2E | pendiente (EV-006) |
+| H-050 | Anotar lo que tomo en mis medidas caseras | alta | 7 | 15 | U + I + E2E | en verde |
+| H-051 | Anotar agua y sal con un toque desde el reloj | alta | 7 | 11 | U + I + E2E | en verde |
+| H-052 | Que la app me pregunte si llevo horas sin anotar lo que pide mi plan | alta | 7 | 9 | U + I + E2E + D | en verde (parcial: D pendiente) |
+| H-053 | Medir la presión de pie a su tiempo con un temporizador | alta | 7 | 8 | U + I + E2E + D | en verde (parcial: D pendiente) |
+| H-054 | Definir una regla sobre la diferencia al ponerme de pie | alta | 5 | 8 | U + I + E2E | en verde |
+| H-055 | Definir una regla sobre el cambio respecto a mi valor de partida | alta | 5 | 10 | U + I + E2E | en verde |
+| H-056 | Definir una regla de tendencia | alta | 6 | 9 | U + I + E2E | en verde |
+| H-057 | Revisar lo que falta antes de empezar y empezar igual si quiero | alta | 6 | 10 | U + I + E2E | en verde |
 
-*EV-006:* filas CRUD de H-050 a H-057 según el mini-Tejido del 2026-10-26. H-002, H-003, H-005, H-006, H-009, H-012, H-022, H-028, H-036 y H-040 ganan criterios marcados «(EV-006)» y sus casos se añaden a sus pruebas actuales; su estado no cambia hasta construirlos.
+*EV-006:* filas CRUD de H-050 a H-057 según el mini-Tejido del 2026-10-26. H-002, H-003, H-005, H-006, H-009, H-012, H-022, H-028, H-036 y H-040 ganan criterios marcados «(EV-006)», cubiertos en sus pruebas actuales. Construido el 2026-10-26:
+- Dominio: `rules/Ev006RuleEngineTest` (tabla §4.1 de EV-006) y `usecase/Ev006UseCasesTest` (revisión previa, botón rápido, partida, plan del ayuno, medidas del catálogo).
+- Datos: `ExchangeTest` (1.2 de ida y vuelta, 1.0/1.1 con valores de fábrica, rechazos S1), `MigrationTest` (8 → 9) y `Repositories4Test` (ejemplo con marcas y metas).
+- E2E: `H051QuickIntakeE2eTest`, `H052IntakeNudgeE2eTest`, `H053StandingTimerE2eTest`, `H054PairDifferenceRuleE2eTest`, `H055BaselineRuleE2eTest`, `H056TrendRuleE2eTest`, `H057PreStartReviewE2eTest`; H-009 y H-002 actualizados en `RecordAndAlertE2eTest` y `Batch2aE2eTest`; frases de H-028 en `ui/safety/RuleSentencesTest`.
+- En el temporizador, la prueba avanza a la vez el reloj de la app y el hilo principal de Robolectric (`passSeconds`); que la alarma suene de verdad es el caso D de §4.7.
 
 ## 4. Casos transversales
 
@@ -123,7 +127,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | «Sal por debajo del 50 % de la meta a las 14:00» con 0.6 de 2.5 g | Dispara |
 | Misma regla con `goal_percent` nulo | Se comporta como antes de EV-006 (100 %) |
 | Agua con sal (dos ingestas con un `group_id`) | Una sola evaluación; la regla de sal ya ve la sal disuelta |
-| Regla con `is_placeholder` o sin cifra | No se puede activar; el motor nunca la evalúa |
+| Regla sin cifra (`threshold` o `check_time`) | No se puede activar; el motor nunca la evalúa. `is_placeholder` no cambia la evaluación de una regla activa |
 | «Pulso sentado más de 15 sobre la partida», partida 70 y lectura de 86 / de 84 | Dispara / no dispara |
 | La propia lectura de partida | Nunca cumple `change_from_baseline` |
 | Lectura de pie sin sentada enlazada con regla `pair_difference` | No se evalúa |

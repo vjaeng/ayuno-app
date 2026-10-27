@@ -189,8 +189,12 @@ class CorrectBloodPressure(
             if (outside.isNotEmpty() && !input.confirmedOutOfRange) {
                 return@inTransaction Outcome.Ok(RecordResult.NeedsRangeConfirmation(outside))
             }
+            // Los segundos de pie no se teclean: se desplazan con la hora para conservar «Ya estoy de pie» (H-053).
+            val seconds = old.secondsStanding?.let { it + java.time.Duration.between(old.takenAt, takenAt).seconds.toInt() }
+            if (seconds != null && seconds < 0) return@inTransaction invalid(ValidationError.SECONDS_STANDING_NEGATIVE)
             old.copy(
                 takenAt = takenAt,
+                secondsStanding = seconds,
                 systolic = systolic,
                 diastolic = diastolic,
                 pulse = input.pulse,
@@ -201,6 +205,7 @@ class CorrectBloodPressure(
         }
         val changed = changes(
             "taken_at" to (old.takenAt to corrected.takenAt),
+            "seconds_standing" to (old.secondsStanding to corrected.secondsStanding),
             "systolic" to (old.systolic to corrected.systolic),
             "diastolic" to (old.diastolic to corrected.diastolic),
             "pulse" to (old.pulse to corrected.pulse),
@@ -218,6 +223,59 @@ class CorrectBloodPressure(
     }
 }
 
+/**
+ * H-055 (D-24): marcar o quitar «de partida» una medición o presión. Marcar quita la marca a la anterior del mismo
+ * ayuno y medición (en presión, de la misma posición); cada fila cambiada deja su `edit_log`. Con el ayuno en curso
+ * vuelve a evaluar las reglas en la misma transacción; las alertas ya registradas no cambian.
+ */
+class MarkBaseline(
+    catalog: CatalogRepository,
+    private val fasts: FastRepository,
+    private val records: RecordRepository,
+    alerts: AlertRepository,
+    private val audit: AuditRepository,
+    private val transactions: TransactionRunner,
+    private val clock: Clock,
+) {
+    private val recorder = AlertRecorder(catalog, records, alerts, clock)
+
+    suspend operator fun invoke(kind: EntryKind, id: String, baseline: Boolean): Outcome<List<com.ayuno.domain.model.Alert>> = transactions.inTransaction {
+        val fastId: String
+        when (kind) {
+            EntryKind.MEASUREMENT -> {
+                val row = records.measurement(id) ?: return@inTransaction invalid(ValidationError.ENTRY_NOT_FOUND)
+                if (row.valueNum == null) return@inTransaction invalid(ValidationError.FIELD_NOT_EDITABLE)
+                if (row.isBaseline == baseline) return@inTransaction Outcome.Ok(emptyList())
+                fastId = row.fastId
+                if (baseline) {
+                    records.measurements(fastId).filter { it.isBaseline && it.metricTypeCode == row.metricTypeCode && it.id != id }.forEach {
+                        records.updateMeasurement(it.copy(isBaseline = false))
+                        audit.log(kind, it.id, listOf(FieldChange("is_baseline", "true", "false")), null, clock)
+                    }
+                }
+                records.updateMeasurement(row.copy(isBaseline = baseline))
+            }
+            EntryKind.BLOOD_PRESSURE -> {
+                val row = records.bloodPressureReading(id) ?: return@inTransaction invalid(ValidationError.ENTRY_NOT_FOUND)
+                if (row.systolic == null) return@inTransaction invalid(ValidationError.FIELD_NOT_EDITABLE)
+                if (row.isBaseline == baseline) return@inTransaction Outcome.Ok(emptyList())
+                fastId = row.fastId
+                if (baseline) {
+                    records.bloodPressure(fastId).filter { it.isBaseline && it.position == row.position && it.id != id }.forEach {
+                        records.updateBloodPressure(it.copy(isBaseline = false))
+                        audit.log(kind, it.id, listOf(FieldChange("is_baseline", "true", "false")), null, clock)
+                    }
+                }
+                records.updateBloodPressure(row.copy(isBaseline = baseline))
+            }
+            EntryKind.INTAKE -> return@inTransaction invalid(ValidationError.FIELD_NOT_EDITABLE)
+        }
+        audit.log(kind, id, listOf(FieldChange("is_baseline", (!baseline).toString(), baseline.toString())), null, clock)
+        val source = fasts.get(fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
+        Outcome.Ok(if (source.fast.status == FastStatus.IN_PROGRESS) recorder.evaluate(source) else emptyList())
+    }
+}
+
 /** H-034, H-048: borrar (en blando) o restaurar una medición o presión, con su fila en `edit_log`; no evalúa reglas (D-20). */
 class SetEntryDeleted(
     private val records: RecordRepository,
@@ -229,12 +287,14 @@ class SetEntryDeleted(
         val (exists, visible) = when (kind) {
             EntryKind.MEASUREMENT -> (records.measurement(id, includeDeleted = true) != null) to (records.measurement(id) != null)
             EntryKind.BLOOD_PRESSURE -> (records.bloodPressureReading(id, includeDeleted = true) != null) to (records.bloodPressureReading(id) != null)
+            EntryKind.INTAKE -> (records.intake(id, includeDeleted = true) != null) to (records.intake(id) != null)
         }
         if (!exists) return@inTransaction invalid(ValidationError.ENTRY_NOT_FOUND)
         if (visible != deleted) return@inTransaction Outcome.Ok(Unit)
         when (kind) {
             EntryKind.MEASUREMENT -> records.setMeasurementDeleted(id, deleted)
             EntryKind.BLOOD_PRESSURE -> records.setBloodPressureDeleted(id, deleted)
+            EntryKind.INTAKE -> records.setIntakeDeleted(id, deleted)
         }
         audit.append(
             EditLogEntry(

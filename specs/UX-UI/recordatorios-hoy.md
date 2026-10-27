@@ -100,3 +100,5 @@ No es una regla ni una alerta: no escribe `alert` ni usa rojo. Suena una vez por
 *Cambio EV-005 (2026-10-23):* el valor de un hecho de una escala con palabras se muestra con su palabra y número («Mucha · 7») (H-049).
 
 *Cambio EV-006 (2026-10-26):* notificación nueva «¿Has tomado sal desde las 07:00?» con «Sí, anotar» / «Todavía no», cuando una meta con «preguntar tras N h» lleva N horas despierto sin ingestas de su tipo (H-052); también aparece como fila en Hoy hasta que se anota. Usa las mismas alarmas exactas y se reprograma tras reiniciar (H-016, ADR-005).
+
+*Cambio EV-006, construcción (2026-10-26):* la pregunta suena una vez a su hora exacta; si el teléfono estaba apagado entonces, no se repite al encenderlo, pero la fila de Hoy la muestra hasta que se anota una ingesta del tipo.

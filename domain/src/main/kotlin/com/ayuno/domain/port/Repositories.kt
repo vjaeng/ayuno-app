@@ -111,6 +111,10 @@ interface RecordRepository {
     fun observeIntakes(fastId: String): Flow<List<Intake>>
     suspend fun intakes(fastId: String): List<Intake>
     suspend fun insertIntake(intake: Intake)
+    suspend fun intake(id: String, includeDeleted: Boolean = false): Intake?
+
+    /** H-051: «Deshacer» del botón rápido (borrado blando). */
+    suspend fun setIntakeDeleted(id: String, deleted: Boolean)
 
     fun observeProductLogs(fastId: String): Flow<List<ProductLog>>
     suspend fun productLogs(fastId: String): List<ProductLog>

@@ -23,6 +23,7 @@ class ReleasedSchemasTest {
         6 to "2cdc8d628e5c5b9cb27dbaab8f9a4c4d", // ejemplo con todas las mediciones (APK 0.8.1): solo datos
         7 to "2cdc8d628e5c5b9cb27dbaab8f9a4c4d", // hitos 24, 36 y 48 en la plantilla de ejemplo (APK 0.12.0): solo datos
         8 to "5b96858413bbc26ce6a91aef26aa9e7f", // EV-005: tabla metric_option (APK 0.13.0)
+        9 to "8eac5a3d33889b4e74f4429353a2d511", // EV-006: medidas caseras, reglas entre lecturas y revisión previa (APK 0.14.0)
     )
 
     @Test

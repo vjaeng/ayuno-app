@@ -114,7 +114,13 @@ private fun plannedSupporting(item: PlannedItem): String {
 }
 
 /** Detalle de un planificado: [source] nulo si ya no está planificado (empezó o se borró). */
-data class PlannedDetail(val source: FastWithPlan?, val anotherInProgress: Boolean, val recordCount: Int)
+data class PlannedDetail(
+    val source: FastWithPlan?,
+    val anotherInProgress: Boolean,
+    val recordCount: Int,
+    /** H-057: lo que la revisión previa señalaría ahora (reglas de ejemplo, metas sin cifra, lista sin marcar). */
+    val review: List<com.ayuno.domain.model.StartWarning> = emptyList(),
+)
 
 /** H-046: detalle de un ayuno planificado con lo que hace falta para prepararlo y empezarlo (H-005, H-044, H-045). */
 class PlannedDetailViewModel(private val container: AppContainer, private val fastId: String) : ViewModel() {
@@ -124,7 +130,10 @@ class PlannedDetailViewModel(private val container: AppContainer, private val fa
     val state: StateFlow<PlannedDetail?> = combine(container.fasts.observeFasts(), refresh) { fasts, _ -> fasts }
         .map { fasts ->
             val source = container.fasts.get(fastId)?.takeIf { it.fast.status == FastStatus.PLANNED }
-            PlannedDetail(source, fasts.any { it.status == FastStatus.IN_PROGRESS }, if (source != null) container.recordCount(fastId) else 0)
+            PlannedDetail(
+                source, fasts.any { it.status == FastStatus.IN_PROGRESS }, if (source != null) container.recordCount(fastId) else 0,
+                source?.let { com.ayuno.domain.derived.PreStartReview.of(it.plan, container.catalog.intakeTypes()) }.orEmpty(),
+            )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -138,10 +147,22 @@ class PlannedDetailViewModel(private val container: AppContainer, private val fa
     private val _leaving = MutableStateFlow(false)
     val leaving: StateFlow<Boolean> = _leaving.asStateFlow()
 
-    fun start(onStarted: () -> Unit) {
+    /** Con pendientes en la revisión previa, abre la revisión en vez de empezar (H-057). */
+    fun start(onStarted: () -> Unit, onReview: () -> Unit) {
         _leaving.value = true
-        execute(onStarted) { container.startFastAskingWeight(fastId) }
+        viewModelScope.launch {
+            when (val result = container.startFastAskingWeight(fastId)) {
+                is Outcome.Ok -> { _errors.value = emptyList(); container.reminders.reschedule(); onStarted() }
+                is Outcome.Invalid -> {
+                    _leaving.value = false
+                    if (ValidationError.PRE_START_REVIEW_PENDING in result.errors) onReview() else _errors.value = result.errors
+                }
+            }
+        }
     }
+
+    /** Al volver de la revisión, la lista previa o el plan pueden haber cambiado. */
+    fun reload() { refresh.value++ }
 
     fun registerLastMeal(at: LocalDateTime) = execute { container.registerLastMeal(fastId, at) }
 
@@ -165,13 +186,14 @@ class PlannedDetailViewModel(private val container: AppContainer, private val fa
 }
 
 @Composable
-fun PlannedDetailScreen(fastId: String, onBack: () -> Unit, onChange: () -> Unit, onStarted: () -> Unit, onDeleted: () -> Unit = onBack) {
+fun PlannedDetailScreen(fastId: String, onBack: () -> Unit, onChange: () -> Unit, onStarted: () -> Unit, onDeleted: () -> Unit = onBack, onReview: () -> Unit = {}) {
     val viewModel: PlannedDetailViewModel = viewModel(key = "planned-$fastId", factory = containerFactory { PlannedDetailViewModel(it, fastId) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     val errors by viewModel.errors.collectAsStateWithLifecycle()
     val deleteFailed by viewModel.deleteFailed.collectAsStateWithLifecycle()
     val leaving by viewModel.leaving.collectAsStateWithLifecycle()
     var confirmingDelete by remember { mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.reload() }
     val source = state?.source
     ScreenScaffold(
         source?.let { stringResource(R.string.planned_detail_title, Formats.date(it.fast.lastMealPlanned)) } ?: stringResource(R.string.tab_planned),
@@ -194,11 +216,21 @@ fun PlannedDetailScreen(fastId: String, onBack: () -> Unit, onChange: () -> Unit
             SectionTitle(stringResource(R.string.home_checklist, checklist.count { it.isChecked }, checklist.size))
             checklist.forEach { item -> CheckRow(item.text, item.isChecked) { viewModel.setChecklistItem(item.id, it) } }
         }
+        // H-057: adelanta reglas de ejemplo y metas sin cifra para arreglarlas mientras se prepara (informa; no bloquea).
+        val rules = d.review.count { it.kind == com.ayuno.domain.model.WarningKind.PLACEHOLDER_RULE }
+        val goals = d.review.count { it.kind == com.ayuno.domain.model.WarningKind.GOAL_WITHOUT_AMOUNT }
+        if (rules + goals > 0) {
+            val parts = listOfNotNull(
+                rules.takeIf { it > 0 }?.let { androidx.compose.ui.res.pluralStringResource(R.plurals.review_rules_count, it, it) },
+                goals.takeIf { it > 0 }?.let { androidx.compose.ui.res.pluralStringResource(R.plurals.review_goals_count, it, it) },
+            )
+            InfoBanner(stringResource(R.string.planned_review_line, parts.joinToString(" · ")))
+        }
         LastMealButton(fast, viewModel)
         if (deleteFailed) FieldError(stringResource(R.string.error_delete_fast))
         errors.forEach { FieldError(stringResource(it.message())) }
         // H-046: con otro ayuno en curso no se ofrece empezar y se explica por qué.
-        if (d.anotherInProgress) InfoBanner(stringResource(R.string.planned_other_in_progress)) else PrimaryButton(stringResource(R.string.home_start_now), onClick = { viewModel.start(onStarted) })
+        if (d.anotherInProgress) InfoBanner(stringResource(R.string.planned_other_in_progress)) else PrimaryButton(stringResource(R.string.home_start_now), onClick = { viewModel.start(onStarted, onReview) })
     }
 
     val d = state

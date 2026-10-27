@@ -58,6 +58,7 @@ import com.ayuno.app.ui.record.CorrectEntryScreen
 import com.ayuno.app.ui.record.FastMeasurementsScreen
 import com.ayuno.app.ui.record.MeasurementFormScreen
 import com.ayuno.app.ui.record.RecordGridScreen
+import com.ayuno.app.ui.record.StandingTimerScreen
 import com.ayuno.app.ui.safety.AlertScreen
 import com.ayuno.app.ui.safety.SafetyScreen
 import com.ayuno.app.ui.today.TodayScreen
@@ -90,6 +91,8 @@ sealed interface DeepLink {
     data class Product(val fastId: String, val productCode: String, val scheduledFor: LocalDateTime, val notDone: Boolean = false) : DeepLink
     data class OpenAlert(val alertId: String) : DeepLink
     data class Refeed(val fastId: String) : DeepLink
+    data class Intake(val fastId: String, val intakeTypeCode: String) : DeepLink
+    data class Standing(val fastId: String, val sittingId: String, val since: LocalDateTime) : DeepLink
 }
 
 private object Routes {
@@ -100,7 +103,9 @@ private object Routes {
     const val ALERT = "alert/{alertId}"
     const val END = "end/{fastId}?ruleId={ruleId}&endAt={endAt}"
     const val SYMPTOM = "symptom/{fastId}"
-    const val INTAKE = "intake/{fastId}"
+    const val INTAKE = "intake/{fastId}?type={type}&unit={unit}"
+    const val REVIEW = "review/{fastId}"
+    const val FAST_PLAN = "fastplan/{fastId}?ruleId={ruleId}"
     const val PRODUCT = "product/{fastId}?scheduledFor={scheduledFor}&code={code}&notDone={notDone}"
     const val NOTE = "note/{fastId}"
     const val CATALOGS = "catalogs"
@@ -125,8 +130,13 @@ private object Routes {
     const val METRIC = "catalog/metric?code={code}"
     const val MEASUREMENTS = "measurements/{fastId}"
     const val ENTRY = "entry/{kind}/{id}"
+    const val STANDING = "standing/{fastId}/{sittingId}?since={since}"
 
     fun record(fastId: String) = "record/$fastId"
+    fun intake(fastId: String, type: String? = null, unit: String? = null) =
+        "intake/$fastId?" + listOfNotNull(type?.let { "type=$it" }, unit?.let { "unit=$it" }).joinToString("&")
+    fun review(fastId: String) = "review/$fastId"
+    fun fastPlan(fastId: String, ruleId: String? = null) = "fastplan/$fastId" + (ruleId?.let { "?ruleId=$it" } ?: "")
     fun changeFast(fastId: String) = "fast/change/$fastId"
     fun measure(fastId: String, metric: String, scheduledFor: LocalDateTime?, notDone: Boolean = false) =
         "measure/$fastId/$metric?" + listOfNotNull(
@@ -152,6 +162,8 @@ private object Routes {
     fun metric(code: String?) = "catalog/metric" + (code?.let { "?code=$it" } ?: "")
     fun measurements(fastId: String) = "measurements/$fastId"
     fun entry(kind: EntryKind, id: String) = "entry/${kind.name}/$id"
+    fun standing(fastId: String, sittingId: String, since: LocalDateTime? = null) =
+        "standing/$fastId/$sittingId" + (since?.let { "?since=" + Uri.encode(LocalTimes.format(it)) } ?: "")
 }
 
 private fun optional(name: String) = navArgument(name) { type = NavType.StringType; nullable = true; defaultValue = null }
@@ -169,6 +181,11 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
             is DeepLink.Product -> navController.navigate(Routes.product(link.fastId, link.scheduledFor, link.productCode, link.notDone))
             is DeepLink.OpenAlert -> navController.navigate(Routes.alert(link.alertId))
             is DeepLink.Refeed -> navController.navigate(Routes.refeed(link.fastId))
+            is DeepLink.Intake -> navController.navigate(Routes.intake(link.fastId, link.intakeTypeCode))
+            // Desde el aviso de pie: el temporizador se reabre con su hora de inicio (H-053).
+            is DeepLink.Standing -> navController.navigate(Routes.standing(link.fastId, link.sittingId, link.since)) {
+                popUpTo(Routes.STANDING) { inclusive = true }
+            }
             null -> return@LaunchedEffect
         }
         onDeepLinkHandled()
@@ -215,6 +232,8 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                         onRefeed = { navController.navigate(Routes.refeed(it)) },
                         onMeal = { navController.navigate(Routes.meal(it)) },
                         onMeasurements = { navController.navigate(Routes.measurements(it)) },
+                        onReview = { navController.navigate(Routes.review(it)) },
+                        onIntakeForm = { fastId, type, unit -> navController.navigate(Routes.intake(fastId, type, unit)) },
                     ),
                 )
             }
@@ -228,16 +247,34 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                     onBack = { navController.popBackStack() },
                     onChange = { navController.navigate(Routes.changeFast(fastId)) },
                     onStarted = backHome,
+                    onReview = { navController.navigate(Routes.review(fastId)) },
                 )
             }
+            composable(Routes.REVIEW) { entry ->
+                val fastId = entry.arguments?.getString("fastId")!!
+                com.ayuno.app.ui.planned.PreStartReviewScreen(
+                    fastId,
+                    onBack = { navController.popBackStack() },
+                    onFixRule = { navController.navigate(Routes.fastPlan(fastId, it)) },
+                    onFixGoals = { navController.navigate(Routes.fastPlan(fastId)) },
+                    onStarted = backHome,
+                )
+            }
+            composable(Routes.FAST_PLAN, arguments = listOf(optional("ruleId"))) { entry ->
+                com.ayuno.app.ui.planned.FastPlanScreen(entry.arguments?.getString("fastId")!!, entry.arguments?.getString("ruleId"), onBack = { navController.popBackStack() })
+            }
             composable(TopLevelDestination.TODAY.route) {
-                TodayScreen(onOpenEntry = { kind, id -> navController.navigate(Routes.entry(kind, id)) }, onOpen = { fastId, item, notDone ->
-                    when (item.kind) {
-                        PendingKind.PRODUCT -> navController.navigate(Routes.product(fastId, item.scheduledAt, item.code, notDone))
-                        PendingKind.REFEED -> navController.navigate(Routes.refeed(fastId))
-                        PendingKind.METRIC -> navController.navigate(Routes.measure(fastId, item.code, item.scheduledAt, notDone))
-                    }
-                })
+                TodayScreen(
+                    onOpenEntry = { kind, id -> navController.navigate(Routes.entry(kind, id)) },
+                    onOpenIntake = { fastId, type -> navController.navigate(Routes.intake(fastId, type)) },
+                    onOpen = { fastId, item, notDone ->
+                        when (item.kind) {
+                            PendingKind.PRODUCT -> navController.navigate(Routes.product(fastId, item.scheduledAt, item.code, notDone))
+                            PendingKind.REFEED -> navController.navigate(Routes.refeed(fastId))
+                            PendingKind.METRIC -> navController.navigate(Routes.measure(fastId, item.code, item.scheduledAt, notDone))
+                        }
+                    },
+                )
             }
             composable(Routes.SETTINGS) {
                 com.ayuno.app.ui.settings.SettingsScreen(onBack = { navController.popBackStack() }, onPersonalData = { navController.navigate(Routes.PERSONAL_DATA) })
@@ -287,9 +324,18 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                     onBack = { navController.popBackStack() },
                     onSelect = { type -> navController.navigate(Routes.measure(fastId, type.code, null)) },
                     onSymptom = { navController.navigate("symptom/$fastId") },
-                    onIntake = { navController.navigate("intake/$fastId") },
+                    onIntake = { navController.navigate(Routes.intake(fastId)) },
                     onProduct = { navController.navigate(Routes.product(fastId, null)) },
                     onNote = { navController.navigate("note/$fastId") },
+                )
+            }
+            composable(Routes.STANDING, arguments = listOf(optional("since"))) { entry ->
+                StandingTimerScreen(
+                    fastId = entry.arguments?.getString("fastId")!!,
+                    sittingId = entry.arguments?.getString("sittingId")!!,
+                    since = entry.arguments?.getString("since")?.let { LocalTimes.parse(it) },
+                    onBack = backHome,
+                    onAlerts = { alerts -> navController.navigate(Routes.alert(alerts.first().id)) },
                 )
             }
             composable(Routes.MEASURE, arguments = listOf(optional("scheduledFor"), optional("notDone"))) { entry ->
@@ -298,7 +344,12 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
                 val scheduledFor = entry.arguments?.getString("scheduledFor")?.let { LocalTimes.parse(it) }
                 val notDone = entry.arguments?.getString("notDone") == "true"
                 if (metric == MetricType.BLOOD_PRESSURE_CODE) {
-                    BloodPressureFormScreen(fastId, scheduledFor, onBack = { navController.popBackStack() }, onSaved = afterSaving, askNotDone = notDone)
+                    BloodPressureFormScreen(
+                        fastId, scheduledFor, onBack = { navController.popBackStack() }, onSaved = afterSaving, askNotDone = notDone,
+                        onSitting = { sitting ->
+                            navController.navigate(Routes.standing(fastId, sitting.id)) { popUpTo(Routes.MEASURE) { inclusive = true } }
+                        },
+                    )
                 } else {
                     MeasurementFormScreen(fastId, metric, scheduledFor, onBack = { navController.popBackStack() }, onSaved = afterSaving, askNotDone = notDone)
                 }
@@ -313,9 +364,9 @@ fun AyunoApp(deepLink: DeepLink? = null, onDeepLinkHandled: () -> Unit = {}) {
             composable(Routes.SYMPTOM) { entry ->
                 SymptomFormScreen(entry.arguments?.getString("fastId")!!, onBack = { navController.popBackStack() }, onSaved = afterSaving)
             }
-            composable(Routes.INTAKE) { entry ->
+            composable(Routes.INTAKE, arguments = listOf(optional("type"), optional("unit"))) { entry ->
                 val fastId = entry.arguments?.getString("fastId")!!
-                IntakeFormScreen(fastId, onBack = { navController.popBackStack() }) { alerts, endAt ->
+                IntakeFormScreen(fastId, onBack = { navController.popBackStack() }, initialType = entry.arguments?.getString("type"), initialUnit = entry.arguments?.getString("unit")) { alerts, endAt ->
                     if (endAt != null) navController.navigate(Routes.end(fastId, endAt = endAt)) { popUpTo(TopLevelDestination.HOME.route) } else afterSaving(alerts)
                 }
             }

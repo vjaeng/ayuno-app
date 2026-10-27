@@ -32,6 +32,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +67,7 @@ import com.ayuno.app.ui.components.FieldError
 import com.ayuno.app.ui.components.InfoBanner
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.PrimaryButton
+import com.ayuno.app.ui.components.QuickButton
 import com.ayuno.app.ui.components.SecondaryButton
 import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.components.message
@@ -73,6 +79,7 @@ import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.derived.Milestone
 import com.ayuno.domain.model.EndReason
 import com.ayuno.domain.model.Fast
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 data class HomeActions(
@@ -88,6 +95,10 @@ data class HomeActions(
     val onMeasurements: (fastId: String) -> Unit = {},
     val onOpenPlanned: (fastId: String) -> Unit = {},
     val onPlannedTab: () -> Unit = {},
+    /** H-057: revisión antes de empezar, cuando el plan tiene pendientes. */
+    val onReview: (fastId: String) -> Unit = {},
+    /** H-051: pulsación larga en un BotonRapido → formulario con tipo y medida elegidos. */
+    val onIntakeForm: (fastId: String, intakeTypeCode: String, unitCode: String) -> Unit = { _, _, _ -> },
 )
 
 @Composable
@@ -99,18 +110,45 @@ fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = viewModel(factor
     val undecided = (state as? HomeUiState.InProgress)?.undecidedAlertId
     LaunchedEffect(undecided) { undecided?.let(actions.onAlert) }
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Dimens.screenPadding),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spaceL),
-    ) {
-        PermissionBanners(viewModel)
-        errors.forEach { FieldError(stringResource(it.message())) }
-        when (val s = state) {
-            HomeUiState.Loading -> LoadingState()
-            HomeUiState.Error -> ErrorState(stringResource(R.string.error_load)) { }
-            is HomeUiState.Idle -> IdleContent(s, viewModel, actions)
-            is HomeUiState.InProgress -> InProgressContent(s, viewModel, actions)
+    val snackbar = remember { SnackbarHostState() }
+    val event by viewModel.events.collectAsStateWithLifecycle()
+    val savedText = (event as? HomeEvent.Saved)?.saved?.let {
+        stringResource(R.string.quick_saved, it.typeName, it.unitName, Formats.number(it.amount, 2), it.unit)
+    }
+    val undoLabel = stringResource(R.string.action_undo)
+    // El Snackbar vive en su propio ámbito: consumir el evento relanza el efecto y no debe cerrarlo.
+    val snackbarScope = rememberCoroutineScope()
+    LaunchedEffect(event) {
+        when (val e = event) {
+            is HomeEvent.OpenAlert -> { viewModel.consumeEvent(); actions.onAlert(e.alertId) }
+            is HomeEvent.OpenReview -> { viewModel.consumeEvent(); actions.onReview(e.fastId) }
+            is HomeEvent.Saved -> {
+                val text = savedText!!
+                viewModel.consumeEvent()
+                snackbarScope.launch {
+                    val result = snackbar.showSnackbar(text, actionLabel = undoLabel, duration = SnackbarDuration.Short)
+                    if (result == SnackbarResult.ActionPerformed) viewModel.undoQuickIntake(e.saved.intakeId)
+                }
+            }
+            null -> Unit
         }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Dimens.screenPadding),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceL),
+        ) {
+            PermissionBanners(viewModel)
+            errors.forEach { FieldError(stringResource(it.message())) }
+            when (val s = state) {
+                HomeUiState.Loading -> LoadingState()
+                HomeUiState.Error -> ErrorState(stringResource(R.string.error_load)) { }
+                is HomeUiState.Idle -> IdleContent(s, viewModel, actions)
+                is HomeUiState.InProgress -> InProgressContent(s, viewModel, actions)
+            }
+        }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
     }
     val askWeight by viewModel.startWeightPrompt.collectAsStateWithLifecycle()
     askWeight?.let { fastId ->
@@ -244,7 +282,7 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
     }
     if (state.totals.isNotEmpty()) {
         SectionTitle(stringResource(R.string.home_today_totals))
-        state.totals.forEach { Text(totalText(it), style = MaterialTheme.typography.bodyLarge) }
+        state.totals.forEach { total -> TodayTotal(total, state.expected[total.intakeType.code]) }
     }
     state.last?.let { last ->
         SectionTitle(stringResource(R.string.home_last_measurement))
@@ -257,7 +295,42 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
         onClick = { actions.onMeasurements(state.fast.id) },
         trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
     )
+    if (state.quickButtons.isNotEmpty()) {
+        val saving by viewModel.saving.collectAsStateWithLifecycle()
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceS), modifier = Modifier.fillMaxWidth()) {
+            state.quickButtons.take(3).forEach { b ->
+                val type = b.typeName.replaceFirstChar { it.lowercase() }
+                QuickButton(
+                    text = stringResource(R.string.quick_button, b.unitName, type),
+                    description = stringResource(R.string.quick_button_description, b.unitName, type),
+                    longClickLabel = stringResource(R.string.quick_button_long),
+                    saving = saving == b.intakeTypeCode,
+                    onClick = { viewModel.quickIntake(state.fast.id, b) },
+                    onLongClick = { actions.onIntakeForm(state.fast.id, b.intakeTypeCode, b.unitCode) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        Text(stringResource(R.string.quick_hint), style = MaterialTheme.typography.bodyMedium, color = AyunoThemeTokens.colors.onSurfaceVariant)
+    }
     PrimaryButton(stringResource(R.string.home_record), onClick = { actions.onRecord(state.fast.id) })
+}
+
+/** Bloque «Hoy» de un tipo (H-006, EV-006): «llevas X de Y», «a esta hora» y el sodio frente al de la meta. */
+@Composable
+private fun TodayTotal(total: com.ayuno.domain.derived.DailyTotal, expected: Double?) {
+    val goal = total.goal
+    val goalSodium = com.ayuno.domain.derived.DailyTotals.goalSodium(total)
+    Column {
+        Text(if (goalSodium != null) totalText(total, withSodium = false) else totalText(total), style = MaterialTheme.typography.bodyLarge)
+        if (expected != null && goal?.dailyAmount != null) {
+            Text(stringResource(R.string.total_expected, Formats.number(expected, 2), goal.unit), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = Dimens.spaceL))
+        }
+        val sodium = total.sodium
+        if (goalSodium != null && sodium != null) {
+            Text(stringResource(R.string.total_goal_sodium, Formats.number(sodium, 2), Formats.number(goalSodium, 2)), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = Dimens.spaceL))
+        }
+    }
 }
 
 @Composable
@@ -346,18 +419,19 @@ private fun Milestones(milestones: List<Milestone>) {
     }
 }
 
-/** «Sal: llevas 5 de 4 g · sodio 1,97 g», sin colores de juicio (H-012). */
+/** «Sal: llevas 5 de 4 g · sodio 1,97 g», sin colores de juicio (H-012); una meta sin cifra muestra solo el total. */
 @Composable
-fun totalText(total: com.ayuno.domain.derived.DailyTotal): String {
+fun totalText(total: com.ayuno.domain.derived.DailyTotal, withSodium: Boolean = true): String {
     val type = total.intakeType
     val goal = total.goal
+    val amount = goal?.dailyAmount
     val reached = com.ayuno.domain.derived.DailyTotals.amountForGoal(total)
-    val main = if (goal != null && reached != null) {
-        stringResource(R.string.total_with_goal, type.name, Formats.number(reached, 2), Formats.number(goal.dailyAmount, 2), goal.unit)
+    val main = if (goal != null && amount != null && reached != null) {
+        stringResource(R.string.total_with_goal, type.name, Formats.number(reached, 2), Formats.number(amount, 2), goal.unit)
     } else {
         stringResource(R.string.total_without_goal, type.name, Formats.number(total.amount, 2), type.unit)
     }
-    return total.sodium?.let { main + stringResource(R.string.total_sodium, Formats.number(it, 2)) } ?: main
+    return total.sodium?.takeIf { withSodium }?.let { main + stringResource(R.string.total_sodium, Formats.number(it, 2)) } ?: main
 }
 
 @Composable

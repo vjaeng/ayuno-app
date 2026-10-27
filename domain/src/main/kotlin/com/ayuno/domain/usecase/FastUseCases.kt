@@ -1,6 +1,7 @@
 package com.ayuno.domain.usecase
 
 import com.ayuno.domain.derived.FastSpacing
+import com.ayuno.domain.derived.PreStartReview
 import com.ayuno.domain.derived.RefeedSchedule
 import com.ayuno.domain.id.Ids
 import com.ayuno.domain.model.EditAction
@@ -192,20 +193,29 @@ class DeleteFast(private val fasts: FastRepository, private val transactions: Tr
     }
 }
 
-/** H-005: «Empieza el ayuno ahora». */
+/**
+ * H-005: «Empieza el ayuno ahora». H-057 (D-25): si el plan del ayuno tiene pendientes y no se eligió «de todos modos»,
+ * devuelve `PRE_START_REVIEW_PENDING` sin escribir nada. La revisión se recalcula dentro de la transacción: con
+ * [anyway], `started_with_warnings` guarda lo que faltaba en ese instante (nulo si ya no falta nada).
+ */
 class StartFast(
     private val fasts: FastRepository,
     private val transactions: TransactionRunner,
     private val clock: Clock,
+    private val catalog: CatalogRepository? = null,
 ) {
-    suspend operator fun invoke(fastId: String): Outcome<Fast> = transactions.inTransaction {
-        val fast = fasts.get(fastId)?.fast ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
+    suspend operator fun invoke(fastId: String, anyway: Boolean = false): Outcome<Fast> = transactions.inTransaction {
+        val source = fasts.get(fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
+        val fast = source.fast
         if (fast.status != FastStatus.PLANNED) return@inTransaction invalid(ValidationError.FAST_NOT_PLANNED)
         if (fasts.all().any { it.status == FastStatus.IN_PROGRESS }) return@inTransaction invalid(ValidationError.ANOTHER_FAST_IN_PROGRESS)
+        val warnings = PreStartReview.of(source.plan, catalog?.intakeTypes().orEmpty())
+        if (warnings.isNotEmpty() && !anyway) return@inTransaction invalid(ValidationError.PRE_START_REVIEW_PENDING)
         val started = fast.copy(
             status = FastStatus.IN_PROGRESS,
             clockStartActual = LocalTimes.now(clock),
             tzOffset = offsetText(clock),
+            startedWithWarnings = warnings.ifEmpty { null },
         )
         fasts.update(started)
         Outcome.Ok(started)

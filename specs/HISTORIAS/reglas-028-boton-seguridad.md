@@ -9,7 +9,7 @@
 ### Criterios de Aceptación
 - [ ] El botón de seguridad está visible en la pantalla principal durante todo el ayuno.
 - [ ] La pantalla lista cada regla activa como una frase completa (p. ej. «Si la glucosa queda bajo 55 durante 20 minutos: alerta roja»), sin siglas.
-- [ ] Las reglas de diferencia al ponerse de pie, de cambio desde el valor de partida y de tendencia también se leen como frase completa (p. ej. «Si el pulso sube más de 30 al ponerme de pie: aviso y medir de nuevo en 30 minutos») (EV-006).
+- [ ] Las reglas de diferencia al ponerse de pie, de cambio desde el valor de partida y de tendencia también se leen como frase completa (p. ej. «Si tu pulso sube más de 30 al ponerme de pie: aviso y medir de nuevo en 30 minutos») (EV-006).
 - [ ] Desde ella puedo terminar el ayuno y tocar «algo no va bien».
 
 ### Consideraciones de Seguridad

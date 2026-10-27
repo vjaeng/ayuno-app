@@ -1,0 +1,9 @@
+[
+  { "intake_type_code": "water", "code": "glass", "name": "vaso", "equivalent": 250.0, "imprecise": false },
+  { "intake_type_code": "water", "code": "cup", "name": "taza", "equivalent": 240.0, "imprecise": false },
+  { "intake_type_code": "infusion", "code": "glass", "name": "vaso", "equivalent": 250.0, "imprecise": false },
+  { "intake_type_code": "infusion", "code": "cup", "name": "taza", "equivalent": 240.0, "imprecise": false },
+  { "intake_type_code": "salt", "code": "teaspoon", "name": "cucharadita rasa", "equivalent": 5.0, "imprecise": false },
+  { "intake_type_code": "salt", "code": "quarter_teaspoon", "name": "¼ de cucharadita", "equivalent": 1.25, "imprecise": false },
+  { "intake_type_code": "salt", "code": "pinch", "name": "pizca", "equivalent": 0.3, "imprecise": true }
+]

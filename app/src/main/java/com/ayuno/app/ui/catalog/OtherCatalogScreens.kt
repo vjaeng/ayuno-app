@@ -1,5 +1,16 @@
 package com.ayuno.app.ui.catalog
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -11,6 +22,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +47,7 @@ import com.ayuno.app.ui.components.TimePickerDialog
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
+import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.model.IntakeType
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.ProductKind
@@ -148,15 +163,66 @@ fun IntakeEditorScreen(code: String?, onBack: () -> Unit) {
     var unit by remember(existing) { mutableStateOf(existing?.unit.orEmpty()) }
     var breaks by remember(existing) { mutableStateOf(existing?.breaksFast ?: false) }
     var factor by remember(existing) { mutableStateOf(existing?.sodiumFactor?.let { Formats.number(it, 3) }.orEmpty()) }
+    val measures = remember(existing) {
+        mutableStateListOf<MeasureDraft>().apply {
+            existing?.units.orEmpty().forEach { add(MeasureDraft(it.id, it.name, Formats.number(it.equivalent, 3), it.imprecise, it.code == existing?.quickUnitCode)) }
+        }
+    }
     ScreenScaffold(stringResource(R.string.catalog_intake), onBack) {
         AyunoTextField(stringResource(R.string.field_name), name, { name = it })
         AyunoTextField(stringResource(R.string.field_unit), unit, { unit = it })
         SwitchRow(stringResource(R.string.intake_breaks_fast), breaks, { breaks = it })
         AyunoTextField(stringResource(R.string.field_sodium_factor), factor, { factor = it }, numeric = true)
+        MeasuresSection(measures, unit, breaks)
         errors.forEach { FieldError(stringResource(it.message())) }
         PrimaryButton(stringResource(R.string.action_save), onClick = {
-            vm.save({ vm.container_.saveIntakeType(SaveIntakeType.Input(code, name, unit, breaks, Formats.parseNumber(factor))) }, onBack)
+            val units = measures.map { SaveIntakeType.UnitDraft(it.id, it.name, Formats.parseNumber(it.equivalent) ?: Double.NaN, it.imprecise, it.quick) }
+            vm.save({ vm.container_.saveIntakeType(SaveIntakeType.Input(code, name, unit, breaks, Formats.parseNumber(factor), units)) }, onBack)
         })
+    }
+}
+
+/** Medida en edición: la equivalencia se guarda como texto hasta pulsar «Guardar». */
+private data class MeasureDraft(val id: String?, val name: String, val equivalent: String, val imprecise: Boolean, val quick: Boolean)
+
+/**
+ * «Medidas caseras» y «Botón rápido en Inicio» (H-050, H-051; `ajustes-catalogos.md`). Quitar la medida del botón lo
+ * deja en «Ninguno»; con «Rompe el ayuno» el botón no se ofrece.
+ */
+@Composable
+private fun MeasuresSection(measures: SnapshotStateList<MeasureDraft>, unit: String, breaks: Boolean) {
+    SectionTitle(stringResource(R.string.catalog_measures_title))
+    Text(stringResource(R.string.catalog_measures_help), style = MaterialTheme.typography.bodyLarge)
+    if (measures.isEmpty()) Text(stringResource(R.string.catalog_measures_empty), style = MaterialTheme.typography.bodyLarge)
+    measures.forEachIndexed { i, m ->
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.spaceS)) {
+                AyunoTextField(stringResource(R.string.catalog_measure_name), m.name, { measures[i] = m.copy(name = it) }, Modifier.weight(1f))
+                AyunoTextField(stringResource(R.string.catalog_measure_equivalent), m.equivalent, { measures[i] = m.copy(equivalent = it) }, Modifier.width(Dimens.tileSize), numeric = true, suffix = unit)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { CheckRow(stringResource(R.string.catalog_measure_imprecise), m.imprecise) { measures[i] = m.copy(imprecise = it) } }
+                IconButton(onClick = { measures.add(i - 1, measures.removeAt(i)) }, enabled = i > 0, modifier = Modifier.size(Dimens.touchMin)) {
+                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.catalog_measure_up, m.name))
+                }
+                IconButton(onClick = { measures.removeAt(i) }, modifier = Modifier.size(Dimens.touchMin)) {
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.catalog_measure_remove, m.name))
+                }
+            }
+        }
+    }
+    SecondaryButton(stringResource(R.string.catalog_measure_add), onClick = { measures.add(MeasureDraft(null, "", "", imprecise = false, quick = false)) })
+    if (breaks) {
+        if (measures.isNotEmpty()) Text(stringResource(R.string.catalog_quick_breaks), style = MaterialTheme.typography.bodyLarge)
+    } else if (measures.isNotEmpty()) {
+        SectionTitle(stringResource(R.string.catalog_quick_title))
+        val none = -1
+        val selected = measures.indexOfFirst { it.quick }
+        OptionSelector(
+            listOf(none to stringResource(R.string.catalog_quick_none)) + measures.mapIndexed { i, m -> i to m.name.ifBlank { "…" } },
+            selected,
+            { chosen -> measures.indices.forEach { i -> measures[i] = measures[i].copy(quick = i == chosen) } },
+        )
     }
 }
 

@@ -15,12 +15,14 @@ object Formats {
     private val dateTimeSeconds = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM, HH:mm:ss", spanish)
     private val date = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", spanish)
     private val time = DateTimeFormatter.ofPattern("HH:mm", spanish)
+    private val timeSeconds = DateTimeFormatter.ofPattern("HH:mm:ss", spanish)
 
     fun dateTime(value: LocalDateTime): String = dateTime.format(value)
     fun dateTimeSeconds(value: LocalDateTime): String = dateTimeSeconds.format(value)
     fun date(value: LocalDateTime): String = date.format(value)
     fun time(value: LocalDateTime): String = time.format(value)
     fun time(value: LocalTime): String = time.format(value)
+    fun timeSeconds(value: LocalDateTime): String = timeSeconds.format(value)
 
     /** «33 h 12 min». */
     fun duration(value: Duration): String {
@@ -43,6 +45,14 @@ object Formats {
     fun measurementValue(m: Measurement, type: MetricType?, decimals: Int = 2): String {
         type?.optionFor(m.valueNum)?.let { return "${it.label} · ${number(it.value, decimals)}" }
         return "${m.valueEntered?.let { number(it, decimals) } ?: m.valueText.orEmpty()} ${m.unitEntered.orEmpty()}".trim()
+    }
+
+    /** Redondeado a cuartos, con fracción: 0.5 → «½», 1.75 → «1¾», 2 → «2» (medidas caseras, H-050). */
+    fun quarters(value: Double): String {
+        val q = Math.round(value * 4).toInt()
+        val whole = q / 4
+        val fraction = when (q % 4) { 1 -> "¼"; 2 -> "½"; 3 -> "¾"; else -> "" }
+        return if (whole == 0 && fraction.isNotEmpty()) fraction else "$whole$fraction"
     }
 
     /** Lee un número escrito con coma o punto decimal. */

@@ -31,6 +31,18 @@ enum class BpComponent(override val code: String) : Coded { SYSTOLIC("systolic")
 enum class RuleConditionKind(override val code: String) : Coded {
     METRIC_BELOW("metric_below"), METRIC_ABOVE("metric_above"), ALARM_SYMPTOM("alarm_symptom"),
     INTAKE_BELOW_GOAL("intake_below_goal"), MANUAL("manual"),
+    PAIR_DIFFERENCE("pair_difference"), CHANGE_FROM_BASELINE("change_from_baseline"), TREND("trend"),
+}
+
+/** EV-006 (D-24): sentido de las condiciones entre lecturas. */
+enum class RuleDirection(override val code: String) : Coded { ABOVE("above"), BELOW("below") }
+
+/** EV-006 (D-24): de qué se mide la tendencia. */
+enum class TrendOf(override val code: String) : Coded { VALUE("value"), PAIR_DIFFERENCE("pair_difference") }
+
+/** EV-006 (D-25): qué faltaba al empezar de todos modos. */
+enum class WarningKind(override val code: String) : Coded {
+    PLACEHOLDER_RULE("placeholder_rule"), GOAL_WITHOUT_AMOUNT("goal_without_amount"), UNCHECKED_ITEM("unchecked_item"),
 }
 
 enum class RuleLevel(override val code: String) : Coded { NOTICE("notice"), ALERT("alert") }

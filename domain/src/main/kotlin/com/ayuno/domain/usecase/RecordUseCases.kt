@@ -53,6 +53,7 @@ internal class AlertRecorder(
             intakeTypes = catalog.intakeTypes(),
             goals = source.plan.goals,
             now = now,
+            standingCheckSeconds = source.plan.metrics.firstOrNull { it.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE }?.standingCheckSeconds,
         )
         return RuleEngine.evaluate(context).map { hit ->
             Alert(Ids.newId(), fastId, hit.rule.id, now, hit.triggerEntryIds, userChoice = null, choiceReason = null)
@@ -166,6 +167,8 @@ class RecordBloodPressure(
         val note: String? = null,
         val notDoneReason: String? = null,
         val confirmedOutOfRange: Boolean = false,
+        /** H-053: hora de «Ya estoy de pie»; los segundos de pie se calculan hasta [takenAt]. Nula = «sin esperar». */
+        val standingSince: LocalDateTime? = null,
     )
 
     suspend operator fun invoke(input: Input): Outcome<RecordResult<BloodPressureReading>> {
@@ -189,10 +192,14 @@ class RecordBloodPressure(
             val source = fasts.get(input.fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
             if (input.pairedReadingId != null) {
                 val paired = records.bloodPressure(input.fastId).firstOrNull { it.id == input.pairedReadingId }
-                if (input.position != Position.STANDING || paired == null || paired.position != Position.SITTING) {
+                    ?: return@inTransaction invalid(ValidationError.PAIRED_READING_NOT_FOUND)
+                if (input.position != Position.STANDING || paired.position != Position.SITTING) {
                     return@inTransaction invalid(ValidationError.PAIRED_READING_INVALID)
                 }
             }
+            val seconds = input.standingSince?.takeIf { input.pairedReadingId != null && input.position == Position.STANDING }
+                ?.let { java.time.Duration.between(it.withNano(0), input.takenAt.withNano(0)).seconds.toInt() }
+            if (seconds != null && seconds < 0) return@inTransaction invalid(ValidationError.SECONDS_STANDING_NEGATIVE)
             val reading = BloodPressureReading(
                 id = Ids.newId(),
                 fastId = input.fastId,
@@ -206,6 +213,7 @@ class RecordBloodPressure(
                 pairedReadingId = input.pairedReadingId,
                 notDoneReason = notDone,
                 note = input.note?.trim()?.ifEmpty { null },
+                secondsStanding = seconds.takeIf { notDone == null },
             )
             records.insertBloodPressure(reading)
             Outcome.Ok(RecordResult.Saved(reading, recorder.evaluate(source)))

@@ -34,12 +34,27 @@ data class PlanMetric(
     val id: String,
     val metricTypeCode: String,
     val schedules: List<MetricSchedule>,
+    /** H-053: segundos de pie a los que el temporizador pide cada lectura; solo presión; vacío = sin temporizador. */
+    val standingCheckSeconds: List<Int>? = null,
+) {
+    companion object {
+        val DEFAULT_STANDING_SECONDS = listOf(60, 180)
+    }
+}
+
+/**
+ * `intake_goal` (H-002). [dailyAmount] nulo = meta «por llenar» (D-25); [nudgeAfterHours]: horas despierto sin ingestas
+ * tras las que se pregunta (H-052, D-23).
+ */
+data class IntakeGoal(
+    val id: String,
+    val intakeTypeCode: String,
+    val dailyAmount: Double?,
+    val unit: String,
+    val nudgeAfterHours: Double? = null,
 )
 
-/** `intake_goal` (H-002). */
-data class IntakeGoal(val id: String, val intakeTypeCode: String, val dailyAmount: Double, val unit: String)
-
-/** `checklist_item` (H-002): solo informa, nunca bloquea empezar. */
+/** `checklist_item` (H-002): sin marcar no bloquea empezar; la revisión previa lo lista (H-057). */
 data class ChecklistItem(val id: String, val text: String, val isChecked: Boolean)
 
 /** `stage_notice` (H-002): aviso fijo visible solo durante sus etapas. */

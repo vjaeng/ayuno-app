@@ -83,4 +83,20 @@ fun ValidationError.message(): Int = when (this) {
     ValidationError.TOLERANCE_DETAIL_REQUIRED -> R.string.error_tolerance_detail
     ValidationError.TOLERANCE_REQUIRED -> R.string.error_tolerance_required
     ValidationError.NOTHING_TO_EXPORT -> R.string.data_nothing_to_export
+    ValidationError.MEASURE_NOT_FOUND -> R.string.error_measure_not_found
+    ValidationError.MEASURE_EQUIVALENT_NOT_POSITIVE -> R.string.error_measure_equivalent
+    ValidationError.MEASURE_NAME_REQUIRED -> R.string.error_measure_name_required
+    ValidationError.MEASURE_NAME_DUPLICATED -> R.string.error_measure_name_duplicated
+    ValidationError.QUICK_UNIT_NOT_SET -> R.string.error_quick_unit_not_set
+    ValidationError.QUICK_UNIT_INVALID -> R.string.error_quick_unit_invalid
+    ValidationError.PAIRED_READING_NOT_FOUND -> R.string.error_paired_not_found
+    ValidationError.SECONDS_STANDING_NEGATIVE -> R.string.error_seconds_standing
+    ValidationError.RULE_DIRECTION_REQUIRED -> R.string.error_rule_direction
+    ValidationError.RULE_THRESHOLD_NOT_POSITIVE -> R.string.error_rule_threshold_positive
+    ValidationError.RULE_TREND_COUNT_TOO_LOW -> R.string.error_rule_trend_count
+    ValidationError.RULE_TREND_NEEDS_BLOOD_PRESSURE -> R.string.error_rule_needs_bp
+    ValidationError.RULE_GOAL_PERCENT_OUT_OF_RANGE -> R.string.error_rule_goal_percent
+    ValidationError.STANDING_SECONDS_INVALID -> R.string.error_standing_seconds
+    ValidationError.NUDGE_HOURS_NOT_POSITIVE -> R.string.error_nudge_hours
+    ValidationError.PRE_START_REVIEW_PENDING -> R.string.error_review_pending
 }

@@ -3,6 +3,7 @@ package com.ayuno.data.repository
 import android.content.Context
 import androidx.room.withTransaction
 import com.ayuno.data.db.AyunoDatabase
+import com.ayuno.data.db.HouseholdUnitEntity
 import com.ayuno.data.db.MetricOptionEntity
 import com.ayuno.data.seed.CatalogSeed
 import com.ayuno.domain.model.Alert
@@ -78,11 +79,25 @@ class RoomCatalogRepository(
         dao2.upsertSymptomType(type.toEntity(existing?.createdAt ?: now, if (existing != null) now else null))
     }
 
-    override fun observeIntakeTypes(): Flow<List<IntakeType>> = dao2.observeIntakeTypes().map { l -> l.map { it.toDomain() } }
-    override suspend fun intakeTypes(): List<IntakeType> = dao2.intakeTypes().map { it.toDomain() }
-    override suspend fun saveIntakeType(type: IntakeType) {
+    override fun observeIntakeTypes(): Flow<List<IntakeType>> =
+        combine(dao2.observeIntakeTypes(), dao2.observeHouseholdUnits()) { types, units -> types.map { it.toDomain(units) } }
+    override suspend fun intakeTypes(): List<IntakeType> { val units = dao2.householdUnits(); return dao2.intakeTypes().map { it.toDomain(units) } }
+
+    /** Guarda el tipo y sus medidas caseras (H-050); las medidas que ya no están se borran en blando. */
+    override suspend fun saveIntakeType(type: IntakeType) = database.withTransaction {
         val existing = dao2.intakeType(type.code); val now = clock.stamp()
         dao2.upsertIntakeType(type.toEntity(existing?.createdAt ?: now, if (existing != null) now else null))
+        val old = dao2.unitsOf(type.code).associateBy { it.id }
+        val changed = type.units.filter { u ->
+            old[u.id]?.let { it.deletedAt != null || it.name != u.name || it.equivalent != u.equivalent || it.imprecise != u.imprecise || it.position != u.position || it.code != u.code } ?: true
+        }
+        dao2.upsertHouseholdUnits(changed.map { u ->
+            HouseholdUnitEntity(
+                u.id, u.code, type.code, u.name, u.equivalent, u.imprecise, u.position,
+                createdAt = old[u.id]?.createdAt ?: now, updatedAt = if (old.containsKey(u.id)) now else null, deletedAt = null,
+            )
+        })
+        dao2.softDeleteHouseholdUnits(type.code, type.units.map { it.id }, now)
     }
 
     override fun observeProducts(): Flow<List<Product>> =
@@ -320,6 +335,11 @@ class RoomRecordRepository(private val database: AyunoDatabase, private val cloc
     override fun observeIntakes(fastId: String): Flow<List<Intake>> = dao2.observeIntakes(fastId).map { l -> l.map { it.toDomain() } }
     override suspend fun intakes(fastId: String): List<Intake> = dao2.intakes(fastId).map { it.toDomain() }
     override suspend fun insertIntake(intake: Intake) = dao2.insertIntake(intake.toEntity(clock.stamp()))
+    override suspend fun intake(id: String, includeDeleted: Boolean) = dao2.intake(id)?.takeIf { includeDeleted || it.deletedAt == null }?.toDomain()
+    override suspend fun setIntakeDeleted(id: String, deleted: Boolean) {
+        val now = clock.stamp()
+        dao2.setIntakeDeleted(id, now.takeIf { deleted }, now)
+    }
     override fun observeProductLogs(fastId: String): Flow<List<ProductLog>> = dao2.observeProductLogs(fastId).map { l -> l.map { it.toDomain() } }
     override suspend fun productLogs(fastId: String): List<ProductLog> = dao2.productLogs(fastId).map { it.toDomain() }
     override suspend fun insertProductLog(log: ProductLog) = dao2.insertProductLog(log.toEntity(clock.stamp()))

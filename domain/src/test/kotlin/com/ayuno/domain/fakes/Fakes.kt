@@ -146,8 +146,10 @@ class FakeRecords : RecordRepository {
     override suspend fun insertSymptom(symptom: Symptom) { symptoms.value = symptoms.value + symptom }
 
     val intakes = MutableStateFlow<List<Intake>>(emptyList())
-    override fun observeIntakes(fastId: String) = intakes.map { l -> l.filter { it.fastId == fastId } }
-    override suspend fun intakes(fastId: String) = intakes.value.filter { it.fastId == fastId }
+    override fun observeIntakes(fastId: String) = combine(intakes, deleted) { l, d -> l.filter { it.fastId == fastId && it.id !in d } }
+    override suspend fun intakes(fastId: String) = intakes.value.filter { it.fastId == fastId && it.id !in deleted.value }
+    override suspend fun intake(id: String, includeDeleted: Boolean) = intakes.value.firstOrNull { it.id == id && (includeDeleted || it.id !in deleted.value) }
+    override suspend fun setIntakeDeleted(id: String, deleted: Boolean) = setDeleted(id, deleted)
     override suspend fun insertIntake(intake: Intake) { intakes.value = intakes.value + intake }
 
     val productLogs = MutableStateFlow<List<ProductLog>>(emptyList())

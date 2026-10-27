@@ -49,7 +49,20 @@ object CatalogSeed {
         val unit: String,
         @SerialName("breaks_fast") val breaksFast: Boolean,
         @SerialName("sodium_factor") val sodiumFactor: Double?,
+        @SerialName("quick_unit_code") val quickUnitCode: String? = null,
     )
+
+    @Serializable
+    private data class SeedHouseholdUnit(
+        @SerialName("intake_type_code") val intakeTypeCode: String,
+        val code: String,
+        val name: String,
+        val equivalent: Double,
+        val imprecise: Boolean,
+    )
+
+    @Serializable
+    private data class SeedGoal(@SerialName("intake_type_code") val intakeTypeCode: String, @SerialName("nudge_after_hours") val nudgeAfterHours: Double?)
 
     @Serializable
     private data class SeedStage(val kind: String, @SerialName("duration_value") val durationValue: Double?, @SerialName("duration_unit") val durationUnit: String)
@@ -66,6 +79,7 @@ object CatalogSeed {
         val active: Boolean,
         @SerialName("condition_kind") val conditionKind: String,
         @SerialName("metric_type_code") val metricTypeCode: String?,
+        @SerialName("intake_type_code") val intakeTypeCode: String? = null,
         val level: String,
         val message: String,
         val action: String,
@@ -79,6 +93,7 @@ object CatalogSeed {
         val stages: List<SeedStage>,
         val metrics: List<SeedMetric>,
         val rules: List<SeedRule>,
+        val goals: List<SeedGoal> = emptyList(),
     )
 
     @Serializable
@@ -110,7 +125,84 @@ object CatalogSeed {
         }
         insertMetricOptions(db, context, now)
         insertCatalogs(db, context, now)
+        insertHouseholdUnits(db, context, now)
         insertExampleTemplate(db, context, now)
+        updateExampleForReview(db, context, now)
+    }
+
+    /**
+     * H-050, H-051: medidas caseras de fábrica con identificadores fijos y botón rápido de cada tipo. También la usa
+     * la migración 8→9: solo para tipos que existen, sin duplicar, y el botón solo si el tipo no tiene ya uno y no rompe
+     * el ayuno. Son equivalencias de cocina, no dosis.
+     */
+    fun insertHouseholdUnits(db: SupportSQLiteDatabase, context: Context, now: String) {
+        val types = db.query("SELECT code, breaks_fast, quick_unit_code FROM intake_type").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), (c.getInt(1) == 1) to c.isNull(2)) }
+        }
+        val units = json.decodeFromString<List<SeedHouseholdUnit>>(read(context, "seed/household_units.json")).filter { it.intakeTypeCode in types }
+        units.groupBy { it.intakeTypeCode }.forEach { (type, list) ->
+            val taken = db.query("SELECT code FROM household_unit WHERE intake_type_code = ? AND deleted_at IS NULL", arrayOf(type)).use { c ->
+                buildSet { while (c.moveToNext()) add(c.getString(0)) }
+            }
+            list.filter { it.code !in taken }.forEachIndexed { i, u ->
+                db.insert("household_unit", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
+                    put("id", seedId("household_unit/$type/${u.code}")); put("code", u.code); put("intake_type_code", type); put("name", u.name)
+                    put("equivalent", u.equivalent); put("imprecise", u.imprecise); put("position", taken.size + i); put("created_at", now)
+                })
+            }
+        }
+        json.decodeFromString<List<SeedIntakeType>>(read(context, "seed/intake_types.json")).filter { it.quickUnitCode != null }.forEach { t ->
+            val (breaksFast, noQuick) = types[t.code] ?: return@forEach
+            if (breaksFast || !noQuick) return@forEach
+            db.update(
+                "intake_type", SQLiteDatabase.CONFLICT_NONE, ContentValues().apply { put("quick_unit_code", t.quickUnitCode) },
+                "code = ? AND EXISTS (SELECT 1 FROM household_unit WHERE intake_type_code = ? AND code = ? AND deleted_at IS NULL)",
+                arrayOf(t.code, t.code, t.quickUnitCode),
+            )
+        }
+    }
+
+    /**
+     * H-003, H-057 (D-25): la plantilla de ejemplo marca «de ejemplo» sus reglas de fábrica (solo si siguen idénticas a
+     * la semilla) y recibe sus metas sin cifra con «preguntar tras 6 h» y la regla de sal, si le faltan. Al crear la base
+     * y en la migración 8→9; ninguna plantilla propia ni ningún ayuno cambia.
+     */
+    fun updateExampleForReview(db: SupportSQLiteDatabase, context: Context, now: String) {
+        val templateId = exampleId("template")
+        val exists = db.query("SELECT COUNT(*) FROM template WHERE id = ?", arrayOf(templateId)).use { it.moveToFirst() && it.getInt(0) > 0 }
+        if (!exists) return
+        val t = json.decodeFromString<SeedTemplate>(read(context, "seed/example_template.json"))
+        t.rules.forEachIndexed { i, r ->
+            insertExampleRule(db, templateId, i, r, now)
+            db.update(
+                "rule", SQLiteDatabase.CONFLICT_NONE, ContentValues().apply { put("is_placeholder", true) },
+                "id = ? AND template_id = ? AND name = ? AND message = ? AND threshold IS NULL AND check_time IS NULL AND goal_percent IS NULL",
+                arrayOf(exampleId("rule/$i"), templateId, r.name, r.message),
+            )
+        }
+        val present = db.query("SELECT intake_type_code FROM intake_goal WHERE template_id = ? AND deleted_at IS NULL", arrayOf(templateId)).use { c ->
+            buildSet { while (c.moveToNext()) add(c.getString(0)) }
+        }
+        t.goals.filter { it.intakeTypeCode !in present }.forEach { g ->
+            val unit = db.query("SELECT unit FROM intake_type WHERE code = ?", arrayOf(g.intakeTypeCode)).use { if (it.moveToFirst()) it.getString(0) else null } ?: return@forEach
+            db.insert("intake_goal", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
+                put("id", exampleId("goal/${g.intakeTypeCode}")); put("template_id", templateId); put("intake_type_code", g.intakeTypeCode)
+                putNull("daily_amount"); put("unit", unit); put("nudge_after_hours", g.nudgeAfterHours); put("created_at", now)
+            })
+        }
+    }
+
+    private fun insertExampleRule(db: SupportSQLiteDatabase, templateId: String, index: Int, r: SeedRule, now: String) {
+        db.insert(
+            "rule",
+            SQLiteDatabase.CONFLICT_IGNORE,
+            ContentValues().apply {
+                put("id", exampleId("rule/$index")); put("template_id", templateId); put("name", r.name); put("active", r.active)
+                put("condition_kind", r.conditionKind); put("metric_type_code", r.metricTypeCode); put("intake_type_code", r.intakeTypeCode)
+                put("filter_stage_kinds", "[]"); put("filter_on_waking", false); put("level", r.level); put("message", r.message)
+                put("action", r.action); put("created_at", now)
+            },
+        )
     }
 
     /**
@@ -168,16 +260,7 @@ object CatalogSeed {
             )
         }
         insertPlanMetrics(db, t.metrics, templateId, now)
-        t.rules.forEachIndexed { i, r ->
-            insert(
-                "rule",
-                ContentValues().apply {
-                    put("id", exampleId("rule/$i")); put("template_id", templateId); put("name", r.name); put("active", r.active)
-                    put("condition_kind", r.conditionKind); put("metric_type_code", r.metricTypeCode); put("filter_stage_kinds", "[]")
-                    put("filter_on_waking", false); put("level", r.level); put("message", r.message); put("action", r.action)
-                },
-            )
-        }
+        t.rules.forEachIndexed { i, r -> insertExampleRule(db, templateId, i, r, now) }
     }
 
     /** Síntomas y tipos de ingesta de ejemplo (H-010, H-011); también los usa la migración 1→2. */

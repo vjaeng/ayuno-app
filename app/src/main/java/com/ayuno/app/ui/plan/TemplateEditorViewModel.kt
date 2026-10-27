@@ -37,6 +37,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
+/** Meta de un tipo de ingesta tal como se teclea: cantidad vacía = «por llenar»; horas vacías = no pregunta (H-002, H-052). */
+data class GoalDraft(val id: String, val amount: String, val unit: String, val nudgeHours: String = "") {
+    fun toGoal(intakeTypeCode: String) = IntakeGoal(id, intakeTypeCode, optionalNumber(amount), unit, optionalNumber(nudgeHours))
+
+    companion object {
+        fun of(goal: IntakeGoal) = GoalDraft(goal.id, goal.dailyAmount?.let { Formats.number(it, 2) }.orEmpty(), goal.unit, goal.nudgeAfterHours?.let { Formats.number(it, 2) }.orEmpty())
+
+        /** Vacío = sin cifra; un texto que no es número se manda como −1 para que el dominio lo rechace. */
+        fun optionalNumber(text: String): Double? = if (text.isBlank()) null else Formats.parseNumber(text) ?: -1.0
+    }
+}
+
+/** «60, 180» → [60, 180]; vacío = sin temporizador; un texto que no es número se manda como 0 para que el dominio lo rechace. */
+fun parseStandingSeconds(text: String): List<Int>? =
+    text.split(',', ';', ' ').filter { it.isNotBlank() }.map { it.trim().toIntOrNull() ?: 0 }.ifEmpty { null }
+
 /** Borrador editable de una plantilla (H-001) con sus reglas (H-019, H-020). */
 data class TemplateDraft(
     val id: String,
@@ -47,8 +63,9 @@ data class TemplateDraft(
     val stageIds: Map<StageKind, String> = emptyMap(),
     val metrics: Map<String, PlanMetric> = emptyMap(),
     val rules: List<Rule> = emptyList(),
-    /** Meta por tipo de ingesta: id, cantidad tecleada y unidad. */
-    val goals: Map<String, Triple<String, String, String>> = emptyMap(),
+    val goals: Map<String, GoalDraft> = emptyMap(),
+    /** H-053: tiempos de pie de la presión tal como se teclean («60, 180»). */
+    val standingSeconds: String = "",
     val checklist: List<ChecklistItem> = emptyList(),
     val notices: List<StageNotice> = emptyList(),
     val products: Map<String, PlanProduct> = emptyMap(),
@@ -89,7 +106,8 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         stageIds = t.plan.stages.associate { it.kind to it.id },
         metrics = t.plan.metrics.associateBy { it.metricTypeCode },
         rules = t.plan.rules,
-        goals = t.plan.goals.associate { it.intakeTypeCode to Triple(it.id, Formats.number(it.dailyAmount, 2), it.unit) },
+        goals = t.plan.goals.associate { it.intakeTypeCode to GoalDraft.of(it) },
+        standingSeconds = t.plan.metrics.firstOrNull { it.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE }?.standingCheckSeconds.orEmpty().joinToString(", "),
         checklist = t.plan.checklist,
         notices = t.plan.notices,
         products = t.plan.products.associateBy { it.productCode },
@@ -103,7 +121,12 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
     }
 
     fun toggleMetric(code: String, on: Boolean) = edit { d ->
-        d.copy(metrics = if (on) d.metrics + (code to (d.metrics[code] ?: PlanMetric(Ids.newId(), code, emptyList()))) else d.metrics - code)
+        val added = d.metrics[code] == null && on && code == MetricType.BLOOD_PRESSURE_CODE
+        d.copy(
+            metrics = if (on) d.metrics + (code to (d.metrics[code] ?: PlanMetric(Ids.newId(), code, emptyList()))) else d.metrics - code,
+            // La presión trae de fábrica 60 y 180 s de pie (H-053).
+            standingSeconds = if (added && d.standingSeconds.isBlank()) PlanMetric.DEFAULT_STANDING_SECONDS.joinToString(", ") else d.standingSeconds,
+        )
     }
 
     fun addSchedule(code: String, stage: StageKind, time: LocalTime) = edit { d ->
@@ -124,9 +147,7 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
         return errors
     }
 
-    fun setGoal(intakeCode: String, amount: String?, unit: String) = edit { d ->
-        d.copy(goals = if (amount == null) d.goals - intakeCode else d.goals + (intakeCode to Triple(d.goals[intakeCode]?.first ?: Ids.newId(), amount, unit)))
-    }
+    fun setGoal(intakeCode: String, goal: GoalDraft?) = edit { d -> d.copy(goals = if (goal == null) d.goals - intakeCode else d.goals + (intakeCode to goal)) }
 
     fun addChecklistItem(text: String) = edit { d -> if (text.isBlank()) d else d.copy(checklist = d.checklist + ChecklistItem(Ids.newId(), text.trim(), false)) }
     fun removeChecklistItem(id: String) = edit { d -> d.copy(checklist = d.checklist.filterNot { it.id == id }) }
@@ -166,9 +187,11 @@ class TemplateEditorViewModel(private val container: AppContainer, templateId: S
             Template(d.id, d.name, Formats.parseNumber(d.targetHours) ?: 0.0, milestones),
             Plan(
                 stages = stages,
-                metrics = d.metrics.values.toList(),
+                metrics = d.metrics.values.map {
+                    if (it.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE) it.copy(standingCheckSeconds = parseStandingSeconds(d.standingSeconds)) else it
+                },
                 rules = d.rules,
-                goals = d.goals.map { (code, g) -> IntakeGoal(g.first, code, Formats.parseNumber(g.second) ?: 0.0, g.third) },
+                goals = d.goals.map { (code, g) -> g.toGoal(code) },
                 checklist = d.checklist,
                 notices = d.notices,
                 products = d.products.values.toList(),

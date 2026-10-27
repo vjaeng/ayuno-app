@@ -63,6 +63,24 @@ data class IntakeType(
     val unit: String,
     val breaksFast: Boolean,
     val sodiumFactor: Double?,
+    /** H-051: `code` de la medida del botón rápido; nulo = sin botón. */
+    val quickUnitCode: String? = null,
+    /** H-050: medidas caseras (sin las borradas), en orden de `position`. */
+    val units: List<HouseholdUnit> = emptyList(),
+) {
+    fun unit(code: String?): HouseholdUnit? = code?.let { c -> units.firstOrNull { it.code == c } }
+    val quickUnit: HouseholdUnit? get() = if (breaksFast) null else unit(quickUnitCode)
+}
+
+/** `household_unit` (H-050, D-22): medida casera con su equivalencia en la unidad del tipo. */
+data class HouseholdUnit(
+    val id: String,
+    val code: String,
+    val intakeTypeCode: String,
+    val name: String,
+    val equivalent: Double,
+    val imprecise: Boolean,
+    val position: Int,
 )
 
 data class ProductSchedule(val id: String, val timeOfDay: java.time.LocalTime, val amount: Double)

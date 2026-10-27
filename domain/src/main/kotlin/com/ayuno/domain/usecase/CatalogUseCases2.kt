@@ -1,6 +1,7 @@
 package com.ayuno.domain.usecase
 
 import com.ayuno.domain.id.Ids
+import com.ayuno.domain.model.HouseholdUnit
 import com.ayuno.domain.model.IntakeType
 import com.ayuno.domain.model.Product
 import com.ayuno.domain.model.ProductKind
@@ -42,9 +43,26 @@ class SetSymptomTypeActive(private val catalog: CatalogRepository) {
     }
 }
 
-/** H-011: tipos de ingesta editables, con «rompe el ayuno» y factor de sodio. */
+/**
+ * H-011: tipos de ingesta editables, con «rompe el ayuno» y factor de sodio. H-050/H-051: medidas caseras y botón
+ * rápido; [Input.units] nulo deja las medidas y el botón que hay.
+ */
 class SaveIntakeType(private val catalog: CatalogRepository) {
-    data class Input(val code: String?, val name: String, val unit: String, val breaksFast: Boolean, val sodiumFactor: Double?)
+    data class Input(
+        val code: String?,
+        val name: String,
+        val unit: String,
+        val breaksFast: Boolean,
+        val sodiumFactor: Double?,
+        /** En el orden en que se muestran. */
+        val units: List<UnitDraft>? = null,
+    )
+
+    /**
+     * Medida del editor: `id` nulo si es nueva; una equivalencia sin escribir llega como NaN. [quick]: la del botón
+     * rápido (como mucho una; las nuevas aún no tienen código).
+     */
+    data class UnitDraft(val id: String?, val name: String, val equivalent: Double, val imprecise: Boolean, val quick: Boolean = false)
 
     suspend operator fun invoke(input: Input): Outcome<IntakeType> {
         val name = input.name.trim()
@@ -54,14 +72,37 @@ class SaveIntakeType(private val catalog: CatalogRepository) {
             if (name.isEmpty()) add(ValidationError.NAME_REQUIRED)
             if (input.unit.isBlank()) add(ValidationError.UNIT_REQUIRED)
             if (input.sodiumFactor != null && input.sodiumFactor <= 0) add(ValidationError.SODIUM_FACTOR_NOT_POSITIVE)
+            input.units?.let { drafts ->
+                if (drafts.any { it.name.isBlank() }) add(ValidationError.MEASURE_NAME_REQUIRED)
+                val names = drafts.map { it.name.trim().lowercase() }.filter { it.isNotEmpty() }
+                if (names.size != names.toSet().size) add(ValidationError.MEASURE_NAME_DUPLICATED)
+                if (drafts.any { it.equivalent.isNaN() || it.equivalent <= 0 }) add(ValidationError.MEASURE_EQUIVALENT_NOT_POSITIVE)
+            }
         }
         if (errors.isNotEmpty()) return Outcome.Invalid(errors)
+        val code = existing?.code ?: uniqueCode(name, all.map { it.code }.toSet())
+        var quick = existing?.quickUnitCode
+        val units = input.units?.let { drafts ->
+            val old = existing?.units.orEmpty().associateBy { it.id }
+            val taken = mutableSetOf<String>()
+            quick = null
+            drafts.mapIndexed { i, d ->
+                // El código de una medida existente no cambia; el de una nueva sale de su nombre.
+                val unitCode = d.id?.let { old[it]?.code } ?: uniqueCode(d.name.trim(), taken + old.values.map { it.code })
+                taken += unitCode
+                if (d.quick) quick = unitCode
+                HouseholdUnit(d.id ?: Ids.newId(), unitCode, code, d.name.trim(), d.equivalent, d.imprecise, i)
+            }
+        } ?: existing?.units.orEmpty()
         val saved = IntakeType(
-            code = existing?.code ?: uniqueCode(name, all.map { it.code }.toSet()),
+            code = code,
             name = name,
             unit = input.unit.trim(),
             breaksFast = input.breaksFast,
             sodiumFactor = input.sodiumFactor,
+            // Quitar la medida del botón o marcar «rompe el ayuno» deja el botón en «Ninguno».
+            quickUnitCode = quick?.takeIf { q -> !input.breaksFast && units.any { it.code == q } },
+            units = units,
         )
         catalog.saveIntakeType(saved)
         return Outcome.Ok(saved)

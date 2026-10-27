@@ -81,9 +81,11 @@ fun ScreenScaffold(
     onBack: (() -> Unit)?,
     bottomBar: @Composable () -> Unit = {},
     actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
+        snackbarHost = snackbarHost,
         topBar = {
             TopAppBar(
                 title = { Text(title, style = MaterialTheme.typography.headlineSmall) },

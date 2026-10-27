@@ -7,6 +7,8 @@ import android.content.Intent
 import android.os.Build
 import com.ayuno.app.MainActivity
 import com.ayuno.domain.derived.DayAgenda
+import com.ayuno.domain.derived.IntakeNudge
+import com.ayuno.domain.derived.IntakeNudgeItem
 import com.ayuno.domain.derived.Pending
 import com.ayuno.domain.port.AlertRepository
 import com.ayuno.domain.port.SettingsRepository
@@ -86,11 +88,58 @@ class ReminderScheduler(
         }
     }
 
+    /**
+     * H-053: una alarma exacta por cada tiempo de pie desde [since]; cada una con su propia operación, aparte de la
+     * cadena de recordatorios. Devuelve falso si el teléfono no acepta alarmas exactas (el aviso puede llegar tarde).
+     */
+    fun scheduleStanding(fastId: String, sittingId: String, since: LocalDateTime, seconds: List<Int>): Boolean {
+        val exact = canScheduleExact()
+        seconds.forEach { s ->
+            val millis = since.plusSeconds(s.toLong()).atZone(clock.zone).toInstant().toEpochMilli()
+            val operation = standingOperation(fastId, sittingId, since, s)
+            if (exact) {
+                val show = PendingIntent.getActivity(context, SHOW_REQUEST, Intent(context, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
+                alarms.setAlarmClock(AlarmManager.AlarmClockInfo(millis, show), operation)
+            } else {
+                alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, millis, operation)
+            }
+        }
+        return exact
+    }
+
+    /** H-053 «Cancelar»: retira las alarmas de pie pendientes y sus avisos visibles. */
+    fun cancelStanding(fastId: String, sittingId: String, since: LocalDateTime, seconds: List<Int>) {
+        seconds.forEach { s ->
+            alarms.cancel(standingOperation(fastId, sittingId, since, s))
+            ReminderNotifier.cancel(context, ReminderNotifier.standingId(sittingId, s))
+        }
+    }
+
+    /** Retira el aviso de un tiempo de pie ya anotado. */
+    fun cancelStandingNotice(sittingId: String, seconds: Int) = ReminderNotifier.cancel(context, ReminderNotifier.standingId(sittingId, seconds))
+
+    private fun standingOperation(fastId: String, sittingId: String, since: LocalDateTime, seconds: Int): PendingIntent {
+        val intent = Intent(context, ReminderReceiver::class.java)
+            .setAction(ReminderReceiver.ACTION_STANDING)
+            .putExtra(ReminderNotifier.EXTRA_FAST_ID, fastId)
+            .putExtra(ReminderNotifier.EXTRA_SITTING_ID, sittingId)
+            .putExtra(ReminderNotifier.EXTRA_STANDING_SINCE, LocalTimes.format(since))
+            .putExtra(ReminderNotifier.EXTRA_STANDING_SECONDS, seconds)
+        return PendingIntent.getBroadcast(context, ReminderNotifier.standingId(sittingId, seconds), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
     /** El pendiente sigue sin hacerse (para un aviso pospuesto). */
     suspend fun stillPending(reminder: DueReminder): Boolean {
         val source = fasts.get(reminder.fastId) ?: return false
         val state = Pending.status(reminder.item, LocalTimes.now(clock), pendingRecords(source.fast.id)).state
         return state == PendingState.PENDING || state == PendingState.LATE
+    }
+
+    /** H-052: próxima pregunta por tipo de las metas del ayuno en curso (derivado «Próxima pregunta por tipo»). */
+    suspend fun nudges(): List<Pair<String, IntakeNudgeItem>> {
+        val current = fasts.all().firstOrNull { it.status == FastStatus.IN_PROGRESS } ?: return emptyList()
+        val source = fasts.get(current.id) ?: return emptyList()
+        return IntakeNudge.items(source, records.intakes(current.id), settings.get()).map { current.id to it }
     }
 
     /** Horas de comprobación de reglas de ingesta del ayuno en curso. */
@@ -103,7 +152,10 @@ class ReminderScheduler(
 
     suspend fun reschedule() {
         val from = LocalTimes.now(clock).plusSeconds(1)
-        val next = (upcoming(from).map { it.item.scheduledAt } + ruleCheckPoints(from)).minOrNull()
+        val nudges = nudges()
+        // Una ingesta nueva mueve la pregunta al futuro: la que estaba visible se retira.
+        nudges.filter { (_, n) -> n.at.isAfter(from) }.forEach { (fastId, n) -> ReminderNotifier.cancel(context, ReminderNotifier.nudgeId(fastId, n.intakeTypeCode)) }
+        val next = (upcoming(from).map { it.item.scheduledAt } + ruleCheckPoints(from) + nudges.map { it.second.at }.filter { it.isAfter(from) }).minOrNull()
         if (next == null) {
             alarms.cancel(operation(null))
             return

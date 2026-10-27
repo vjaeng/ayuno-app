@@ -52,15 +52,31 @@ import com.ayuno.domain.model.RuleLevel
 import com.ayuno.domain.model.UserChoice
 import com.ayuno.domain.usecase.Outcome
 import com.ayuno.domain.usecase.ValidationError
+import com.ayuno.app.ui.format.standingMoment
+import com.ayuno.domain.derived.Baseline
+import com.ayuno.domain.derived.StandingMoment
+import com.ayuno.domain.model.BloodPressureReading
+import com.ayuno.domain.model.BpComponent
+import com.ayuno.domain.model.Measurement
+import com.ayuno.domain.model.RuleConditionKind
+import com.ayuno.domain.model.TrendOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/** «Por:» de las condiciones de EV-006 (H-054 a H-056): la pareja, el valor de partida o la racha. */
+sealed interface TriggerSummary {
+    data class Pair(val sitting: Int, val standing: Int, val moment: Int?, val difference: Int) : TriggerSummary
+    data class FromBaseline(val value: String, val baseline: String, val difference: String) : TriggerSummary
+    data class Streak(val values: List<String>) : TriggerSummary
+}
+
 data class AlertDetails(
     val alert: Alert,
     val rule: Rule,
     val triggers: List<String>,
+    val summary: TriggerSummary?,
     val types: List<MetricType>,
     val symptomTypes: List<com.ayuno.domain.model.SymptomType>,
     val intakeTypes: List<com.ayuno.domain.model.IntakeType>,
@@ -91,7 +107,54 @@ class AlertViewModel(private val container: AppContainer, private val alertId: S
                     ?: symptoms[id]?.let { s -> "${symptomTypes.firstOrNull { it.code == s.symptomTypeCode }?.name} ${s.severity}/10 · ${Formats.time(s.takenAt)}" }
                     ?: intakes[id]?.let { i -> "${intakeTypes.firstOrNull { it.code == i.intakeTypeCode }?.name} ${Formats.number(i.amount)} ${i.unit} · ${Formats.time(i.takenAt)}" }
             }
-            _details.value = AlertDetails(alert, rule, triggers, types, symptomTypes, intakeTypes)
+            val seconds = source.plan.metrics.firstOrNull { it.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE }?.standingCheckSeconds
+            val summary = summaryOf(rule, alert.triggerEntryIds, readings, measurements, seconds)
+            _details.value = AlertDetails(alert, rule, triggers, summary, types, symptomTypes, intakeTypes)
+        }
+    }
+
+    private fun summaryOf(
+        rule: Rule,
+        ids: List<String>,
+        readings: Map<String, BloodPressureReading>,
+        measurements: Map<String, Measurement>,
+        seconds: List<Int>?,
+    ): TriggerSummary? {
+        val component = rule.bpComponent ?: BpComponent.SYSTOLIC
+        fun signed(v: Double) = (if (v > 0) "+" else "") + Formats.number(v)
+        fun pairDifference(sittingId: String, standingId: String): Int? {
+            val sitting = readings[sittingId] ?: return null
+            val standing = readings[standingId] ?: return null
+            return StandingMoment.difference(standing, sitting, component)
+        }
+        return when (rule.conditionKind) {
+            RuleConditionKind.PAIR_DIFFERENCE -> {
+                val sitting = readings[ids.getOrNull(0)] ?: return null
+                val standing = readings[ids.getOrNull(1)] ?: return null
+                TriggerSummary.Pair(
+                    sitting.value(component) ?: return null, standing.value(component) ?: return null,
+                    StandingMoment.of(standing, seconds), pairDifference(sitting.id, standing.id) ?: return null,
+                )
+            }
+            RuleConditionKind.CHANGE_FROM_BASELINE -> {
+                val id = ids.singleOrNull() ?: return null
+                readings[id]?.let { r ->
+                    val base = Baseline.bloodPressure(readings.values.toList(), rule.filterPosition) ?: return null
+                    val value = r.value(component) ?: return null
+                    val baseValue = base.value(component) ?: return null
+                    TriggerSummary.FromBaseline(value.toString(), baseValue.toString(), signed((value - baseValue).toDouble()))
+                } ?: measurements[id]?.let { m ->
+                    val base = Baseline.measurement(measurements.values.toList(), m.metricTypeCode)?.valueNum ?: return null
+                    val value = m.valueNum ?: return null
+                    TriggerSummary.FromBaseline(Formats.number(value), Formats.number(base), signed(value - base))
+                }
+            }
+            RuleConditionKind.TREND -> if (rule.trendOf == TrendOf.PAIR_DIFFERENCE) {
+                TriggerSummary.Streak(ids.chunked(2).mapNotNull { pair -> pair.takeIf { it.size == 2 }?.let { pairDifference(it[0], it[1]) }?.let { signed(it.toDouble()) } })
+            } else {
+                TriggerSummary.Streak(ids.mapNotNull { id -> readings[id]?.value(component)?.toString() ?: measurements[id]?.valueNum?.let { Formats.number(it) } })
+            }
+            else -> null
         }
     }
 
@@ -137,7 +200,18 @@ fun AlertScreen(alertId: String, onEndFast: (fastId: String, ruleId: String) -> 
             )
             Text(d.rule.message, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive })
             Text(RuleSentences.describe(context, d.rule, d.types, d.symptomTypes, d.intakeTypes), style = MaterialTheme.typography.bodyLarge)
-            if (d.triggers.isNotEmpty()) Text(stringResource(R.string.alert_triggers, d.triggers.joinToString(" · ")), style = MaterialTheme.typography.bodyLarge)
+            val resources = context.resources
+            val by = when (val summary = d.summary) {
+                is TriggerSummary.Pair -> stringResource(
+                    R.string.alert_trigger_pair, summary.sitting, summary.standing,
+                    if (summary.moment == null) standingMoment(resources, null) else stringResource(R.string.standing_at, standingMoment(resources, summary.moment)),
+                    (if (summary.difference > 0) "+" else "") + summary.difference,
+                )
+                is TriggerSummary.FromBaseline -> stringResource(R.string.alert_trigger_baseline, summary.value, summary.baseline, summary.difference)
+                is TriggerSummary.Streak -> summary.values.joinToString(", ")
+                null -> d.triggers.joinToString(" · ")
+            }
+            if (by.isNotEmpty()) Text(stringResource(R.string.alert_triggers, by), style = MaterialTheme.typography.bodyLarge)
 
             val endButton: @Composable () -> Unit = {
                 DecisionButton(stringResource(R.string.alert_end_fast), filled = true, background, content) {

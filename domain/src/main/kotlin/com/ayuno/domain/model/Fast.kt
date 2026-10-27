@@ -18,7 +18,12 @@ data class Fast(
     val endRuleId: String?,
     val tzOffset: String,
     val notes: String?,
+    /** H-057 (D-25): lo que faltaba al empezar de todos modos; nunca se edita. */
+    val startedWithWarnings: List<StartWarning>? = null,
 )
+
+/** Un pendiente al empezar: a qué apunta del plan del ayuno y una copia de su texto en ese momento. */
+data class StartWarning(val kind: WarningKind, val refId: String, val text: String)
 
 /**
  * [replacedRules]: reglas de copias del plan sustituidas al cambiar la plantilla (D-16). No se evalúan, pero las

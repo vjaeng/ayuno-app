@@ -1,0 +1,1136 @@
+{
+    "schema": "fasting-log",
+    "schema_version": "1.2",
+    "app_version": "0.5.0",
+    "exported_at": "2026-10-25T14:03:11",
+    "tz_offset": "-05:00",
+    "person": {
+        "full_name": null,
+        "id_number": null,
+        "birth_date": null
+    },
+    "catalogs": {
+        "metric_types": [
+            {
+                "code": "glucose",
+                "name": "Glucosa",
+                "unit": "mg/dL",
+                "alt_unit": "mmol/L",
+                "entry_unit": "mg/dL",
+                "is_numeric": true,
+                "min_valid": 20.0,
+                "max_valid": 600.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "ketones",
+                "name": "Cetonas",
+                "unit": "mmol/L",
+                "alt_unit": null,
+                "entry_unit": "mmol/L",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "blood_pressure",
+                "name": "Presión arterial",
+                "unit": "mmHg",
+                "alt_unit": null,
+                "entry_unit": "mmHg",
+                "is_numeric": true,
+                "min_valid": null,
+                "max_valid": null,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "weight",
+                "name": "Peso",
+                "unit": "kg",
+                "alt_unit": "lb",
+                "entry_unit": "kg",
+                "is_numeric": true,
+                "min_valid": 20.0,
+                "max_valid": 300.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "waist",
+                "name": "Cintura",
+                "unit": "cm",
+                "alt_unit": "in",
+                "entry_unit": "cm",
+                "is_numeric": true,
+                "min_valid": 40.0,
+                "max_valid": 200.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "temperature",
+                "name": "Temperatura",
+                "unit": "°C",
+                "alt_unit": "°F",
+                "entry_unit": "°C",
+                "is_numeric": true,
+                "min_valid": 30.0,
+                "max_valid": 43.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "hunger",
+                "name": "Hambre",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "energy",
+                "name": "Energía",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "mood",
+                "name": "Ánimo",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "mental_clarity",
+                "name": "Claridad mental",
+                "unit": "de 0 a 10",
+                "alt_unit": null,
+                "entry_unit": "de 0 a 10",
+                "is_numeric": true,
+                "min_valid": 0.0,
+                "max_valid": 10.0,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "metric_options": [
+            {
+                "id": "5964e5fb-eb0b-36dc-a054-d96ea4a1c6f0",
+                "metric_type_code": "hunger",
+                "label": "Nada",
+                "value": 0.0,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "928b50c8-f845-38b3-b11d-ff4092bb5786",
+                "metric_type_code": "hunger",
+                "label": "Poca",
+                "value": 3.0,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "27eac823-9ae8-34a0-9c9c-0917f974a372",
+                "metric_type_code": "hunger",
+                "label": "Moderada",
+                "value": 5.0,
+                "position": 2,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "08816531-90ea-3726-afcb-85c7d2107cbb",
+                "metric_type_code": "hunger",
+                "label": "Mucha",
+                "value": 7.0,
+                "position": 3,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "1b29b407-4b06-3ccb-bb15-3147f30d5f3b",
+                "metric_type_code": "hunger",
+                "label": "Intensa",
+                "value": 10.0,
+                "position": 4,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "d8b8bb1a-d2d5-30c5-982a-173b2b9c0173",
+                "metric_type_code": "energy",
+                "label": "Muy baja",
+                "value": 0.0,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "48ac9448-0f0c-3dc9-9546-6ae6ce89addb",
+                "metric_type_code": "energy",
+                "label": "Baja",
+                "value": 3.0,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "ad1799c6-4c25-3584-9369-5c8cb6284137",
+                "metric_type_code": "energy",
+                "label": "Normal",
+                "value": 5.0,
+                "position": 2,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "91e41e3c-07c3-30d5-b4e2-d1a702b56151",
+                "metric_type_code": "energy",
+                "label": "Alta",
+                "value": 7.0,
+                "position": 3,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "d691383c-e14c-3745-803c-6e4c6b3a7d90",
+                "metric_type_code": "energy",
+                "label": "Muy alta",
+                "value": 10.0,
+                "position": 4,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "eaadaf79-b523-39d1-beaa-aae2fb259b7f",
+                "metric_type_code": "mood",
+                "label": "Muy bajo",
+                "value": 0.0,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "813ad5e7-34ff-3b4f-a6dc-d07b4177fd3d",
+                "metric_type_code": "mood",
+                "label": "Bajo",
+                "value": 3.0,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "156dd0fc-0648-3563-ab35-ac273585981b",
+                "metric_type_code": "mood",
+                "label": "Normal",
+                "value": 5.0,
+                "position": 2,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "0ec229e9-2050-35b1-84cc-7ea75634ff94",
+                "metric_type_code": "mood",
+                "label": "Bueno",
+                "value": 7.0,
+                "position": 3,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "af48ecfa-1eb5-39fd-bc4a-d2a18eef0315",
+                "metric_type_code": "mood",
+                "label": "Muy bueno",
+                "value": 10.0,
+                "position": 4,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "e4864735-9d84-3994-a188-fb353de4fdf9",
+                "metric_type_code": "mental_clarity",
+                "label": "Nublada",
+                "value": 0.0,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "bed0a65d-f88c-3a03-af56-fbe06885be73",
+                "metric_type_code": "mental_clarity",
+                "label": "Poca",
+                "value": 3.0,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "6a413aae-7549-3653-992d-60c3350d6eaa",
+                "metric_type_code": "mental_clarity",
+                "label": "Normal",
+                "value": 5.0,
+                "position": 2,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "7eb3b4d1-c33c-31d2-83bf-34d2b3a75c25",
+                "metric_type_code": "mental_clarity",
+                "label": "Buena",
+                "value": 7.0,
+                "position": 3,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "cedd861e-6fb5-32d8-abff-bb9f4ec0dde3",
+                "metric_type_code": "mental_clarity",
+                "label": "Muy clara",
+                "value": 10.0,
+                "position": 4,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "symptom_types": [
+            {
+                "code": "hunger",
+                "name": "Hambre",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "headache",
+                "name": "Dolor de cabeza",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "dizziness",
+                "name": "Mareo",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "cold",
+                "name": "Frío",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "nausea",
+                "name": "Náusea",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "insomnia",
+                "name": "Insomnio",
+                "group_name": "Esperables",
+                "is_alarm": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "intake_types": [
+            {
+                "code": "water",
+                "name": "Agua",
+                "unit": "mL",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "quick_unit_code": "glass",
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "infusion",
+                "name": "Infusión",
+                "unit": "mL",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "quick_unit_code": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "salt",
+                "name": "Sal",
+                "unit": "g",
+                "breaks_fast": false,
+                "sodium_factor": 0.393,
+                "quick_unit_code": "pinch",
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "potassium",
+                "name": "Potasio",
+                "unit": "mg",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "quick_unit_code": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "magnesium",
+                "name": "Magnesio",
+                "unit": "mg",
+                "breaks_fast": false,
+                "sodium_factor": null,
+                "quick_unit_code": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "broth",
+                "name": "Caldo",
+                "unit": "mL",
+                "breaks_fast": true,
+                "sodium_factor": null,
+                "quick_unit_code": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "code": "food",
+                "name": "Comida",
+                "unit": "porción",
+                "breaks_fast": true,
+                "sodium_factor": null,
+                "quick_unit_code": null,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "household_units": [
+            {
+                "id": "be441510-2206-3e7b-94dc-9b00c45f73d8",
+                "code": "glass",
+                "intake_type_code": "water",
+                "name": "vaso",
+                "equivalent": 250.0,
+                "imprecise": false,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "808d8376-c5c9-33b2-a28a-3cda080effd6",
+                "code": "cup",
+                "intake_type_code": "water",
+                "name": "taza",
+                "equivalent": 240.0,
+                "imprecise": false,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "95a06aa5-04a9-334c-8137-c724de6910c1",
+                "code": "glass",
+                "intake_type_code": "infusion",
+                "name": "vaso",
+                "equivalent": 250.0,
+                "imprecise": false,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "ec396408-4e83-3322-b3dc-31d01a91045d",
+                "code": "cup",
+                "intake_type_code": "infusion",
+                "name": "taza",
+                "equivalent": 240.0,
+                "imprecise": false,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "4197b506-fb13-3274-a909-eb46b956c199",
+                "code": "teaspoon",
+                "intake_type_code": "salt",
+                "name": "cucharadita rasa",
+                "equivalent": 5.0,
+                "imprecise": false,
+                "position": 0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "dfb3b830-3c97-342c-93f8-1f309b5933dd",
+                "code": "quarter_teaspoon",
+                "intake_type_code": "salt",
+                "name": "¼ de cucharadita",
+                "equivalent": 1.25,
+                "imprecise": false,
+                "position": 1,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            },
+            {
+                "id": "d6c63004-77f6-3f00-ab44-8f44881b5f61",
+                "code": "pinch",
+                "intake_type_code": "salt",
+                "name": "pizca",
+                "equivalent": 0.3,
+                "imprecise": true,
+                "position": 2,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "products": [
+            {
+                "code": "magnesio",
+                "name": "Magnesio",
+                "kind": "supplement",
+                "default_amount": 400.0,
+                "unit": "mg",
+                "avoid": false,
+                "active": true,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ],
+        "product_schedules": [
+            {
+                "id": "7fa0f163-6bc4-4404-9c92-f7a77f13b35a",
+                "product_code": "magnesio",
+                "time_of_day": "20:00",
+                "amount": 400.0,
+                "created_at": "2026-10-22T18:00:00",
+                "updated_at": null,
+                "deleted_at": null
+            }
+        ]
+    },
+    "templates": [
+        {
+            "id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "name": "Ayuno de 57 horas",
+            "target_hours": 57.0,
+            "milestone_hours": [
+                12.0,
+                24.0
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "fasts": [
+        {
+            "id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "status": "finished",
+            "target_hours": 57.0,
+            "milestone_hours": [
+                12.0,
+                24.0
+            ],
+            "last_meal_planned": "2026-10-22T18:00:00",
+            "last_meal_actual": null,
+            "clock_start_planned": "2026-10-22T22:00:00",
+            "clock_start_actual": "2026-10-22T22:05:00",
+            "end_actual": "2026-10-25T07:03:00",
+            "end_reason": "goal_met",
+            "end_reason_detail": null,
+            "end_rule_id": null,
+            "tz_offset": "-05:00",
+            "notes": "Semana tranquila",
+            "started_with_warnings": [
+                {
+                    "kind": "unchecked_item",
+                    "ref_id": "2f35f4ee-7a6a-48f3-91dd-c76c1c64aaa2",
+                    "text": "Comprar sal"
+                }
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-25T07:03:00",
+            "deleted_at": null
+        }
+    ],
+    "stages": [
+        {
+            "id": "8cedfa91-eafd-46e6-bc90-5d6a28ecb121",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "kind": "refeed",
+            "duration_value": 6.0,
+            "duration_unit": "hours",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "ca6164fe-9094-40ec-b3e9-0bda64458df1",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "kind": "post",
+            "duration_value": 2.0,
+            "duration_unit": "days",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "535fb0c0-a820-4d0e-bb23-ca5611a9a275",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "kind": "refeed",
+            "duration_value": 6.0,
+            "duration_unit": "hours",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        },
+        {
+            "id": "d6c728df-a92a-4fd5-8bd8-1d0c5f7ebfb6",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "kind": "post",
+            "duration_value": 2.0,
+            "duration_unit": "days",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "plan_metrics": [
+        {
+            "id": "58bd1dfc-8986-44e3-a5cf-4f201c0bb1a4",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "metric_type_code": "glucose",
+            "standing_check_seconds": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "4bfc2af6-f75d-4b19-870d-e9915fb8dda6",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "metric_type_code": "glucose",
+            "standing_check_seconds": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "metric_schedules": [
+        {
+            "id": "88dafe58-3557-4ca3-9253-7ed94068c17b",
+            "plan_metric_id": "58bd1dfc-8986-44e3-a5cf-4f201c0bb1a4",
+            "stage_kind": "fast",
+            "time_of_day": "07:00",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "d25cf130-ac6f-48ce-a9cf-8b7a2d92273c",
+            "plan_metric_id": "4bfc2af6-f75d-4b19-870d-e9915fb8dda6",
+            "stage_kind": "fast",
+            "time_of_day": "07:00",
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "rules": [
+        {
+            "id": "a9960ea0-cad4-4a1e-9013-08a67bebf6ae",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "name": "Glucosa baja",
+            "active": true,
+            "condition_kind": "metric_below",
+            "metric_type_code": "glucose",
+            "bp_component": null,
+            "threshold": 55.0,
+            "sustained_minutes": 20,
+            "symptom_type_code": null,
+            "intake_type_code": null,
+            "check_time": null,
+            "filter_stage_kinds": [
+                "fast"
+            ],
+            "filter_on_waking": false,
+            "filter_position": null,
+            "level": "alert",
+            "message": "Rompe con caldo tibio con sal.",
+            "action": "offer_end",
+            "action_minutes": null,
+            "direction": null,
+            "trend_count": null,
+            "trend_of": null,
+            "goal_percent": null,
+            "is_placeholder": false,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "0fd44cec-a14e-4ae5-8dfd-75496f205c47",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "name": "Glucosa baja",
+            "active": true,
+            "condition_kind": "metric_below",
+            "metric_type_code": "glucose",
+            "bp_component": null,
+            "threshold": 55.0,
+            "sustained_minutes": 20,
+            "symptom_type_code": null,
+            "intake_type_code": null,
+            "check_time": null,
+            "filter_stage_kinds": [
+                "fast"
+            ],
+            "filter_on_waking": false,
+            "filter_position": null,
+            "level": "alert",
+            "message": "Rompe con caldo tibio con sal.",
+            "action": "offer_end",
+            "action_minutes": null,
+            "direction": null,
+            "trend_count": null,
+            "trend_of": null,
+            "goal_percent": null,
+            "is_placeholder": false,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        },
+        {
+            "id": "ac3754f7-3872-465e-a66d-136bd0dc29af",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "name": "Algo no va bien",
+            "active": true,
+            "condition_kind": "manual",
+            "metric_type_code": null,
+            "bp_component": null,
+            "threshold": null,
+            "sustained_minutes": null,
+            "symptom_type_code": null,
+            "intake_type_code": null,
+            "check_time": null,
+            "filter_stage_kinds": [],
+            "filter_on_waking": false,
+            "filter_position": null,
+            "level": "alert",
+            "message": "Mensaje",
+            "action": "offer_end",
+            "action_minutes": null,
+            "direction": null,
+            "trend_count": null,
+            "trend_of": null,
+            "goal_percent": null,
+            "is_placeholder": false,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "intake_goals": [
+        {
+            "id": "6e3f076f-74a6-48a5-9521-1ae0fae48c21",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "intake_type_code": "salt",
+            "daily_amount": 4.0,
+            "unit": "g",
+            "nudge_after_hours": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "1092e031-e5de-44ae-b892-11729f33297a",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "intake_type_code": "salt",
+            "daily_amount": 4.0,
+            "unit": "g",
+            "nudge_after_hours": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "checklist_items": [
+        {
+            "id": "c0d7df1a-bbf8-4f26-9d78-7367dcfd695e",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "text": "Comprar sal",
+            "is_checked": false,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "2f35f4ee-7a6a-48f3-91dd-c76c1c64aaa2",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "text": "Comprar sal",
+            "is_checked": false,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "stage_notices": [
+        {
+            "id": "bf0d3bd4-a692-4fac-9183-1fc8436c8d0c",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "text": "No sacarse sangre",
+            "stage_kinds": [
+                "fast",
+                "post"
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "aa75c898-2a2c-4506-b452-abc92bf6a337",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "text": "No sacarse sangre",
+            "stage_kinds": [
+                "fast",
+                "post"
+            ],
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "plan_products": [
+        {
+            "id": "5aad7b4e-08dc-4604-ae39-bb649e2e3d4c",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "product_code": "magnesio",
+            "during_fast": "continues",
+            "optional_enabled": false,
+            "reason": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "07931c3f-717e-4ccb-8ee4-7067ee652cf7",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "product_code": "magnesio",
+            "during_fast": "continues",
+            "optional_enabled": false,
+            "reason": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "refeed_steps": [
+        {
+            "id": "740ec875-c264-4ba1-977e-19cf2c3ec1be",
+            "template_id": "a8644eeb-4dca-489e-a834-85d01916af08",
+            "fast_id": null,
+            "kind": "timed",
+            "description": "Una taza de caldo",
+            "offset_minutes": 0,
+            "repeat_every_minutes": 60,
+            "repeat_for_minutes": 120,
+            "day_offset": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": null,
+            "deleted_at": null
+        },
+        {
+            "id": "8031d600-3843-4a3d-b256-3663f1bbf961",
+            "template_id": null,
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "kind": "timed",
+            "description": "Una taza de caldo",
+            "offset_minutes": 0,
+            "repeat_every_minutes": 60,
+            "repeat_for_minutes": 120,
+            "day_offset": null,
+            "created_at": "2026-10-22T18:00:00",
+            "updated_at": "2026-10-23T07:02:15",
+            "deleted_at": null
+        }
+    ],
+    "measurements": [
+        {
+            "id": "43b3d854-7961-4256-a81c-873e83e15696",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "metric_type_code": "glucose",
+            "taken_at": "2026-10-23T07:02:15",
+            "scheduled_for": "2026-10-23T07:00:00",
+            "value_num": 72.0,
+            "value_text": null,
+            "value_entered": 72.0,
+            "unit_entered": "mg/dL",
+            "source": "cgm",
+            "trend": null,
+            "on_waking": false,
+            "not_done_reason": null,
+            "note": null,
+            "is_baseline": false,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "blood_pressure_readings": [
+        {
+            "id": "17ce92f6-ff9d-472e-8274-d1b57c908bdf",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "taken_at": "2026-10-23T07:10:00",
+            "scheduled_for": null,
+            "systolic": 118,
+            "diastolic": 76,
+            "pulse": 60,
+            "position": "sitting",
+            "on_waking": false,
+            "paired_reading_id": null,
+            "not_done_reason": null,
+            "note": null,
+            "seconds_standing": null,
+            "is_baseline": false,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "symptoms": [
+        {
+            "id": "cdd6eaba-fd67-4a52-be04-accd03be9d99",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "symptom_type_code": "headache",
+            "noted_at": "2026-10-23T12:00:00",
+            "severity": 4,
+            "note": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "intakes": [
+        {
+            "id": "fa09cbe2-b20e-4276-be56-d5953a5d9ba4",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "intake_type_code": "salt",
+            "taken_at": "2026-10-23T09:00:00",
+            "amount": 2.5,
+            "unit": "g",
+            "note": null,
+            "amount_entered": 2.0,
+            "unit_entered": "quarter_teaspoon",
+            "group_id": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "product_logs": [
+        {
+            "id": "f5bb66e1-fd44-420d-a2a0-b67839bbd2a4",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "product_code": "magnesio",
+            "scheduled_at": "2026-10-23T20:00:00",
+            "status": "not_taken",
+            "taken_at": null,
+            "planned_amount": 400.0,
+            "amount": null,
+            "unit": null,
+            "reason": "Diarrea",
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "alerts": [
+        {
+            "id": "e52c0490-f38c-4a83-9d85-39033b01262b",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "rule_id": "ac3754f7-3872-465e-a66d-136bd0dc29af",
+            "fired_at": "2026-10-23T07:02:15",
+            "trigger_entry_ids": [],
+            "user_choice": null,
+            "choice_reason": null,
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "notes": [
+        {
+            "id": "2f823d15-b20c-46ef-ba38-dac8ba5f2529",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "noted_at": "2026-10-23T12:10:00",
+            "text": "leve temblor",
+            "created_at": "2026-10-23T07:02:15",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "refeed_checks": [
+        {
+            "id": "3921b65d-16d9-4ab9-a462-c857022339c6",
+            "refeed_step_id": "8031d600-3843-4a3d-b256-3663f1bbf961",
+            "scheduled_at": "2026-10-25T07:03:00",
+            "done_at": "2026-10-25T07:05:00",
+            "created_at": "2026-10-25T07:03:00",
+            "updated_at": "2026-10-25T07:05:00",
+            "deleted_at": null
+        },
+        {
+            "id": "bcd9c14f-e0c0-4950-ab77-fff0bc3c97cd",
+            "refeed_step_id": "8031d600-3843-4a3d-b256-3663f1bbf961",
+            "scheduled_at": "2026-10-25T08:03:00",
+            "done_at": null,
+            "created_at": "2026-10-25T07:03:00",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "meals": [
+        {
+            "id": "47225533-f0c5-4bdb-981d-1b1bad96eceb",
+            "fast_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "eaten_at": "2026-10-25T09:40:00",
+            "description": "Puré de calabaza",
+            "approx_amount": null,
+            "tolerance": "fine",
+            "tolerance_detail": null,
+            "created_at": "2026-10-25T07:05:00",
+            "updated_at": null,
+            "deleted_at": null
+        }
+    ],
+    "edit_logs": [
+        {
+            "id": "ae4dd8b9-27f0-43a4-953b-f946584e4eec",
+            "entity_name": "fast",
+            "row_id": "00029ac0-7d30-4fca-9780-4e6ebb33902d",
+            "action": "edit",
+            "edited_at": "2026-10-22T22:15:00",
+            "field": "clock_start_actual",
+            "old_value": "2026-10-22T22:10:00",
+            "new_value": "2026-10-22T22:05:00",
+            "reason": "Lo puse tarde",
+            "created_at": "2026-10-22T22:15:00",
+            "updated_at": null
+        }
+    ]
+}

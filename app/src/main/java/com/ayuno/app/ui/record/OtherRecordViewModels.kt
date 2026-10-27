@@ -70,6 +70,10 @@ class IntakeViewModel(container: AppContainer, private val fastId: String) : Sim
     val types: StateFlow<List<IntakeType>?> = container.catalog.observeIntakeTypes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** Metas del plan del ayuno, para la línea de la medida imprecisa (H-050). */
+    val goals: StateFlow<List<com.ayuno.domain.model.IntakeGoal>> = kotlinx.coroutines.flow.flow { emit(container.fasts.get(fastId)?.plan?.goals.orEmpty()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val totals: StateFlow<List<DailyTotal>> = combine(container.records.observeIntakes(fastId), container.catalog.observeIntakeTypes()) { intakes, types ->
         DailyTotals.of(now().toLocalDate(), intakes, types, container.fasts.get(fastId)?.plan?.goals.orEmpty())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

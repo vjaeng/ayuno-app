@@ -30,6 +30,20 @@ interface Catalog2Dao {
 
     @Upsert suspend fun upsertIntakeType(entity: IntakeTypeEntity)
 
+    @Query("SELECT * FROM household_unit WHERE deleted_at IS NULL ORDER BY position")
+    fun observeHouseholdUnits(): Flow<List<HouseholdUnitEntity>>
+
+    @Query("SELECT * FROM household_unit WHERE deleted_at IS NULL ORDER BY position")
+    suspend fun householdUnits(): List<HouseholdUnitEntity>
+
+    @Query("SELECT * FROM household_unit WHERE intake_type_code = :code")
+    suspend fun unitsOf(code: String): List<HouseholdUnitEntity>
+
+    @Upsert suspend fun upsertHouseholdUnits(entities: List<HouseholdUnitEntity>)
+
+    @Query("UPDATE household_unit SET deleted_at = :now, updated_at = :now WHERE intake_type_code = :code AND deleted_at IS NULL AND id NOT IN (:keep)")
+    suspend fun softDeleteHouseholdUnits(code: String, keep: List<String>, now: String)
+
     @Query("SELECT * FROM product WHERE deleted_at IS NULL ORDER BY name")
     fun observeProducts(): Flow<List<ProductEntity>>
 
@@ -105,6 +119,12 @@ interface Record2Dao {
     suspend fun intakes(fastId: String): List<IntakeEntity>
 
     @Insert suspend fun insertIntake(entity: IntakeEntity)
+
+    @Query("SELECT * FROM intake WHERE id = :id")
+    suspend fun intake(id: String): IntakeEntity?
+
+    @Query("UPDATE intake SET deleted_at = :deletedAt, updated_at = :now WHERE id = :id")
+    suspend fun setIntakeDeleted(id: String, deletedAt: String?, now: String)
 
     @Query("SELECT * FROM product_log WHERE fast_id = :fastId AND deleted_at IS NULL ORDER BY created_at")
     fun observeProductLogs(fastId: String): Flow<List<ProductLogEntity>>

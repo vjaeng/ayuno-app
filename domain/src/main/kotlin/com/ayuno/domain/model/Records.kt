@@ -3,7 +3,7 @@ package com.ayuno.domain.model
 import java.time.LocalDateTime
 
 /** Entradas que se pueden ver y corregir en «Mediciones de este ayuno» (H-048); [entityName] es la tabla en `edit_log`. */
-enum class EntryKind(val entityName: String) { MEASUREMENT("measurement"), BLOOD_PRESSURE("blood_pressure_reading") }
+enum class EntryKind(val entityName: String) { MEASUREMENT("measurement"), BLOOD_PRESSURE("blood_pressure_reading"), INTAKE("intake") }
 
 /** Entrada del registro sobre la que se pueden evaluar reglas. */
 sealed interface RecordEntry {
@@ -27,6 +27,8 @@ data class Measurement(
     val onWaking: Boolean,
     val notDoneReason: String?,
     val note: String?,
+    /** H-055 (D-24): marcada «de partida». */
+    val isBaseline: Boolean = false,
 ) : RecordEntry
 
 data class BloodPressureReading(
@@ -42,6 +44,10 @@ data class BloodPressureReading(
     val pairedReadingId: String?,
     val notDoneReason: String?,
     val note: String?,
+    /** H-053: segundos de pie, calculados; nulo = «tomada sin esperar». */
+    val secondsStanding: Int? = null,
+    /** H-055 (D-24): marcada «de partida». */
+    val isBaseline: Boolean = false,
 ) : RecordEntry {
     fun value(component: BpComponent): Int? = when (component) {
         BpComponent.SYSTOLIC -> systolic
@@ -60,7 +66,10 @@ data class Symptom(
     val note: String?,
 ) : RecordEntry
 
-/** `intake` (H-012). */
+/**
+ * `intake` (H-012). [amount] y [unit] son el equivalente en la unidad del tipo (lo que suman totales y reglas);
+ * [amountEntered] y [unitEntered] lo tecleado, con la unidad del tipo o el `code` de una medida casera (D-22).
+ */
 data class Intake(
     override val id: String,
     override val fastId: String,
@@ -69,6 +78,10 @@ data class Intake(
     val amount: Double,
     val unit: String,
     val note: String?,
+    val amountEntered: Double = amount,
+    val unitEntered: String = unit,
+    /** H-051: «Agua con sal», ingestas guardadas juntas. */
+    val groupId: String? = null,
 ) : RecordEntry
 
 /** `product_log` (H-015). */

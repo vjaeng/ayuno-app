@@ -12,7 +12,9 @@ import com.ayuno.domain.model.RuleAction
 import com.ayuno.domain.model.RuleConditionKind
 import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.TemplateWithPlan
+import com.ayuno.domain.model.TrendOf
 import com.ayuno.domain.port.AuditRepository
+import com.ayuno.domain.port.FastRepository
 import com.ayuno.domain.port.TemplateRepository
 import com.ayuno.domain.port.TransactionRunner
 import com.ayuno.domain.time.LocalTimes
@@ -62,7 +64,11 @@ class SaveTemplate(private val templates: TemplateRepository) {
             addAll(PlanValidator.validate(input.plan))
         }.distinct()
         if (errors.isNotEmpty()) return Outcome.Invalid(errors)
-        val plan = input.plan.copy(refeed = input.plan.refeed.map(RefeedStepValidator::normalize))
+        val oldRules = templates.get(template.id)?.plan?.rules.orEmpty().associateBy { it.id }
+        val plan = input.plan.copy(
+            refeed = input.plan.refeed.map(RefeedStepValidator::normalize),
+            rules = input.plan.rules.map { RuleValidator.normalize(it, oldRules[it.id]) },
+        )
         val saved = TemplateWithPlan(template.copy(milestoneHours = template.milestoneHours.distinct().sorted()), plan)
         templates.save(saved)
         return Outcome.Ok(saved)
@@ -80,8 +86,16 @@ object PlanValidator {
         plan.rules.forEach { addAll(RuleValidator.validate(it)) }
         if (plan.rules.count { it.conditionKind == RuleConditionKind.MANUAL } > 1) add(ValidationError.RULE_MANUAL_DUPLICATED)
         plan.goals.forEach {
-            if (it.dailyAmount <= 0) add(ValidationError.GOAL_NOT_POSITIVE)
+            // Una meta puede quedar sin cifra («por llenar», D-25).
+            if (it.dailyAmount != null && it.dailyAmount <= 0) add(ValidationError.GOAL_NOT_POSITIVE)
             if (it.unit.isBlank()) add(ValidationError.UNIT_REQUIRED)
+            if (it.nudgeAfterHours != null && it.nudgeAfterHours <= 0) add(ValidationError.NUDGE_HOURS_NOT_POSITIVE)
+        }
+        plan.metrics.forEach { m ->
+            val seconds = m.standingCheckSeconds ?: return@forEach
+            if (m.metricTypeCode != MetricType.BLOOD_PRESSURE_CODE || seconds.any { it <= 0 } || seconds != seconds.distinct().sorted()) {
+                add(ValidationError.STANDING_SECONDS_INVALID)
+            }
         }
         plan.checklist.forEach { if (it.text.isBlank()) add(ValidationError.TEXT_REQUIRED) }
         plan.notices.forEach {
@@ -122,12 +136,14 @@ object RefeedStepValidator {
 
 /**
  * Validación de reglas: condiciones de medición (H-019, H-020), síntoma de alarma (H-021), ingesta bajo la meta
- * (H-022) y manual (H-023); acciones «ninguna», «ofrecer terminar» y «medir de nuevo en N minutos» (H-026), esta
- * solo en condiciones de medición: el recordatorio necesita saber qué medir.
+ * (H-022), manual (H-023) y entre lecturas (H-054 a H-056); acciones «ninguna», «ofrecer terminar» y «medir de nuevo
+ * en N minutos» (H-026), esta solo en condiciones sobre una medición: el recordatorio necesita saber qué medir. Las
+ * cifras solo son obligatorias para activar la regla (H-003: las de ejemplo vienen inactivas y sin cifra).
  */
 object RuleValidator {
     val SUPPORTED_CONDITIONS = RuleConditionKind.entries.toSet()
     private val METRIC_CONDITIONS = setOf(RuleConditionKind.METRIC_BELOW, RuleConditionKind.METRIC_ABOVE)
+    private val BETWEEN_READINGS = setOf(RuleConditionKind.PAIR_DIFFERENCE, RuleConditionKind.CHANGE_FROM_BASELINE, RuleConditionKind.TREND)
     val SUPPORTED_ACTIONS = RuleAction.entries.toSet()
 
     fun validate(rule: Rule): List<ValidationError> = buildList {
@@ -137,18 +153,72 @@ object RuleValidator {
         if (rule.action !in SUPPORTED_ACTIONS) add(ValidationError.RULE_ACTION_UNSUPPORTED)
         if (rule.action == RuleAction.SCHEDULE_MEASUREMENT) {
             if (rule.actionMinutes == null || rule.actionMinutes <= 0) add(ValidationError.RULE_ACTION_MINUTES_REQUIRED)
-            if (rule.conditionKind !in METRIC_CONDITIONS) add(ValidationError.RULE_ACTION_NEEDS_METRIC)
+            if (rule.conditionKind !in METRIC_CONDITIONS + BETWEEN_READINGS) add(ValidationError.RULE_ACTION_NEEDS_METRIC)
         }
         if (rule.conditionKind == RuleConditionKind.INTAKE_BELOW_GOAL) {
             if (rule.intakeTypeCode.isNullOrBlank()) add(ValidationError.RULE_INTAKE_REQUIRED)
-            if (rule.checkTime == null) add(ValidationError.RULE_CHECK_TIME_REQUIRED)
+            if (rule.checkTime == null && rule.active) add(ValidationError.RULE_CHECK_TIME_REQUIRED)
+            if (rule.goalPercent != null && rule.goalPercent !in 1.0..100.0) add(ValidationError.RULE_GOAL_PERCENT_OUT_OF_RANGE)
+        }
+        if (rule.conditionKind in METRIC_CONDITIONS + BETWEEN_READINGS) {
+            if (rule.metricTypeCode.isNullOrBlank()) add(ValidationError.RULE_METRIC_REQUIRED)
+            if (rule.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE && rule.bpComponent == null) add(ValidationError.RULE_BP_COMPONENT_REQUIRED)
         }
         if (rule.conditionKind in METRIC_CONDITIONS) {
-            if (rule.metricTypeCode.isNullOrBlank()) add(ValidationError.RULE_METRIC_REQUIRED)
             // Una regla inactiva puede quedar sin umbral (estructura de la plantilla de ejemplo, H-003): nunca se evalúa.
             if (rule.threshold == null && rule.active) add(ValidationError.RULE_THRESHOLD_REQUIRED)
-            if (rule.metricTypeCode == MetricType.BLOOD_PRESSURE_CODE && rule.bpComponent == null) add(ValidationError.RULE_BP_COMPONENT_REQUIRED)
             if (rule.sustainedMinutes != null && rule.sustainedMinutes <= 0) add(ValidationError.RULE_SUSTAINED_NOT_POSITIVE)
         }
+        if (rule.conditionKind in BETWEEN_READINGS && rule.direction == null) add(ValidationError.RULE_DIRECTION_REQUIRED)
+        when (rule.conditionKind) {
+            RuleConditionKind.PAIR_DIFFERENCE -> {
+                if (rule.metricTypeCode != null && rule.metricTypeCode != MetricType.BLOOD_PRESSURE_CODE) add(ValidationError.RULE_TREND_NEEDS_BLOOD_PRESSURE)
+                if (rule.threshold == null && rule.active) add(ValidationError.RULE_THRESHOLD_REQUIRED)
+            }
+            RuleConditionKind.CHANGE_FROM_BASELINE -> {
+                if (rule.threshold == null && rule.active) add(ValidationError.RULE_THRESHOLD_REQUIRED)
+                if (rule.threshold != null && rule.threshold <= 0) add(ValidationError.RULE_THRESHOLD_NOT_POSITIVE)
+            }
+            RuleConditionKind.TREND -> {
+                if ((rule.trendCount ?: 0) < Rule.MIN_TREND_COUNT) add(ValidationError.RULE_TREND_COUNT_TOO_LOW)
+                if (rule.trendOf == TrendOf.PAIR_DIFFERENCE && rule.metricTypeCode != MetricType.BLOOD_PRESSURE_CODE) add(ValidationError.RULE_TREND_NEEDS_BLOOD_PRESSURE)
+            }
+            else -> Unit
+        }
+    }
+
+    /**
+     * Deja la regla coherente con su tipo de condición (lo que no aplica, vacío) y pone a false «de ejemplo» si cambió
+     * su nombre, su mensaje o una cifra respecto a [old] (D-25).
+     */
+    fun normalize(rule: Rule, old: Rule?): Rule {
+        val between = rule.conditionKind in BETWEEN_READINGS
+        val cleaned = rule.copy(
+            direction = rule.direction.takeIf { between },
+            trendCount = if (rule.conditionKind == RuleConditionKind.TREND) rule.trendCount ?: Rule.MIN_TREND_COUNT else null,
+            trendOf = if (rule.conditionKind == RuleConditionKind.TREND) rule.trendOf ?: TrendOf.VALUE else null,
+            threshold = rule.threshold.takeIf { rule.conditionKind != RuleConditionKind.TREND },
+            metricTypeCode = if (rule.conditionKind == RuleConditionKind.PAIR_DIFFERENCE) MetricType.BLOOD_PRESSURE_CODE else rule.metricTypeCode,
+            sustainedMinutes = rule.sustainedMinutes.takeIf { rule.conditionKind in METRIC_CONDITIONS },
+            goalPercent = rule.goalPercent.takeIf { rule.conditionKind == RuleConditionKind.INTAKE_BELOW_GOAL },
+        )
+        return if (old != null && old.isPlaceholder && cleaned.editedFrom(old)) cleaned.copy(isPlaceholder = false) else cleaned
+    }
+}
+
+/**
+ * H-057: cambiar las reglas y metas de la copia del plan de un ayuno aún planificado («Arreglar ›» de la revisión
+ * previa). La plantilla no cambia (D-03); una regla «de ejemplo» deja de serlo al cambiar su nombre, mensaje o cifra.
+ */
+class SaveFastPlan(private val fasts: FastRepository) {
+    suspend operator fun invoke(fastId: String, rules: List<Rule>, goals: List<com.ayuno.domain.model.IntakeGoal>): Outcome<Plan> {
+        val source = fasts.get(fastId) ?: return invalid(ValidationError.FAST_NOT_FOUND)
+        if (source.fast.status != com.ayuno.domain.model.FastStatus.PLANNED) return invalid(ValidationError.FAST_NOT_PLANNED)
+        val oldRules = source.plan.rules.associateBy { it.id }
+        val plan = source.plan.copy(rules = rules.map { RuleValidator.normalize(it, oldRules[it.id]) }, goals = goals)
+        val errors = PlanValidator.validate(plan).distinct()
+        if (errors.isNotEmpty()) return Outcome.Invalid(errors)
+        fasts.updatePlan(fastId, plan)
+        return Outcome.Ok(plan)
     }
 }

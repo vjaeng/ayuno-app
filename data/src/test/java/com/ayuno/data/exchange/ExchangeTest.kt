@@ -117,7 +117,7 @@ class ExchangeTest {
         saveTemplate(template)
         val fastId = (createFast(CreateFast.Input(template.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), 57.0, "Semana tranquila")) as Outcome.Ok).value.fast.id
         now = Instant.parse("2026-10-23T03:10:00Z")
-        startFast(fastId)
+        startFast(fastId, anyway = true)
         now = Instant.parse("2026-10-23T03:15:00Z")
         correctClockStart(fastId, LocalDateTime.of(2026, 10, 22, 22, 5), "Lo puse tarde")
         val at7 = LocalDateTime.of(2026, 10, 23, 7, 0)
@@ -125,7 +125,8 @@ class ExchangeTest {
         recordMeasurement(RecordMeasurement.Input(fastId, "glucose", at7.plusMinutes(2).plusSeconds(15), at7, 72.0, "mg/dL", source = GlucoseSource.CGM))
         recordBloodPressure(RecordBloodPressure.Input(fastId, at7.plusMinutes(10), systolic = 118, diastolic = 76, pulse = 60, position = Position.SITTING))
         RecordSymptom(catalog, fasts, records, alerts, tx, clock)(RecordSymptom.Input(fastId, "headache", at7.plusHours(5), 4, null))
-        RecordIntake(catalog, fasts, records, alerts, tx, clock)(RecordIntake.Input(fastId, "salt", at7.plusHours(2), 2.5, null, null))
+        // EV-006: anotada en medida casera; viaja lo tecleado y su equivalente (2 × 1,25 g).
+        RecordIntake(catalog, fasts, records, alerts, tx, clock)(RecordIntake.Input(fastId, "salt", at7.plusHours(2), 2.0, "quarter_teaspoon", null))
         val at20 = LocalDateTime.of(2026, 10, 23, 20, 0)
         RecordProductLog(catalog, fasts, records, tx)(RecordProductLog.Input(fastId, "magnesio", at20, ProductLogStatus.NOT_TAKEN, null, null, "Diarrea"))
         RecordNote(fasts, records)(fastId, at7.plusHours(5).plusMinutes(10), "leve temblor")
@@ -303,7 +304,7 @@ class ExchangeTest {
             SaveMetricType.Input("hunger", "Hambre", hunger.unit, true, 0.0, 10.0, hunger.options.map { SaveMetricType.OptionDraft(it.id, it.label, it.value) } + SaveMetricType.OptionDraft(null, "Feroz", 9.0)),
         )
         val doc = parse((source.export()(s.fastId) as Outcome.Ok).value.json)
-        assertEquals("1.1", doc["schema_version"]!!.jsonPrimitive.content)
+        assertEquals("1.2", doc["schema_version"]!!.jsonPrimitive.content)
         assertEquals(21, doc["catalogs"]!!.jsonObject["metric_options"]!!.jsonArray.size)
 
         val fresh = world()
@@ -346,6 +347,97 @@ class ExchangeTest {
             doc + ("catalogs" to JsonObject(doc["catalogs"]!!.jsonObject + mapOf("metric_types" to JsonArray(types + textType), "metric_options" to JsonArray(options + newOption("estado", "Bien", 1.0))))),
         ).toString().toByteArray()
         assertEquals(ImportCheck.Rejected(ImportProblem.InvalidRow("metric_options", n + 1, "metric_type_code")), fresh.exporter().import(nonNumeric))
+        assertEquals(before, fresh.snapshot())
+    }
+
+    @Test
+    fun `H-036 H-040 en 1_2 viajan medidas, lo tecleado y la revision previa, y un archivo 1_1 toma los valores por defecto`() = runTest {
+        val source = world()
+        val s = source.seed()
+        val doc = parse((source.export()(s.fastId) as Outcome.Ok).value.json)
+        val intake = doc["intakes"]!!.jsonArray.single().jsonObject
+        assertEquals(2.5, intake["amount"]!!.jsonPrimitive.content.toDouble(), 0.0)
+        assertEquals("quarter_teaspoon", intake["unit_entered"]!!.jsonPrimitive.content)
+        assertEquals("unchecked_item", doc["fasts"]!!.jsonArray.single().jsonObject["started_with_warnings"]!!.jsonArray.single().jsonObject["kind"]!!.jsonPrimitive.content)
+        assertEquals(7, doc["catalogs"]!!.jsonObject["household_units"]!!.jsonArray.size)
+
+        val fresh = world()
+        assertTrue(fresh.exporter().import(doc.toString().toByteArray()) is ImportCheck.Ok)
+        val restored = fresh.records.intakes(s.fastId).single()
+        assertEquals(2.0 to "quarter_teaspoon", restored.amountEntered to restored.unitEntered)
+        assertEquals(source.fasts.get(s.fastId)!!.fast.startedWithWarnings, fresh.fasts.get(s.fastId)!!.fast.startedWithWarnings)
+
+        // Un archivo 1.1 no trae nada de 1.2: lo tecleado es la cantidad y su unidad; las marcas, falsas.
+        val v12Only = mapOf(
+            "intakes" to setOf("amount_entered", "unit_entered", "group_id"), "measurements" to setOf("is_baseline"),
+            "blood_pressure_readings" to setOf("is_baseline", "seconds_standing"), "plan_metrics" to setOf("standing_check_seconds"),
+            "rules" to setOf("direction", "trend_count", "trend_of", "goal_percent", "is_placeholder"), "fasts" to setOf("started_with_warnings"),
+            "intake_goals" to setOf("nudge_after_hours"),
+        )
+        val catalogs = doc["catalogs"]!!.jsonObject
+        val oldCatalogs = JsonObject(
+            catalogs - "household_units" + ("intake_types" to JsonArray(catalogs["intake_types"]!!.jsonArray.map { JsonObject(it.jsonObject - "quick_unit_code") })),
+        )
+        val old = JsonObject(
+            doc.mapValues { (key, value) ->
+                val drop = v12Only[key] ?: return@mapValues value
+                JsonArray(value.jsonArray.map { JsonObject(it.jsonObject - drop) })
+            } + ("schema_version" to JsonPrimitive("1.1")) + ("catalogs" to oldCatalogs),
+        )
+        val other = world()
+        val check = other.exporter().import(old.toString().toByteArray())
+        assertTrue(check.toString(), check is ImportCheck.Ok)
+        val oldIntake = other.records.intakes(s.fastId).single()
+        assertEquals(2.5 to "g", oldIntake.amountEntered to oldIntake.unitEntered)
+        assertTrue(other.fasts.get(s.fastId)!!.plan.rules.none { it.isPlaceholder })
+        // Las medidas de fábrica del teléfono siguen ahí.
+        assertEquals(3, other.catalog.intakeTypes().single { it.code == "salt" }.units.size)
+    }
+
+    @Test
+    fun `H-040 en 1_2 lo tecleado sin medida, dos de partida, rachas cortas, segundos sin pareja o avisos ajenos rechazan el archivo`() = runTest {
+        val source = world()
+        val s = source.seed()
+        val doc = parse((source.export()(s.fastId) as Outcome.Ok).value.json)
+        fun rows(key: String) = doc[key]!!.jsonArray.map { it.jsonObject }
+        fun with(key: String, change: (List<JsonObject>) -> List<JsonObject>) = JsonObject(doc + (key to JsonArray(change(rows(key))))).toString().toByteArray()
+        fun JsonObject.set(vararg pairs: Pair<String, JsonElement>) = JsonObject(this + pairs)
+        val fresh = world()
+        val before = fresh.snapshot()
+        suspend fun rejected(table: String, row: Int, column: String, file: ByteArray) =
+            assertEquals(ImportCheck.Rejected(ImportProblem.InvalidRow(table, row, column)), fresh.exporter().import(file))
+
+        rejected("intakes", 1, "unit_entered", with("intakes") { l -> l.map { it.set("unit_entered" to JsonPrimitive("cubo")) } })
+        rejected("intakes", 1, "amount_entered", with("intakes") { l -> l.map { it.set("amount_entered" to JsonPrimitive(0)) } })
+        val m = rows("measurements").single()
+        rejected(
+            "measurements", 2, "is_baseline",
+            with("measurements") { listOf(m.set("is_baseline" to JsonPrimitive(true)), m.set("id" to JsonPrimitive(Ids.newId()), "is_baseline" to JsonPrimitive(true))) },
+        )
+        rejected(
+            "rules", 1, "trend_count",
+            with("rules") { l -> listOf(l.first().set("condition_kind" to JsonPrimitive("trend"), "direction" to JsonPrimitive("below"), "trend_count" to JsonPrimitive(2))) + l.drop(1) },
+        )
+        rejected(
+            "rules", 1, "direction",
+            with("rules") { l -> listOf(l.first().set("condition_kind" to JsonPrimitive("change_from_baseline"))) + l.drop(1) },
+        )
+        rejected("blood_pressure_readings", 1, "seconds_standing", with("blood_pressure_readings") { l -> l.map { it.set("seconds_standing" to JsonPrimitive(60)) } })
+        rejected(
+            "fasts", 1, "started_with_warnings",
+            with("fasts") { l -> l.map { it.set("started_with_warnings" to JsonArray(listOf(JsonObject(mapOf("kind" to JsonPrimitive("otra"), "ref_id" to JsonPrimitive("x"), "text" to JsonPrimitive("y")))))) } },
+        )
+        val catalogs = doc["catalogs"]!!.jsonObject
+        val units = catalogs["household_units"]!!.jsonArray.map { it.jsonObject }
+        val zero = JsonObject(doc + ("catalogs" to JsonObject(catalogs + ("household_units" to JsonArray(units.mapIndexed { i, u -> if (i == 0) u.set("equivalent" to JsonPrimitive(0)) else u }))))).toString().toByteArray()
+        rejected("household_units", 1, "equivalent", zero)
+        val breaking = catalogs["intake_types"]!!.jsonArray.map { it.jsonObject }.map { t ->
+            if (t["breaks_fast"]!!.jsonPrimitive.content == "true") t.set("quick_unit_code" to JsonPrimitive("glass")) else t
+        }
+        val index = breaking.indexOfFirst { it["quick_unit_code"] is JsonPrimitive && it["breaks_fast"]!!.jsonPrimitive.content == "true" }
+        if (index >= 0) {
+            rejected("intake_types", index + 1, "quick_unit_code", JsonObject(doc + ("catalogs" to JsonObject(catalogs + ("intake_types" to JsonArray(breaking))))).toString().toByteArray())
+        }
         assertEquals(before, fresh.snapshot())
     }
 

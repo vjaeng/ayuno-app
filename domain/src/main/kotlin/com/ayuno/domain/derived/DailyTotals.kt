@@ -33,6 +33,15 @@ object DailyTotals {
         return if (UnitConversions.canConvert(total.intakeType.unit, goal.unit)) UnitConversions.convert(total.amount, total.intakeType.unit, goal.unit) else null
     }
 
+    /** Derivado «Sodio de la meta» (H-006): la meta del tipo en su unidad × su factor de sodio; nulo sin cifra o sin factor. */
+    fun goalSodium(total: DailyTotal): Double? {
+        val goal = total.goal ?: return null
+        val amount = goal.dailyAmount ?: return null
+        val factor = total.intakeType.sodiumFactor ?: return null
+        if (!UnitConversions.canConvert(goal.unit, total.intakeType.unit)) return null
+        return UnitConversions.convert(amount, goal.unit, total.intakeType.unit) * factor
+    }
+
     private fun toTypeUnit(intake: Intake, type: IntakeType): Double =
         if (UnitConversions.canConvert(intake.unit, type.unit)) UnitConversions.convert(intake.amount, intake.unit, type.unit) else 0.0
 }

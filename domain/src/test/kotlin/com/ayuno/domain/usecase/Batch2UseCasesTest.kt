@@ -17,6 +17,8 @@ import com.ayuno.domain.model.ProductLogStatus
 import com.ayuno.domain.model.RuleConditionKind
 import com.ayuno.domain.model.StageKind
 import com.ayuno.domain.model.StageNotice
+import com.ayuno.domain.model.StartWarning
+import com.ayuno.domain.model.WarningKind
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -56,13 +58,15 @@ class Batch2UseCasesTest {
     }
 
     @Test
-    fun `H-002 marcar la lista previa no impide empezar el ayuno`() = runTest {
+    fun `H-002 H-057 la lista previa sin marcar pide revisar y no impide empezar de todos modos`() = runTest {
         val w = TestWorld()
         val fast = w.plannedFast(w.plan57h().copy(checklist = listOf(ChecklistItem(Ids.newId(), "Comprar sal", false))))
         w.setChecklistItem(fast.fast.id, fast.plan.checklist.single().id, true)
         assertTrue(w.fasts.get(fast.fast.id)!!.plan.checklist.single().isChecked)
         val other = w.plannedFast(w.plan57h().copy(checklist = listOf(ChecklistItem(Ids.newId(), "Sin marcar", false))), weeksLater = 2)
-        assertTrue(w.startFast(other.fast.id) is Outcome.Ok)
+        assertEquals(listOf(ValidationError.PRE_START_REVIEW_PENDING), (w.startFast(other.fast.id) as Outcome.Invalid).errors)
+        val started = (w.startFast(other.fast.id, anyway = true) as Outcome.Ok).value
+        assertEquals(listOf(StartWarning(WarningKind.UNCHECKED_ITEM, other.plan.checklist.single().id, "Sin marcar")), started.startedWithWarnings)
     }
 
     // ---------- H-010 / H-021 ----------

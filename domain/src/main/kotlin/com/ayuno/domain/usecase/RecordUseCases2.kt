@@ -4,6 +4,9 @@ import com.ayuno.domain.id.Ids
 import com.ayuno.domain.model.Alert
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.Intake
+import com.ayuno.domain.model.IntakeType
+import com.ayuno.domain.derived.HouseholdMeasures
+import com.ayuno.domain.units.UnitConversions
 import com.ayuno.domain.model.Note
 import com.ayuno.domain.model.ProductLog
 import com.ayuno.domain.model.ProductLogStatus
@@ -46,7 +49,11 @@ class RecordSymptom(
     }
 }
 
-/** H-012: anotar una ingesta con cantidad y unidad (el sodio y los totales se calculan). */
+/**
+ * H-012, H-050, H-051: anotar una ingesta. La cantidad se teclea en la unidad del tipo o en una de sus medidas caseras;
+ * se guarda lo tecleado y su equivalente (D-22). «Agua con sal» ([alongside]) guarda dos ingestas con el mismo
+ * `group_id` y la misma hora, todo o nada, con una sola evaluación de reglas.
+ */
 class RecordIntake(
     private val catalog: CatalogRepository,
     private val fasts: FastRepository,
@@ -57,20 +64,63 @@ class RecordIntake(
 ) {
     private val recorder = AlertRecorder(catalog, records, alerts, clock)
 
-    data class Input(val fastId: String, val intakeTypeCode: String, val takenAt: LocalDateTime, val amount: Double?, val unit: String?, val note: String?)
+    /** [unit]: unidad del tipo (por defecto) o `code` de una medida casera del tipo. */
+    data class Input(
+        val fastId: String,
+        val intakeTypeCode: String,
+        val takenAt: LocalDateTime,
+        val amount: Double?,
+        val unit: String?,
+        val note: String?,
+        val alongside: Part? = null,
+    )
+
+    /** Segunda ingesta de la misma entrada («Agua con sal»). */
+    data class Part(val intakeTypeCode: String, val amount: Double?, val unit: String?)
 
     suspend operator fun invoke(input: Input): Outcome<RecordResult<Intake>> {
-        val type = catalog.intakeTypes().firstOrNull { it.code == input.intakeTypeCode } ?: return invalid(ValidationError.INTAKE_TYPE_NOT_FOUND)
-        if (input.amount == null || input.amount <= 0) return invalid(ValidationError.AMOUNT_NOT_POSITIVE)
-        val intake = Intake(
-            Ids.newId(), input.fastId, type.code, input.takenAt.withNano(0), input.amount,
-            input.unit?.trim()?.ifEmpty { null } ?: type.unit, input.note?.trim()?.ifEmpty { null },
-        )
+        val types = catalog.intakeTypes()
+        val groupId = input.alongside?.let { Ids.newId() }
+        val first = build(types, input.fastId, Part(input.intakeTypeCode, input.amount, input.unit), input.takenAt, input.note, groupId)
+        val second = input.alongside?.let { build(types, input.fastId, it, input.takenAt, null, groupId) }
+        val intakes = listOfNotNull(first, second).map { (it as? Built.Ok)?.intake ?: return Outcome.Invalid(listOf((it as Built.Error).error)) }
         return transactions.inTransaction {
             val source = fasts.get(input.fastId) ?: return@inTransaction invalid(ValidationError.FAST_NOT_FOUND)
-            records.insertIntake(intake)
-            Outcome.Ok(RecordResult.Saved(intake, recorder.evaluate(source)))
+            intakes.forEach { records.insertIntake(it) }
+            Outcome.Ok(RecordResult.Saved(intakes.first(), recorder.evaluate(source)))
         }
+    }
+
+    private sealed interface Built {
+        data class Ok(val intake: Intake) : Built
+        data class Error(val error: ValidationError) : Built
+    }
+
+    private fun build(types: List<IntakeType>, fastId: String, part: Part, takenAt: LocalDateTime, note: String?, groupId: String?): Built {
+        val type = types.firstOrNull { it.code == part.intakeTypeCode } ?: return Built.Error(ValidationError.INTAKE_TYPE_NOT_FOUND)
+        if (part.amount == null || part.amount <= 0) return Built.Error(ValidationError.AMOUNT_NOT_POSITIVE)
+        val unitEntered = part.unit?.trim()?.ifEmpty { null } ?: type.unit
+        val amount = HouseholdMeasures.equivalent(type, part.amount, unitEntered)
+            ?: convertible(part.amount, unitEntered, type.unit)
+            ?: return Built.Error(ValidationError.MEASURE_NOT_FOUND)
+        return Built.Ok(
+            Intake(
+                id = Ids.newId(), fastId = fastId, intakeTypeCode = type.code, takenAt = takenAt.withNano(0), amount = amount, unit = type.unit,
+                note = note?.trim()?.ifEmpty { null }, amountEntered = part.amount, unitEntered = unitEntered, groupId = groupId,
+            ),
+        )
+    }
+}
+
+private fun convertible(amount: Double, from: String, to: String): Double? =
+    if (UnitConversions.canConvert(from, to)) UnitConversions.convert(amount, from, to) else null
+
+/** H-051: un toque en el botón rápido guarda 1 de su medida a la hora actual, por la misma vía que el formulario. */
+class RecordQuickIntake(private val catalog: CatalogRepository, private val recordIntake: RecordIntake, private val clock: Clock) {
+    suspend operator fun invoke(fastId: String, intakeTypeCode: String): Outcome<RecordResult<Intake>> {
+        val type = catalog.intakeTypes().firstOrNull { it.code == intakeTypeCode } ?: return invalid(ValidationError.INTAKE_TYPE_NOT_FOUND)
+        val unit = type.quickUnit ?: return invalid(ValidationError.QUICK_UNIT_NOT_SET)
+        return recordIntake(RecordIntake.Input(fastId, type.code, LocalTimes.now(clock), 1.0, unit.code, null))
     }
 }
 

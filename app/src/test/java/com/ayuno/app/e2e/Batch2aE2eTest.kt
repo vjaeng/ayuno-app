@@ -182,6 +182,9 @@ class Batch2aE2eTest {
         compose.tap("Comprar sal")
         compose.assertShown("Lista previa: marcados 1 de 2")
         compose.tap("Empieza el ayuno ahora")
+        // EV-006 (H-057): lo que queda sin marcar sale en la revisión previa y se puede empezar igual.
+        compose.assertShown("Lista previa sin marcar (1)")
+        compose.tap("Empezar de todos modos")
         compose.assertShown("Seguridad")
     }
 

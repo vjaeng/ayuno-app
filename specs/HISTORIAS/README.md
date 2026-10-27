@@ -57,14 +57,14 @@ Total: **57** historias · alta 42 · media 14 · baja 1. H-001 a H-043 son la v
 | H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
 | H-048 | [Ver y corregir las mediciones del ayuno en curso](mediciones-048-ver-corregir-mediciones.md) | mediciones | alta | entregada (EV-004) |
 | H-049 | [Elegir con palabras en las escalas de cómo me siento](mediciones-049-escalas-con-palabras.md) | mediciones | alta | entregada (EV-005) |
-| H-050 | [Anotar lo que tomo en mis medidas caseras](liquidos-050-medidas-caseras.md) | liquidos | alta | tejida (EV-006) |
-| H-051 | [Anotar agua y sal con un toque desde el reloj](liquidos-051-anotar-en-un-toque.md) | liquidos | alta | tejida (EV-006) |
-| H-052 | [Que la app me pregunte si llevo horas sin anotar lo que pide mi plan](recordatorios-052-preguntar-si-no-anoto.md) | recordatorios | alta | tejida (EV-006) |
-| H-053 | [Medir la presión de pie a su tiempo con un temporizador](mediciones-053-temporizador-de-pie.md) | mediciones | alta | tejida (EV-006) |
-| H-054 | [Definir una regla sobre la diferencia al ponerme de pie](reglas-054-regla-diferencia-de-pie.md) | reglas | alta | tejida (EV-006) |
-| H-055 | [Definir una regla sobre el cambio respecto a mi valor de partida](reglas-055-regla-cambio-desde-partida.md) | reglas | alta | tejida (EV-006) |
-| H-056 | [Definir una regla de tendencia](reglas-056-regla-tendencia.md) | reglas | alta | tejida (EV-006) |
-| H-057 | [Revisar lo que falta antes de empezar y empezar igual si quiero](reloj-057-revision-antes-de-empezar.md) | reloj | alta | tejida (EV-006) |
+| H-050 | [Anotar lo que tomo en mis medidas caseras](liquidos-050-medidas-caseras.md) | liquidos | alta | entregada |
+| H-051 | [Anotar agua y sal con un toque desde el reloj](liquidos-051-anotar-en-un-toque.md) | liquidos | alta | entregada |
+| H-052 | [Que la app me pregunte si llevo horas sin anotar lo que pide mi plan](recordatorios-052-preguntar-si-no-anoto.md) | recordatorios | alta | construida (falta verificar en el teléfono) |
+| H-053 | [Medir la presión de pie a su tiempo con un temporizador](mediciones-053-temporizador-de-pie.md) | mediciones | alta | construida (falta verificar en el teléfono) |
+| H-054 | [Definir una regla sobre la diferencia al ponerme de pie](reglas-054-regla-diferencia-de-pie.md) | reglas | alta | entregada |
+| H-055 | [Definir una regla sobre el cambio respecto a mi valor de partida](reglas-055-regla-cambio-desde-partida.md) | reglas | alta | entregada |
+| H-056 | [Definir una regla de tendencia](reglas-056-regla-tendencia.md) | reglas | alta | entregada |
+| H-057 | [Revisar lo que falta antes de empezar y empezar igual si quiero](reloj-057-revision-antes-de-empezar.md) | reloj | alta | entregada |
 
 ## Épicas
 
@@ -171,6 +171,12 @@ Exportar e importar: archivo `fasting-log` 1.0 con nombres canónicos, `null` pa
 
 Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia de …»), borrarla en blando con confirmación y constancia en la bitácora (los ayunos creados desde ella no cambian) y restaurarla desde «Borradas». Al instalar existe una plantilla de ejemplo (etapas, mediciones y reglas sin umbrales ni dosis), con identificadores fijos; las instalaciones existentes la reciben con la migración 4→5 (sin cambios de esquema). Una regla inactiva puede quedar sin umbral; al activarla lo exige. 281 pruebas en verde; lint sin errores.
 
+## Construcción — EV-006 (2026-10-26)
+
+Medidas caseras con su equivalente y botones rápidos en Inicio con «Deshacer» (pulsación larga → formulario con ese tipo y esa medida); «Lleva sal disuelta» guarda dos ingestas enlazadas. Pregunta «¿Has tomado sal desde las …?» tras N horas despierto, con su fila en Hoy. Temporizador de pie con una alarma por cada tiempo del plan, segundos calculados, «Anotar sin esperar», «Cancelar» y resultado de la pareja. Reglas de diferencia al ponerse de pie, de cambio desde la partida y de tendencia, con su frase y su «Por:»; porcentaje de la meta en la regla de ingesta. «Marcar como de partida» en el Detalle de entrada. Revisión antes de empezar, con arreglo en el plan del ayuno, y «Empezó con pendientes» en Historial. Base de datos 9 y formato 1.2, ambos aditivos. 339 pruebas en verde (dominio 190, datos 61, app 88; cada variante de compilación las pasa todas); lint sin errores.
+
+**Entregadas en EV-006:** H-050, H-051, H-054, H-055, H-056 y H-057, y los criterios EV-006 de H-002, H-003, H-005, H-009, H-012, H-022, H-028, H-036 y H-040. **Construidas, pendientes de verificar en el teléfono (PRUEBAS §4.7):** H-052 (la pregunta con la app cerrada y tras reiniciar) y H-053 (el temporizador con la pantalla apagada). H-006 sigue en construcción solo por su caso D.
+
 ## Cambios aprobados durante la construcción
 
 | Fecha | Historia | Cambio | Origen |
@@ -186,3 +192,4 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 | 2026-10-14 | H-003 | La plantilla de ejemplo pasa de los hitos 12 y 24 a 24, 36 y 48 (con objetivo 36 h, el 48 queda después del objetivo). Las instalaciones existentes la reciben con la migración 6→7 (solo datos), salvo que la persona ya hubiera cambiado los hitos; los ayunos ya creados conservan los suyos | Petición del humano |
 | 2026-10-23 | EV-005: H-049 nueva (escalas con palabras que guardan un número, editables en Catálogos); H-007 y H-008 con el criterio de palabras; H-042 permite capturas de pantalla | El humano quiere elegir cómo se siente con palabras y poder hacer capturas de la app | Petición del humano (EV-005) |
 | 2026-10-25 | EV-006: H-050 a H-057 nuevas (medidas caseras, botones rápidos y agua con sal, pregunta tras horas sin anotar, temporizador de pie, reglas de diferencia, de partida y de tendencia, revisión antes de empezar); H-002, H-003, H-005, H-006, H-009, H-012, H-022, H-028, H-036 y H-040 editadas | El primer ayuno real (57 h) dejó sin registrar agua y sal, midió la presión de pie a los pocos segundos, no tenía regla que viera la subida del pulso al levantarse y empezó con reglas de relleno: la app tiene que notar lo que falta antes que la persona | Petición del humano (EV-006) |
+| 2026-10-26 | H-028, H-053, H-009 | Construcción EV-006: las frases con verbo dicen «Si tu pulso…» (el ejemplo de H-028 se ajusta); con alerta en la toma sentado se muestra la alerta y no el temporizador. H-052 y H-053 quedan construidas hasta verificar en el teléfono | Decisión de construcción (EV-006) |

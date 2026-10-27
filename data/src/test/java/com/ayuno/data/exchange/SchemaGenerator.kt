@@ -80,6 +80,18 @@ internal object SchemaGenerator {
                 Kind.DATE -> type("string", notNull) + ("pattern" to JsonPrimitive(DATE))
                 Kind.TIME -> type("string", notNull) + ("pattern" to JsonPrimitive(TIME))
                 Kind.NUMBER_LIST -> type("array", notNull) + ("items" to buildJsonObject { put("type", "number") })
+                Kind.INTEGER_LIST -> type("array", notNull) + ("items" to buildJsonObject { put("type", "integer") })
+                Kind.OBJECT_LIST -> type("array", notNull) + mapOf(
+                    "minItems" to JsonPrimitive(1),
+                    "items" to objectOf(
+                        listOf("kind", "ref_id", "text"),
+                        mapOf(
+                            "kind" to buildJsonObject { put("enum", strings(ExchangeFormat.WARNING_KINDS.sorted())) },
+                            "ref_id" to JsonObject(type("string", true)),
+                            "text" to buildJsonObject { put("type", "string"); put("minLength", 1) },
+                        ),
+                    ),
+                )
                 Kind.STRING_LIST -> type("array", notNull) + (
                     "items" to buildJsonObject {
                         put("type", "string")

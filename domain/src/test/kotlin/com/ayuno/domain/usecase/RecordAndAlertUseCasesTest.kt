@@ -117,7 +117,7 @@ class RecordAndAlertUseCasesTest {
         val w = TestWorld(); val f = w.startedFast()
         assertEquals(listOf(ValidationError.DIASTOLIC_NOT_BELOW_SYSTOLIC),
             (w.recordBloodPressure(RecordBloodPressure.Input(f.id, at, systolic = 70, diastolic = 80, position = Position.SITTING)) as Outcome.Invalid).errors)
-        assertEquals(listOf(ValidationError.PAIRED_READING_INVALID),
+        assertEquals(listOf(ValidationError.PAIRED_READING_NOT_FOUND),
             (w.recordBloodPressure(RecordBloodPressure.Input(f.id, at, systolic = 110, diastolic = 70, position = Position.STANDING, pairedReadingId = "no-existe")) as Outcome.Invalid).errors)
     }
 

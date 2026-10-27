@@ -76,7 +76,7 @@ Bloque «SI» de las condiciones nuevas (EV-006); «Solo cuando» y «Entonces»
 ── Cambio al ponerme de pie (H-054) ──
 │  [Pulso ▾] de pie − sentado      │  ← Pulso · La de arriba · La de abajo
 │  [sube más de ▾] [ 30 ]          │  ← sube más de · baja más de
-│ Se leerá así: «Si el pulso sube  │
+│ Se leerá así: «Si tu pulso sube  │
 │ más de 30 al ponerme de pie:     │
 │ aviso y medir de nuevo en 30 min»│
 ── Cambio desde mi valor de partida (H-055) ──

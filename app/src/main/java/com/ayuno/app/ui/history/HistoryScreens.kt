@@ -7,6 +7,8 @@ import com.ayuno.domain.model.EntryKind
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -47,6 +49,7 @@ import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.ScreenScaffold
 import com.ayuno.app.ui.components.SecondaryButton
+import com.ayuno.app.ui.components.Badge
 import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
@@ -67,7 +70,11 @@ import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.FastWithPlan
 import com.ayuno.domain.model.MetricType
+import com.ayuno.domain.model.BloodPressureReading
+import com.ayuno.domain.model.Intake
 import com.ayuno.domain.model.Position
+import com.ayuno.domain.model.StartWarning
+import com.ayuno.domain.model.WarningKind
 import com.ayuno.domain.model.ProductLogStatus
 import com.ayuno.domain.model.RuleLevel
 import com.ayuno.domain.model.UserChoice
@@ -149,6 +156,7 @@ data class FastDetail(
     val metricTypes: Map<String, com.ayuno.domain.model.MetricType> = emptyMap(),
     val symptomNames: Map<String, String>,
     val intakeNames: Map<String, String>,
+    val intakeTypes: Map<String, com.ayuno.domain.model.IntakeType> = emptyMap(),
     val productNames: Map<String, String>,
     /** Derivado «recuento de registros del ayuno» (MODELO-DATOS §2.5) para la confirmación de borrado (H-045). */
     val recordCount: Int,
@@ -163,7 +171,8 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
         container.fasts.observeFasts(),
         container.records.observeMeasurements(fastId),
         container.records.observeBloodPressure(fastId),
-    ) { _, _, _ -> }.map { load() }
+        container.records.observeIntakes(fastId),
+    ) { _, _, _, _ -> }.map { load() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private suspend fun load(): FastDetail? {
@@ -192,6 +201,7 @@ class FastDetailViewModel(private val container: AppContainer, private val fastI
             metricTypes = c.catalog.metricTypes().associateBy { it.code },
             symptomNames = c.catalog.symptomTypes().associate { it.code to it.name },
             intakeNames = intakeTypes.associate { it.code to it.name },
+            intakeTypes = intakeTypes.associateBy { it.code },
             productNames = c.catalog.products().associate { it.code to it.name },
             recordCount = records.count(),
             weight = c.catalog.metricType(MetricType.WEIGHT_CODE)?.let { WeightChange.of(source.fast, records.measurements) to it },
@@ -243,6 +253,7 @@ fun FastDetailScreen(
         Text(summary, style = MaterialTheme.typography.bodyLarge)
         d.weight?.let { (change, type) -> weightChangeText(change, type)?.let { Text(it, style = MaterialTheme.typography.bodyLarge) } }
         fast.notes?.let { Text(stringResource(R.string.history_notes, it), style = MaterialTheme.typography.bodyLarge) }
+        fast.startedWithWarnings?.takeIf { it.isNotEmpty() }?.let { StartedWithWarnings(it) }
         SecondaryButton(stringResource(R.string.export_action), onClick = onExport)
         ListRow(
             stringResource(R.string.measurements_title),
@@ -256,7 +267,12 @@ fun FastDetailScreen(
             if (day.totals.isNotEmpty()) {
                 Text(stringResource(R.string.history_totals, day.totals.map { totalText(it) }.joinToString(" · ")), style = MaterialTheme.typography.bodyLarge)
             }
-            day.entries.forEach { TimelineItem(fast, it, d, onOpenEntry) }
+            // H-051: las ingestas de un mismo grupo van en la fila de la primera.
+            val groups = day.entries.filterIsInstance<TimelineEntry.OfIntake>().filter { it.value.groupId != null }.groupBy { it.value.groupId }
+            day.entries.forEach { entry ->
+                val group = (entry as? TimelineEntry.OfIntake)?.value?.groupId?.let { groups[it] }
+                if (group == null || group.first() == entry) TimelineItem(fast, entry, d, onOpenEntry, group.orEmpty().drop(1).map { it.value })
+            }
         }
     }
 
@@ -331,7 +347,7 @@ fun FastMenu(onChange: (() -> Unit)?, onDelete: () -> Unit) {
 
 /** ItemLineaTiempo: hora + hora del ayuno + tipo + valor. */
 @Composable
-private fun TimelineItem(fast: Fast, entry: TimelineEntry, d: FastDetail, onOpenEntry: (EntryKind, String) -> Unit) {
+private fun TimelineItem(fast: Fast, entry: TimelineEntry, d: FastDetail, onOpenEntry: (EntryKind, String) -> Unit, joined: List<Intake> = emptyList()) {
     val hour = FastClock.fastHour(fast, entry.at)?.let { " · " + stringResource(R.string.fast_hour, it) }.orEmpty()
     // H-048: mediciones y presiones se abren para corregirlas; el resto de entradas, cuando se complete H-034.
     val open: (() -> Unit)? = when (entry) {
@@ -342,7 +358,62 @@ private fun TimelineItem(fast: Fast, entry: TimelineEntry, d: FastDetail, onOpen
     val base = Modifier.fillMaxWidth().heightIn(min = Dimens.touchMin)
     Column((if (open != null) base.clickable(onClick = open) else base).padding(vertical = Dimens.spaceXs).semantics(mergeDescendants = true) {}) {
         Text(Formats.time(entry.at) + hour, style = MaterialTheme.typography.bodyMedium)
-        Text(entryText(entry, d), style = MaterialTheme.typography.titleMedium)
+        val with = joined.map { stringResource(R.string.history_intake_with, intakeText(it, d)) }
+        val text = (listOf(entryText(entry, d)) + with).joinToString(" ")
+        Text(text, style = MaterialTheme.typography.titleMedium)
+        if (entry.isBaseline()) Badge(stringResource(R.string.badge_baseline))
+    }
+}
+
+private fun TimelineEntry.isBaseline(): Boolean = when (this) {
+    is TimelineEntry.OfMeasurement -> value.isBaseline
+    is TimelineEntry.OfBloodPressure -> value.isBaseline
+    else -> false
+}
+
+/** H-050: como se anotó («1 pizca») y, si era una medida, su equivalente («0,3 g»). */
+@Composable
+private fun intakeText(intake: Intake, d: FastDetail): String {
+    val type = d.intakeTypes[intake.intakeTypeCode]
+    val name = type?.name ?: intake.intakeTypeCode
+    val unit = type?.units?.firstOrNull { it.code == intake.unitEntered }
+    return if (unit == null) {
+        "$name ${Formats.number(intake.amount, 2)} ${intake.unit}"
+    } else {
+        "$name ${measureAmount(intake.amountEntered, unit.name)} · ${Formats.number(intake.amount, 2)} ${intake.unit}"
+    }
+}
+
+/** «1 vaso», pero «¼ de cucharadita» y «2 × ¼ de cucharadita»: una medida que empieza por cifra no lleva un 1 delante. */
+fun measureAmount(amount: Double, unitName: String): String {
+    val numericName = unitName.firstOrNull()?.let { it.isDigit() || it in "¼½¾" } == true
+    return when {
+        !numericName -> "${Formats.quarters(amount)} $unitName"
+        amount == 1.0 -> unitName
+        else -> "${Formats.quarters(amount)} × $unitName"
+    }
+}
+
+/** H-057: lo que faltaba al empezar, agrupado y solo de lectura. */
+@Composable
+private fun StartedWithWarnings(warnings: List<StartWarning>) {
+    var open by remember { mutableStateOf(false) }
+    ListRow(
+        stringResource(R.string.history_started_with_warnings, warnings.size),
+        null,
+        onClick = { open = !open },
+        trailing = { Icon(if (open) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, contentDescription = null) },
+    )
+    if (open) {
+        warnings.groupBy { it.kind }.forEach { (kind, items) ->
+            val title = when (kind) {
+                WarningKind.PLACEHOLDER_RULE -> R.string.review_rules
+                WarningKind.GOAL_WITHOUT_AMOUNT -> R.string.review_goals
+                WarningKind.UNCHECKED_ITEM -> R.string.review_checklist
+            }
+            SectionTitle(stringResource(title, items.size))
+            items.forEach { Text(it.text, style = MaterialTheme.typography.bodyLarge) }
+        }
     }
 }
 
@@ -360,10 +431,11 @@ private fun entryText(entry: TimelineEntry, d: FastDetail): String {
             val r = entry.value
             val name = d.metricNames[com.ayuno.domain.model.MetricType.BLOOD_PRESSURE_CODE].orEmpty()
             r.notDoneReason?.let { "$name · $notDone · $it" }
-                ?: "$name ${r.systolic}/${r.diastolic}" + (r.pulse?.let { " · ${stringResource(R.string.history_pulse, it)}" } ?: "") + " · " + positionText(r.position)
+                ?: ("$name ${r.systolic}/${r.diastolic}" + (r.pulse?.let { " · ${stringResource(R.string.history_pulse, it)}" } ?: "") + " · " + positionText(r.position) +
+                    standingText(r)?.let { " · $it" }.orEmpty())
         }
         is TimelineEntry.OfSymptom -> "${d.symptomNames[entry.value.symptomTypeCode] ?: entry.value.symptomTypeCode} ${entry.value.severity}/10"
-        is TimelineEntry.OfIntake -> "${d.intakeNames[entry.value.intakeTypeCode] ?: entry.value.intakeTypeCode} ${Formats.number(entry.value.amount, 2)} ${entry.value.unit}"
+        is TimelineEntry.OfIntake -> intakeText(entry.value, d)
         is TimelineEntry.OfProductLog -> {
             val log = entry.value
             val name = d.productNames[log.productCode] ?: log.productCode
@@ -387,6 +459,14 @@ private fun entryText(entry: TimelineEntry, d: FastDetail): String {
         is TimelineEntry.OfRefeed -> stringResource(R.string.history_refeed_step, entry.step?.description.orEmpty())
         is TimelineEntry.OfMeal -> stringResource(R.string.history_meal, entry.value.description, toleranceText(entry.value.tolerance, entry.value.toleranceDetail))
     }
+}
+
+/** H-053: segundos de una lectura de pie enlazada, o «tomada sin esperar». */
+@Composable
+fun standingText(r: BloodPressureReading): String? = when {
+    r.position != Position.STANDING || r.pairedReadingId == null || r.notDoneReason != null -> null
+    r.secondsStanding == null -> stringResource(R.string.standing_form_without_waiting)
+    else -> stringResource(R.string.standing_form_seconds, r.secondsStanding!!)
 }
 
 @Composable

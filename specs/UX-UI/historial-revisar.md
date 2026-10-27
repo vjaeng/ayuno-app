@@ -207,3 +207,5 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 *Cambio EV-005 (2026-10-23):* línea de tiempo, «Mediciones de este ayuno» y el Detalle de entrada muestran las escalas con su palabra y número; corregir una de ellas usa los botones de palabras (H-049). Mockup: https://claude.ai/artifact/ERYg3yGCNPWG7x6tdGkjCq
 
 *Cambio EV-006 (2026-10-26):* el detalle de un ayuno empezado con pendientes lo dice en la cabecera y lista lo que faltaba (H-057). Las ingestas se muestran como se anotaron y con su equivalente; las de un mismo grupo, juntas (H-050, H-051). Las presiones de pie muestran sus segundos o «tomada sin esperar» (H-053). Mediciones y presiones se pueden marcar «de partida» desde el menú ⋮ del Detalle de entrada (H-055). La corrección de ingestas sigue pendiente de H-034.
+
+*Cambio EV-006, construcción (2026-10-26):* las ingestas de un grupo se leen «Agua 1 vaso · 250 mL con Sal ¼ de cucharadita · 1,25 g»; «Empezó con pendientes (N)» se despliega en el sitio, agrupado como en la revisión previa. «Marcar como de partida» confirma con Snackbar «Presión arterial 118/76 marcada como de partida».

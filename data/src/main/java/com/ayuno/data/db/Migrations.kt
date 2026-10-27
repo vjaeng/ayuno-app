@@ -114,8 +114,57 @@ object Migrations {
         }
     }
 
+    /**
+     * Versión 8 → 9 (EV-006, D-22 a D-25): medidas caseras, botón rápido, lo tecleado de cada ingesta, metas sin cifra
+     * con pregunta, tiempos de pie, marca de partida, condiciones entre lecturas, marca «de ejemplo» y pendientes al
+     * empezar. Solo añade: las filas existentes conservan sus valores (lo tecleado de cada ingesta es su cantidad y
+     * unidad), así que un ayuno en curso queda intacto. `intake_goal` se reconstruye porque SQLite no deja quitar el
+     * NOT NULL de `daily_amount`.
+     */
+    class From8To9(private val context: Context, private val clock: Clock) : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            ALTER_V9.forEach(db::execSQL)
+            db.execSQL("UPDATE `intake` SET `amount_entered` = `amount`, `unit_entered` = `unit`")
+            db.execSQL("UPDATE `plan_metric` SET `standing_check_seconds` = '[60,180]' WHERE `metric_type_code` = 'blood_pressure'")
+            GOALS_V9.forEach(db::execSQL)
+            AyunoDatabase.createOwnerTriggers(db, listOf("intake_goal"))
+            val now = LocalTimes.format(LocalTimes.now(clock))
+            CatalogSeed.insertHouseholdUnits(db, context, now)
+            CatalogSeed.updateExampleForReview(db, context, now)
+        }
+
+        private companion object {
+            val ALTER_V9 = listOf(
+                """CREATE TABLE IF NOT EXISTS `household_unit` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `intake_type_code` TEXT NOT NULL, `name` TEXT NOT NULL, `equivalent` REAL NOT NULL, `imprecise` INTEGER NOT NULL, `position` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+                """CREATE INDEX IF NOT EXISTS `index_household_unit_intake_type_code` ON `household_unit` (`intake_type_code`)""",
+                "ALTER TABLE `intake_type` ADD COLUMN `quick_unit_code` TEXT",
+                "ALTER TABLE `intake` ADD COLUMN `amount_entered` REAL NOT NULL DEFAULT 0",
+                "ALTER TABLE `intake` ADD COLUMN `unit_entered` TEXT NOT NULL DEFAULT ''",
+                "ALTER TABLE `intake` ADD COLUMN `group_id` TEXT",
+                "ALTER TABLE `plan_metric` ADD COLUMN `standing_check_seconds` TEXT",
+                "ALTER TABLE `rule` ADD COLUMN `direction` TEXT",
+                "ALTER TABLE `rule` ADD COLUMN `trend_count` INTEGER",
+                "ALTER TABLE `rule` ADD COLUMN `trend_of` TEXT",
+                "ALTER TABLE `rule` ADD COLUMN `goal_percent` REAL",
+                "ALTER TABLE `rule` ADD COLUMN `is_placeholder` INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE `fast` ADD COLUMN `started_with_warnings` TEXT",
+                "ALTER TABLE `measurement` ADD COLUMN `is_baseline` INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE `blood_pressure_reading` ADD COLUMN `seconds_standing` INTEGER",
+                "ALTER TABLE `blood_pressure_reading` ADD COLUMN `is_baseline` INTEGER NOT NULL DEFAULT 0",
+            )
+            val GOALS_V9 = listOf(
+                """CREATE TABLE `intake_goal_v9` (`id` TEXT NOT NULL, `template_id` TEXT, `fast_id` TEXT, `intake_type_code` TEXT NOT NULL, `daily_amount` REAL, `unit` TEXT NOT NULL, `nudge_after_hours` REAL, `created_at` TEXT NOT NULL, `updated_at` TEXT, `deleted_at` TEXT, PRIMARY KEY(`id`))""",
+                "INSERT INTO `intake_goal_v9` (`id`, `template_id`, `fast_id`, `intake_type_code`, `daily_amount`, `unit`, `created_at`, `updated_at`, `deleted_at`) SELECT `id`, `template_id`, `fast_id`, `intake_type_code`, `daily_amount`, `unit`, `created_at`, `updated_at`, `deleted_at` FROM `intake_goal` ORDER BY rowid",
+                "DROP TABLE `intake_goal`",
+                "ALTER TABLE `intake_goal_v9` RENAME TO `intake_goal`",
+                "CREATE INDEX IF NOT EXISTS `index_intake_goal_template_id` ON `intake_goal` (`template_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_intake_goal_fast_id` ON `intake_goal` (`fast_id`)",
+            )
+        }
+    }
+
     fun all(context: Context, clock: Clock): Array<Migration> = arrayOf(
         From1To2(context, clock), From2To3, From3To4, From4To5(context, clock), From5To6(context, clock), From6To7(context, clock),
-        From7To8(context, clock),
+        From7To8(context, clock), From8To9(context, clock),
     )
 }

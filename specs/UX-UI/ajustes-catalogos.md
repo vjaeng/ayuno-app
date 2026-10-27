@@ -169,3 +169,5 @@
 *Implementación (EV-005, 2026-10-23):* el orden se cambia con el botón «Subir» de cada palabra en lugar de arrastrar por el asa ⋮⋮ (mismo resultado con un objetivo de 48 pt, sin gesto de arrastre). Los errores de rango usan un único mensaje («El número de cada palabra debe estar dentro del rango válido. Si cambias el rango, cambia antes las palabras que quedan fuera.»), y un número sin escribir da «Escribe el número de cada palabra».
 
 *Cambio EV-006 (2026-10-26):* el editor de cada líquido añade «Medidas caseras» (nombre, equivalencia en la unidad del líquido, «imprecisa», orden con «Subir», alta y baja) y «Botón rápido en Inicio» (H-050, H-051). De fábrica: vaso 250 mL y taza 240 mL (agua e infusión); cucharadita rasa 5 g, ¼ de cucharadita 1.25 g y pizca 0.3 g, imprecisa (sal); botón rápido agua → vaso, sal → pizca. Son conversiones de cocina, no dosis. Mismo patrón que «Palabras para elegir» (EV-005).
+
+*Cambio EV-006, construcción (2026-10-26):* el botón rápido se elige entre las medidas de la lista del editor, también las recién añadidas (aún sin código); guardar sin tocar las medidas las conserva con su botón.

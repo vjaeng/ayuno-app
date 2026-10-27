@@ -15,6 +15,12 @@ import com.ayuno.domain.model.Measurement
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Rule
 import com.ayuno.domain.model.RuleConditionKind
+import com.ayuno.domain.model.RuleDirection
+import com.ayuno.domain.model.TrendOf
+import com.ayuno.domain.model.BpComponent
+import com.ayuno.domain.model.Position
+import com.ayuno.domain.derived.Baseline
+import com.ayuno.domain.derived.StandingMoment
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -34,6 +40,8 @@ data class RuleContext(
     val intakeTypes: List<IntakeType> = emptyList(),
     val goals: List<IntakeGoal> = emptyList(),
     val now: LocalDateTime? = null,
+    /** H-053: tiempos de pie del plan (`plan_metric.standing_check_seconds` de la presión), para el momento de pie. */
+    val standingCheckSeconds: List<Int>? = null,
 )
 
 /**
@@ -46,6 +54,12 @@ data class RuleContext(
  * - Síntoma de alarma (H-021): salta por cada síntoma de alarma nuevo, con cualquier valor de las mediciones.
  * - Ingesta bajo la meta (H-022): a partir de su hora, una vez al día, si el total del día no llega a la meta.
  * - Manual (H-023): no la evalúa el motor; la dispara el botón «algo no va bien».
+ *
+ * Condiciones entre lecturas (EV-006, D-24), con los mismos episodios:
+ * - Diferencia de pareja (H-054): de pie − sentado en cada lectura de pie enlazada.
+ * - Cambio desde la partida (H-055): contra el valor de partida; la propia lectura de partida nunca cuenta.
+ * - Tendencia (H-056): N lecturas seguidas que suben (o bajan) cada vez; una igual corta la racha. En la diferencia
+ *   de pareja, cada momento de pie se compara con su igual.
  */
 object RuleEngine {
 
@@ -59,6 +73,9 @@ object RuleEngine {
                 RuleConditionKind.ALARM_SYMPTOM -> evaluateSymptom(rule, context)
                 RuleConditionKind.INTAKE_BELOW_GOAL -> evaluateIntake(rule, context)
                 RuleConditionKind.MANUAL -> null
+                RuleConditionKind.PAIR_DIFFERENCE -> evaluatePairDifference(rule, context)
+                RuleConditionKind.CHANGE_FROM_BASELINE -> evaluateBaseline(rule, context)
+                RuleConditionKind.TREND -> evaluateTrend(rule, context)
             }
         }
 
@@ -107,10 +124,97 @@ object RuleEngine {
                 context.intakeTypes.firstOrNull { it.code == code }?.let { DailyTotal(it, 0.0, goal, null) }
             } ?: return null
         val reached = DailyTotals.amountForGoal(total) ?: return null
-        val goal = total.goal ?: return null
-        if (reached >= goal.dailyAmount) return null
+        // Meta sin cifra: la regla no se evalúa (D-25).
+        val amount = total.goal?.dailyAmount ?: return null
+        if (reached >= amount * (rule.goalPercent ?: 100.0) / 100.0) return null
         val todays = context.intakes.filter { it.intakeTypeCode == code && it.takenAt.toLocalDate() == now.toLocalDate() }.map { it.id }
         return RuleHit(rule, todays)
+    }
+
+    /** Punto de una serie: [ids] son las entradas que lo forman (la sentada y la de pie en una pareja). */
+    private data class Point(val ids: List<String>, val takenAt: LocalDateTime, val value: Double)
+
+    /**
+     * Episodio sobre una serie (Q-01): [run] es la racha final que cumple; no salta si ya saltó con alguna lectura de
+     * esa racha.
+     */
+    private fun episodeHit(rule: Rule, context: RuleContext, series: List<Point>, run: List<Point>, triggers: List<Point>): RuleHit? {
+        if (run.isEmpty()) return null
+        val previous = context.alerts.filter { it.ruleId == rule.id }.maxByOrNull { it.firedAt }
+        if (previous != null) {
+            val lastTrigger = series.filter { p -> p.ids.any { it in previous.triggerEntryIds } }.maxOfOrNull { it.takenAt } ?: previous.firedAt
+            if (!run.first().takenAt.isAfter(lastTrigger)) return null
+        }
+        return RuleHit(rule, triggers.flatMap { it.ids }.distinct())
+    }
+
+    private fun compare(direction: RuleDirection?, value: Double, limit: Double): Boolean? = when (direction) {
+        RuleDirection.ABOVE -> value > limit
+        RuleDirection.BELOW -> value < limit
+        null -> null
+    }
+
+    /** Diferencias de pareja de [component] por lectura de pie enlazada, en orden. */
+    private fun pairPoints(rule: Rule, context: RuleContext, component: BpComponent): List<Pair<BloodPressureReading, Point>> {
+        val byId = context.bloodPressure.associateBy { it.id }
+        return context.bloodPressure
+            .filter { it.position == Position.STANDING && it.notDoneReason == null && (!rule.filterOnWaking || it.onWaking) && inStage(rule, context, it.takenAt) }
+            .mapNotNull { standing ->
+                val sitting = byId[standing.pairedReadingId ?: return@mapNotNull null] ?: return@mapNotNull null
+                val diff = StandingMoment.difference(standing, sitting, component) ?: return@mapNotNull null
+                standing to Point(listOf(sitting.id, standing.id), standing.takenAt, diff.toDouble())
+            }
+            .sortedBy { it.second.takenAt }
+    }
+
+    private fun evaluatePairDifference(rule: Rule, context: RuleContext): RuleHit? {
+        val threshold = rule.threshold ?: return null
+        val component = rule.bpComponent ?: return null
+        val series = pairPoints(rule, context, component).map { it.second }
+        val run = series.takeLastWhile { compare(rule.direction, it.value, threshold) == true }
+        return episodeHit(rule, context, series, run, listOfNotNull(run.lastOrNull()))
+    }
+
+    private fun evaluateBaseline(rule: Rule, context: RuleContext): RuleHit? {
+        val distance = rule.threshold ?: return null
+        val code = rule.metricTypeCode ?: return null
+        val (baseId, base) = if (code == MetricType.BLOOD_PRESSURE_CODE) {
+            val component = rule.bpComponent ?: return null
+            val reading = Baseline.bloodPressure(context.bloodPressure, rule.filterPosition) ?: return null
+            reading.id to (reading.value(component) ?: return null).toDouble()
+        } else {
+            val m = Baseline.measurement(context.measurements, code) ?: return null
+            m.id to m.valueNum!!
+        }
+        val series = readingsFor(rule, context).filter { it.id != baseId }.sortedBy { it.takenAt }.map { Point(listOf(it.id), it.takenAt, it.value) }
+        val limit = when (rule.direction) {
+            RuleDirection.ABOVE -> base + distance
+            RuleDirection.BELOW -> base - distance
+            null -> return null
+        }
+        val run = series.takeLastWhile { compare(rule.direction, it.value, limit) == true }
+        return episodeHit(rule, context, series, run, listOfNotNull(run.lastOrNull()))
+    }
+
+    private fun evaluateTrend(rule: Rule, context: RuleContext): RuleHit? {
+        val count = (rule.trendCount ?: Rule.MIN_TREND_COUNT).coerceAtLeast(Rule.MIN_TREND_COUNT)
+        val groups: List<List<Point>> = if (rule.trendOf == TrendOf.PAIR_DIFFERENCE) {
+            val component = rule.bpComponent ?: return null
+            pairPoints(rule, context, component)
+                .groupBy { (standing, _) -> StandingMoment.of(standing, context.standingCheckSeconds) }
+                .values.map { list -> list.map { it.second } }
+        } else {
+            listOf(readingsFor(rule, context).sortedBy { it.takenAt }.map { Point(listOf(it.id), it.takenAt, it.value) })
+        }
+        return groups.firstNotNullOfOrNull { series ->
+            // Racha final: cada punto sube (o baja) respecto al anterior; una igual la corta.
+            var start = series.size - 1
+            while (start > 0 && compare(rule.direction, series[start].value, series[start - 1].value) == true) start--
+            val streak = if (series.isEmpty()) emptyList() else series.subList(start, series.size)
+            if (streak.size < count) return@firstNotNullOfOrNull null
+            // Episodio: la racha cuenta desde el punto que la completa.
+            episodeHit(rule, context, series, streak.drop(count - 1), streak.takeLast(count))
+        }
     }
 
     private fun inStage(rule: Rule, context: RuleContext, time: LocalDateTime): Boolean =

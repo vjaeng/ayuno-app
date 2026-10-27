@@ -141,7 +141,7 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - `trend`: se rearma cuando la racha se corta (una lectura igual o en sentido contrario).
 - `intake_below_goal` con `goal_percent`: compara contra el porcentaje de la meta (nulo = 100, el comportamiento anterior) y sigue rearmándose al cambiar de día.
 
-Marcar otra lectura «de partida» con el ayuno en curso vuelve a evaluar `change_from_baseline` en la misma transacción. Las alertas ya registradas no cambian (como D-20). Una regla con `is_placeholder` o sin cifra sigue sin poder activarse (`RuleValidator`), así que el motor nunca la ve. Ahora hay ocho tipos de condición; sigue sin justificarse una biblioteca externa.
+Marcar otra lectura «de partida» con el ayuno en curso vuelve a evaluar `change_from_baseline` en la misma transacción. Las alertas ya registradas no cambian (como D-20). Una regla sin cifra sigue sin poder activarse (`RuleValidator`), así que el motor nunca la ve. `is_placeholder` no cambia la evaluación: la regla manual del ejemplo viene activa y «de ejemplo», y la revisión previa la señala. Ahora hay ocho tipos de condición; sigue sin justificarse una biblioteca externa.
 
 
 ## ADR-007: Formato de intercambio: JSON canónico con JSON Schema

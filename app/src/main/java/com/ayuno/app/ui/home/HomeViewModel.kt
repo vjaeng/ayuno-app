@@ -6,6 +6,9 @@ import com.ayuno.app.di.AppContainer
 import com.ayuno.app.ui.format.Formats
 import com.ayuno.domain.derived.DailyTotal
 import com.ayuno.domain.derived.DailyTotals
+import com.ayuno.domain.derived.ExpectedIntake
+import com.ayuno.domain.model.EntryKind
+import com.ayuno.domain.usecase.RecordResult
 import com.ayuno.domain.derived.FastClock
 import com.ayuno.domain.derived.Milestone
 import com.ayuno.domain.derived.Pending
@@ -42,6 +45,19 @@ import java.time.LocalDateTime
 data class NextPending(val kind: PendingKind, val label: String, val code: String, val at: LocalDateTime, val late: Boolean)
 data class LastMeasurement(val metricName: String, val value: String, val at: LocalDateTime)
 
+/** BotonRapido de un líquido con medida de botón (H-051). */
+data class QuickButtonUi(val intakeTypeCode: String, val typeName: String, val unitCode: String, val unitName: String)
+
+/** Snackbar tras guardar con el BotonRapido: «Sal: +1 pizca (0.3 g)» y su «Deshacer». */
+data class QuickSaved(val intakeId: String, val typeName: String, val unitName: String, val amount: Double, val unit: String)
+
+/** Avisos de una sola vez que la pantalla consume. */
+sealed interface HomeEvent {
+    data class OpenAlert(val alertId: String) : HomeEvent
+    data class OpenReview(val fastId: String) : HomeEvent
+    data class Saved(val saved: QuickSaved) : HomeEvent
+}
+
 sealed interface HomeUiState {
     data object Loading : HomeUiState
     data object Error : HomeUiState
@@ -71,6 +87,9 @@ sealed interface HomeUiState {
         val undecidedAlertId: String?,
         /** H-048: mediciones y presiones visibles del ayuno. */
         val measurementCount: Int = 0,
+        /** H-006 (EV-006): «a esta hora» por tipo de la meta, en la unidad de la meta; solo con silencio nocturno. */
+        val expected: Map<String, Double> = emptyMap(),
+        val quickButtons: List<QuickButtonUi> = emptyList(),
     ) : HomeUiState
 }
 
@@ -112,6 +131,8 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
                     container.records.observeProductLogs(current.id).map { },
                     container.alerts.observeAlerts(current.id).map { },
                     container.catalog.observeMetricTypes().map { },
+                    container.catalog.observeIntakeTypes().map { },
+                    container.settings.observe().map { },
                 )
                 merge(*changes.toTypedArray()).map { inProgress(current.id) }
             }
@@ -148,6 +169,10 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
         val lastReading = readings.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
             ?.let { r -> LastMeasurement(names[MetricType.BLOOD_PRESSURE_CODE] ?: "", "${r.systolic}/${r.diastolic} mmHg", r.takenAt) }
         val stage = StageWindows.stageAt(StageWindows.of(fast, source.plan), now)
+        val intakeTypes = c.catalog.intakeTypes()
+        val settings = c.settings.get()
+        val expected = source.plan.goals.mapNotNull { goal -> ExpectedIntake.at(goal, settings, now)?.let { goal.intakeTypeCode to it } }.toMap()
+        val quick = intakeTypes.mapNotNull { t -> t.quickUnit?.let { QuickButtonUi(t.code, t.name, it.code, it.name) } }
         return HomeUiState.InProgress(
             fast = fast,
             elapsed = FastClock.elapsed(fast, nowInstant) ?: Duration.ZERO,
@@ -156,16 +181,61 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
             milestones = FastClock.milestones(fast, nowInstant),
             next = next,
             last = listOfNotNull(lastMeasurement, lastReading).maxByOrNull { it.at },
-            totals = DailyTotals.of(now.toLocalDate(), c.records.intakes(fastId), c.catalog.intakeTypes(), source.plan.goals),
+            totals = DailyTotals.of(now.toLocalDate(), c.records.intakes(fastId), intakeTypes, source.plan.goals),
             notices = source.plan.notices.filter { stage != null && stage in it.stageKinds }.map { it.text },
             undecidedAlertId = c.alerts.alerts(fastId).firstOrNull { it.userChoice == null }?.id,
             measurementCount = measurements.size + readings.size,
+            expected = expected,
+            quickButtons = quick,
         )
     }
 
+    private val _events = MutableStateFlow<HomeEvent?>(null)
+    val events: StateFlow<HomeEvent?> = _events.asStateFlow()
+    fun consumeEvent() { _events.value = null }
+
+    /** Tipo cuyo BotonRapido está guardando: deshabilitado hasta confirmar la escritura. */
+    private val _saving = MutableStateFlow<String?>(null)
+    val saving: StateFlow<String?> = _saving.asStateFlow()
+
+    /** H-051: un toque guarda 1 de la medida del botón; el Snackbar solo aparece tras confirmar la escritura. */
+    fun quickIntake(fastId: String, button: QuickButtonUi) {
+        if (_saving.value != null) return
+        _saving.value = button.intakeTypeCode
+        viewModelScope.launch {
+            try {
+                when (val result = container.recordQuickIntake(fastId, button.intakeTypeCode)) {
+                    is Outcome.Ok -> {
+                        val saved = result.value as RecordResult.Saved
+                        _errors.value = emptyList()
+                        refresh.value++
+                        container.reminders.reschedule()
+                        _events.value = saved.alerts.firstOrNull()?.let { HomeEvent.OpenAlert(it.id) }
+                            ?: HomeEvent.Saved(QuickSaved(saved.entry.id, button.typeName, button.unitName, saved.entry.amount, saved.entry.unit))
+                    }
+                    is Outcome.Invalid -> _errors.value = result.errors
+                }
+            } finally {
+                _saving.value = null
+            }
+        }
+    }
+
+    /** «Deshacer»: borrado blando con bitácora; las alertas que hubiera disparado se quedan (S8). */
+    fun undoQuickIntake(intakeId: String) = execute { container.setEntryDeleted(EntryKind.INTAKE, intakeId, true) }
+
     fun now(): LocalDateTime = LocalTimes.now(container.clock)
 
-    fun startFast(fastId: String) = execute { container.startFastAskingWeight(fastId) }
+    /** H-005, H-057: con pendientes en la revisión previa, abre la revisión en vez de empezar. */
+    fun startFast(fastId: String) {
+        viewModelScope.launch {
+            when (val result = container.startFastAskingWeight(fastId)) {
+                is Outcome.Ok -> { _errors.value = emptyList(); refresh.value++; container.reminders.reschedule() }
+                is Outcome.Invalid ->
+                    if (ValidationError.PRE_START_REVIEW_PENDING in result.errors) _events.value = HomeEvent.OpenReview(fastId) else _errors.value = result.errors
+            }
+        }
+    }
 
     /** H-047: ayuno al que ofrecer el peso al empezar, si «Peso» está activo en el catálogo. */
     val startWeightPrompt: StateFlow<String?> = combine(container.startWeightPrompt, container.catalog.observeMetricTypes()) { fastId, types ->

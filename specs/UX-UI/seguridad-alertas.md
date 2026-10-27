@@ -19,7 +19,7 @@
 │ • Si a las 14:00 llevas menos    │
 │   del 50 % de tu meta de sal:    │
 │   aviso.                         │
-│ • Si el pulso sube más de 30 al  │
+│ • Si tu pulso sube más de 30 al  │
 │   ponerme de pie: aviso y medir  │
 │   de nuevo en 30 minutos.        │
 │──────────────────────────────────│
@@ -103,4 +103,6 @@
 
 *Cambio EV-005 (2026-10-23):* en «Por:», una lectura de una escala con palabras se muestra con su palabra y número (H-049). El umbral de la regla sigue siendo un número ([reglas-editar.md](reglas-editar.md) sin cambios, decisión E5-3).
 
-*Cambio EV-006 (2026-10-26):* las condiciones nuevas se leen como frase completa en la pantalla de Seguridad («Si el pulso sube más de 30 al ponerme de pie…», «Si el pulso sentado queda más de 15 por encima de mi valor de partida…», «Si el pulso sube en 3 lecturas seguidas…», «…menos del 50 % de tu meta de sal…») (H-028); el «Por:» de su aviso o alerta muestra la pareja, el valor de partida o la racha que la disparó. Ninguna frase usa colores por valor.
+*Cambio EV-006 (2026-10-26):* las condiciones nuevas se leen como frase completa en la pantalla de Seguridad («Si tu pulso sube más de 30 al ponerme de pie…», «Si tu pulso sentado queda más de 15 por encima de mi valor de partida…», «Si tu pulso sube en 3 lecturas seguidas…», «…menos del 50 % de tu meta de sal…») (H-028); el «Por:» de su aviso o alerta muestra la pareja, el valor de partida o la racha que la disparó. Ninguna frase usa colores por valor.
+
+*Cambio EV-006, construcción (2026-10-26):* las frases con verbo dicen «Si tu pulso…» en lugar de «Si el pulso…»: «tu» sirve para cualquier nombre del catálogo sin adivinar su género y concuerda con «tu valor de partida» y «tu meta». En «Por:», una lectura de pie sin segundos se rotula «sin esperar» («sentado 83 → de pie 126 sin esperar: +43»).

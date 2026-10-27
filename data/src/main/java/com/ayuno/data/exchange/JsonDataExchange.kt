@@ -76,7 +76,7 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
                 Kind.BOOLEAN -> JsonPrimitive(c.getLong(i) != 0L)
                 Kind.INTEGER -> JsonPrimitive(c.getLong(i))
                 Kind.REAL -> JsonPrimitive(c.getDouble(i))
-                Kind.STRING_LIST, Kind.NUMBER_LIST -> json.parseToJsonElement(c.getString(i))
+                Kind.STRING_LIST, Kind.NUMBER_LIST, Kind.INTEGER_LIST, Kind.OBJECT_LIST -> json.parseToJsonElement(c.getString(i))
                 else -> JsonPrimitive(c.getString(i))
             }
         }
@@ -233,7 +233,8 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
                 Kind.REAL -> values.put(col.name, (v as JsonPrimitive).doubleOrNull)
                 // Mismo texto que escriben los repositorios (`[12.0,24.0]`, `["fast"]`).
                 Kind.NUMBER_LIST -> values.put(col.name, (v as JsonArray).joinToString(",", "[", "]") { (it as JsonPrimitive).content.toDouble().toString() })
-                Kind.STRING_LIST -> values.put(col.name, JsonArray(v as JsonArray).toString())
+                Kind.STRING_LIST, Kind.OBJECT_LIST -> values.put(col.name, JsonArray(v as JsonArray).toString())
+                Kind.INTEGER_LIST -> values.put(col.name, (v as JsonArray).joinToString(",", "[", "]") { (it as JsonPrimitive).content })
                 else -> values.put(col.name, (v as JsonPrimitive).content)
             }
         }
@@ -247,6 +248,8 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
         val version = (root["schema_version"] as? JsonPrimitive)?.contentOrNull ?: return reject(ImportProblem.NotOurFile)
         val major = version.substringBefore('.').toIntOrNull() ?: return reject(ImportProblem.NotOurFile)
         if (major > ExchangeFormat.MAJOR) return reject(ImportProblem.NewerVersion(version))
+        // EV-006: un 1.0 o 1.1 no trae los campos de 1.2; toman su valor por defecto antes de validar.
+        val beforeV12 = major == 1 && (version.substringAfter('.', "0").toIntOrNull() ?: 0) < 2
 
         val ignored = mutableListOf<String>()
         val listKeys = ExchangeFormat.TABLES.filterNot { it.catalog }.map { it.key }.toSet()
@@ -263,7 +266,8 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
             val names = cols.map { it.name }.toSet()
             val list = mutableListOf<JsonObject>()
             array.forEachIndexed { i, item ->
-                val row = item as? JsonObject ?: return reject(ImportProblem.InvalidRow(table.key, i + 1, table.key))
+                val raw = item as? JsonObject ?: return reject(ImportProblem.InvalidRow(table.key, i + 1, table.key))
+                val row = if (beforeV12) withDefaults(table, cols, raw) else raw
                 row.keys.filter { it !in names }.forEach { ignored += "${table.key}.$it" }
                 cols.firstOrNull { !valid(table, it, row[it.name]) }?.let { return reject(ImportProblem.InvalidRow(table.key, i + 1, it.name)) }
                 if (table.planOwned && (row.isNull("template_id") == row.isNull("fast_id"))) return reject(ImportProblem.InvalidRow(table.key, i + 1, "template_id"))
@@ -287,6 +291,7 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
             }
         }
         metricOptionProblem(rows)?.let { return reject(it) }
+        ev006Problem(rows)?.let { return reject(it) }
         return ImportCheck.Ok(Parsed(rows, ignored.distinct()))
     }
 
@@ -335,6 +340,94 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
         return null
     }
 
+    private fun withDefaults(table: ExchangeFormat.Table, cols: List<Column>, row: JsonObject): JsonObject {
+        val missing = cols.filter { it.name !in row }.mapNotNull { col -> ExchangeFormat.defaultFor(table.table, col.name, row)?.let { col.name to it } }
+        return if (missing.isEmpty()) row else JsonObject(row + missing)
+    }
+
+    /**
+     * EV-006 (S1, importar.md): medidas con equivalencia > 0 y `code` único por tipo; lo tecleado de cada ingesta en la
+     * unidad del tipo o una medida suya, con cantidades > 0; botón rápido de una medida del tipo y nunca en uno que rompe
+     * el ayuno; reglas nuevas con su dirección, racha ≥ 3, tendencia de la diferencia solo en presión y porcentaje 1-100;
+     * segundos de pie ≥ 0 solo en una de pie enlazada a una sentada del mismo ayuno; como mucho una «de partida» por
+     * ayuno, medición y posición.
+     */
+    private fun ev006Problem(rows: Map<String, List<JsonObject>>): ImportProblem? {
+        fun JsonObject.str(key: String) = (this[key] as? JsonPrimitive)?.contentOrNull
+        fun JsonObject.num(key: String) = (this[key] as? JsonPrimitive)?.doubleOrNull
+        fun JsonObject.flag(key: String) = (this[key] as? JsonPrimitive)?.booleanOrNull == true
+        fun JsonObject.alive() = isNull("deleted_at")
+
+        // Tipos y medidas que quedarían: los del teléfono con los del archivo encima.
+        val typeUnit = db.query("SELECT code, unit, breaks_fast FROM intake_type").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), c.getString(1) to (c.getInt(2) == 1)) }
+        }.toMutableMap()
+        rows["intake_type"].orEmpty().forEach { typeUnit[it.str("code")!!] = it.str("unit")!! to it.flag("breaks_fast") }
+        data class Unit(val type: String, val code: String, val alive: Boolean)
+        val units = db.query("SELECT id, intake_type_code, code, deleted_at FROM household_unit").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), Unit(c.getString(1), c.getString(2), c.isNull(3))) }
+        }.toMutableMap()
+        rows["household_unit"].orEmpty().forEachIndexed { i, u ->
+            if ((u.num("equivalent") ?: 0.0) <= 0) return ImportProblem.InvalidRow("household_units", i + 1, "equivalent")
+            if (u.str("code").isNullOrBlank()) return ImportProblem.InvalidRow("household_units", i + 1, "code")
+            units[u.str("id")!!] = Unit(u.str("intake_type_code")!!, u.str("code")!!, u.alive())
+        }
+        val aliveCodes = units.values.filter { it.alive }.groupBy { it.type }
+        aliveCodes.values.forEach { list ->
+            list.groupBy { it.code }.values.firstOrNull { it.size > 1 }?.let { dup ->
+                val index = rows["household_unit"].orEmpty().indexOfFirst { it.str("code") == dup.first().code && it.str("intake_type_code") == dup.first().type }
+                return ImportProblem.InvalidRow("household_units", index.coerceAtLeast(0) + 1, "code")
+            }
+        }
+        fun hasUnit(type: String, code: String) = aliveCodes[type].orEmpty().any { it.code == code }
+        rows["intake_type"].orEmpty().forEachIndexed { i, t ->
+            val quick = t.str("quick_unit_code") ?: return@forEachIndexed
+            if (t.flag("breaks_fast") || !hasUnit(t.str("code")!!, quick)) return ImportProblem.InvalidRow("intake_types", i + 1, "quick_unit_code")
+        }
+        rows["intake"].orEmpty().forEachIndexed { i, r ->
+            if ((r.num("amount") ?: 0.0) <= 0) return ImportProblem.InvalidRow("intakes", i + 1, "amount")
+            if ((r.num("amount_entered") ?: 0.0) <= 0) return ImportProblem.InvalidRow("intakes", i + 1, "amount_entered")
+            val type = r.str("intake_type_code")!!
+            val entered = r.str("unit_entered")!!
+            val unit = typeUnit[type]?.first
+            // Unidades antiguas convertibles (p. ej. L frente a mL) siguen valiendo, como al anotar.
+            val ok = entered == unit || hasUnit(type, entered) || (unit != null && com.ayuno.domain.units.UnitConversions.canConvert(entered, unit))
+            if (!ok) return ImportProblem.InvalidRow("intakes", i + 1, "unit_entered")
+        }
+        val between = setOf("pair_difference", "change_from_baseline", "trend")
+        rows["rule"].orEmpty().forEachIndexed { i, r ->
+            val kind = r.str("condition_kind")
+            if (kind in between && r.str("direction") == null) return ImportProblem.InvalidRow("rules", i + 1, "direction")
+            if (kind == "trend" && (r.num("trend_count") ?: 0.0) < com.ayuno.domain.model.Rule.MIN_TREND_COUNT) return ImportProblem.InvalidRow("rules", i + 1, "trend_count")
+            if (r.str("trend_of") == "pair_difference" && r.str("metric_type_code") != MetricType.BLOOD_PRESSURE_CODE) return ImportProblem.InvalidRow("rules", i + 1, "trend_of")
+            r.num("goal_percent")?.let { if (it < 1 || it > 100) return ImportProblem.InvalidRow("rules", i + 1, "goal_percent") }
+        }
+        rows["plan_metric"].orEmpty().forEachIndexed { i, m ->
+            val seconds = (m["standing_check_seconds"] as? JsonArray)?.map { (it as JsonPrimitive).content.toLong() } ?: return@forEachIndexed
+            if (m.str("metric_type_code") != MetricType.BLOOD_PRESSURE_CODE || seconds.any { it <= 0 } || seconds != seconds.distinct().sorted()) {
+                return ImportProblem.InvalidRow("plan_metrics", i + 1, "standing_check_seconds")
+            }
+        }
+        val readings = rows["blood_pressure_reading"].orEmpty()
+        val localReadings = db.query("SELECT id, fast_id, position FROM blood_pressure_reading").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), c.getString(1) to c.getString(2)) }
+        }.toMutableMap()
+        readings.forEach { localReadings[it.str("id")!!] = it.str("fast_id")!! to it.str("position")!! }
+        readings.forEachIndexed { i, r ->
+            val seconds = r.num("seconds_standing") ?: return@forEachIndexed
+            val paired = r.str("paired_reading_id")?.let { localReadings[it] }
+            if (seconds < 0 || r.str("position") != "standing" || paired == null || paired.first != r.str("fast_id") || paired.second != "sitting") {
+                return ImportProblem.InvalidRow("blood_pressure_readings", i + 1, "seconds_standing")
+            }
+        }
+        fun duplicatedBaseline(list: List<JsonObject>, group: (JsonObject) -> String?): Int? =
+            list.withIndex().filter { (_, r) -> r.flag("is_baseline") && r.alive() }.groupBy { (_, r) -> r.str("fast_id") to group(r) }
+                .values.firstOrNull { it.size > 1 }?.get(1)?.index
+        duplicatedBaseline(rows["measurement"].orEmpty()) { it.str("metric_type_code") }?.let { return ImportProblem.InvalidRow("measurements", it + 1, "is_baseline") }
+        duplicatedBaseline(readings) { it.str("position") }?.let { return ImportProblem.InvalidRow("blood_pressure_readings", it + 1, "is_baseline") }
+        return null
+    }
+
     private fun Cursor.getDoubleOrNull(i: Int): Double? = if (isNull(i)) null else getDouble(i)
 
     private fun JsonObject.isNull(key: String) = this[key] == null || this[key] is JsonNull
@@ -350,11 +443,23 @@ class JsonDataExchange(private val database: AyunoDatabase) : DataExchange {
             Kind.REAL -> value is JsonPrimitive && !value.isString && value.doubleOrNull != null
             Kind.NUMBER_LIST -> value is JsonArray && value.all { it is JsonPrimitive && !it.isString && it.doubleOrNull != null }
             Kind.STRING_LIST -> value is JsonArray && value.all { it is JsonPrimitive && it.isString && (allowed == null || it.content in allowed) }
+            Kind.INTEGER_LIST -> value is JsonArray && value.all { it is JsonPrimitive && !it.isString && it.longOrNull != null }
+            Kind.OBJECT_LIST -> value is JsonArray && value.isNotEmpty() && value.all { validWarning(it) }
             Kind.DATETIME -> value.isStringMatching(ExchangeFormat.DATETIME_PATTERN) && runCatching { LocalTimes.parse(value.jsonPrimitive()) }.isSuccess
             Kind.DATE -> value.isStringMatching(ExchangeFormat.DATE_PATTERN) && runCatching { LocalDate.parse(value.jsonPrimitive()) }.isSuccess
             Kind.TIME -> value.isStringMatching(ExchangeFormat.TIME_PATTERN) && runCatching { LocalTime.parse(value.jsonPrimitive()) }.isSuccess
             Kind.TEXT -> value is JsonPrimitive && value.isString && (allowed == null || value.content in allowed)
         }
+    }
+
+    /** D-25: `{kind, ref_id, text}` con `kind` conocido y `text` no vacío. */
+    private fun validWarning(item: JsonElement): Boolean {
+        val o = item as? JsonObject ?: return false
+        if (o.keys != setOf("kind", "ref_id", "text")) return false
+        val kind = (o["kind"] as? JsonPrimitive)?.takeIf { it.isString }?.content
+        val ref = (o["ref_id"] as? JsonPrimitive)?.takeIf { it.isString }?.content
+        val text = (o["text"] as? JsonPrimitive)?.takeIf { it.isString }?.content
+        return kind in ExchangeFormat.WARNING_KINDS && !ref.isNullOrBlank() && !text.isNullOrBlank()
     }
 
     private fun JsonElement.isStringMatching(pattern: Regex) = this is JsonPrimitive && isString && pattern.matches(content)

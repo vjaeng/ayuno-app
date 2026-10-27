@@ -61,7 +61,11 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
 
     editingRule?.let { rule ->
         BackHandler { editingRule = null }
-        RuleEditor(rule, types, symptomTypes, intakeTypes, onCancel = { editingRule = null }, onSave = { viewModel.putRule(it).also { e -> if (e.isEmpty()) editingRule = null } })
+        RuleEditor(
+            rule, types, symptomTypes, intakeTypes, onCancel = { editingRule = null },
+            onSave = { viewModel.putRule(it).also { e -> if (e.isEmpty()) editingRule = null } },
+            goals = draft?.goals.orEmpty().map { (code, g) -> g.toGoal(code) },
+        )
         return
     }
 
@@ -109,6 +113,12 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
                         TextButton(onClick = { addingTime = type.code to stage }) { Text(stringResource(R.string.template_add_time)) }
                     }
                 }
+                if (type.isBloodPressure) {
+                    AyunoTextField(
+                        stringResource(R.string.field_standing_seconds), d.standingSeconds, { v -> viewModel.edit { it.copy(standingSeconds = v) } },
+                        suffix = stringResource(R.string.unit_seconds),
+                    )
+                }
             }
         }
 
@@ -136,13 +146,7 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
         }
 
         SectionTitle(stringResource(R.string.template_goals))
-        intakeTypes.forEach { type ->
-            val goal = d.goals[type.code]
-            CheckRow(type.name, goal != null) { on -> viewModel.setGoal(type.code, if (on) goal?.second ?: "" else null, type.unit) }
-            if (goal != null) {
-                AyunoTextField(stringResource(R.string.field_daily_goal), goal.second, { viewModel.setGoal(type.code, it, type.unit) }, numeric = true, suffix = type.unit)
-            }
-        }
+        GoalsSection(intakeTypes, d.goals, viewModel::setGoal)
 
         SectionTitle(stringResource(R.string.template_checklist))
         d.checklist.forEach { item ->
@@ -170,13 +174,7 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
 
         SectionTitle(stringResource(R.string.template_rules))
         if (d.rules.isEmpty()) Text(stringResource(R.string.template_no_rules), style = MaterialTheme.typography.bodyLarge)
-        d.rules.forEach { rule ->
-            ListRow(
-                title = rule.name,
-                supporting = stringResource(if (rule.level == RuleLevel.ALERT) R.string.level_alert else R.string.level_notice),
-                onClick = { editingRule = rule },
-            ) { Switch(checked = rule.active, onCheckedChange = { viewModel.setRuleActive(rule.id, it) }) }
-        }
+        d.rules.forEach { rule -> RuleRow(rule, onClick = { editingRule = rule }) { viewModel.setRuleActive(rule.id, it) } }
         SecondaryButton(stringResource(R.string.template_add_rule), onClick = { editingRule = RuleEditorDefaults.newRule() })
 
         errors.forEach { FieldError(stringResource(it.message())) }
@@ -185,5 +183,30 @@ fun TemplateEditorScreen(templateId: String?, onBack: () -> Unit) {
 
     addingTime?.let { (code, stage) ->
         TimePickerDialog(LocalTime.of(7, 0), onDismiss = { addingTime = null }, onConfirm = { viewModel.addSchedule(code, stage, it); addingTime = null })
+    }
+}
+
+/** Fila de una regla en la lista: nombre, nivel, insignia «de ejemplo» e interruptor (H-019, D-25). */
+@Composable
+fun RuleRow(rule: Rule, onClick: () -> Unit, onActive: (Boolean) -> Unit) {
+    ListRow(
+        title = rule.name,
+        supporting = stringResource(if (rule.level == RuleLevel.ALERT) R.string.level_alert else R.string.level_notice) +
+            (if (rule.isPlaceholder) " · " + stringResource(R.string.badge_placeholder) else ""),
+        onClick = onClick,
+    ) { Switch(checked = rule.active, onCheckedChange = onActive) }
+}
+
+/** «Líquidos y metas» (H-002, H-052): meta opcional («por llenar» sin cifra) y «Preguntar tras N h sin anotar». */
+@Composable
+fun GoalsSection(intakeTypes: List<com.ayuno.domain.model.IntakeType>, goals: Map<String, GoalDraft>, onChange: (String, GoalDraft?) -> Unit) {
+    intakeTypes.forEach { type ->
+        val goal = goals[type.code]
+        CheckRow(type.name, goal != null) { on -> onChange(type.code, if (on) goal ?: GoalDraft(com.ayuno.domain.id.Ids.newId(), "", type.unit) else null) }
+        if (goal != null) {
+            AyunoTextField(stringResource(R.string.field_daily_goal), goal.amount, { onChange(type.code, goal.copy(amount = it)) }, numeric = true, suffix = goal.unit)
+            if (goal.amount.isBlank()) com.ayuno.app.ui.components.Badge(stringResource(R.string.badge_no_amount))
+            AyunoTextField(stringResource(R.string.field_nudge_hours), goal.nudgeHours, { onChange(type.code, goal.copy(nudgeHours = it)) }, numeric = true, suffix = stringResource(R.string.unit_hours))
+        }
     }
 }

@@ -59,13 +59,14 @@ class AppContainer(
     val duplicateTemplate by lazy { com.ayuno.domain.usecase.DuplicateTemplate(templates) }
     val setTemplateDeleted by lazy { com.ayuno.domain.usecase.SetTemplateDeleted(templates, audit, transactions, clock) }
     val createFast by lazy { CreateFast(templates, fasts, transactions, clock) }
-    val startFast by lazy { StartFast(fasts, transactions, clock) }
+    val startFast by lazy { StartFast(fasts, transactions, clock, catalog) }
 
     /** H-047: ayuno recién empezado al que Inicio ofrece una sola vez anotar el peso. Solo en memoria. */
     val startWeightPrompt = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
 
-    suspend fun startFastAskingWeight(fastId: String) =
-        startFast(fastId).also { if (it is com.ayuno.domain.usecase.Outcome.Ok) startWeightPrompt.value = fastId }
+    /** [anyway]: «Empezar de todos modos» de la revisión previa (H-057). */
+    suspend fun startFastAskingWeight(fastId: String, anyway: Boolean = false) =
+        startFast(fastId, anyway).also { if (it is com.ayuno.domain.usecase.Outcome.Ok) startWeightPrompt.value = fastId }
     val registerLastMeal by lazy { RegisterLastMeal(fasts, audit, transactions, clock) }
     val correctClockStart by lazy { CorrectClockStart(fasts, audit, transactions, clock) }
     val refeed: com.ayuno.domain.port.RefeedRepository by lazy { com.ayuno.data.repository.RoomRefeedRepository(database, clock) }
@@ -92,6 +93,9 @@ class AppContainer(
     val correctMeasurement by lazy { com.ayuno.domain.usecase.CorrectMeasurement(catalog, fasts, records, alerts, audit, transactions, clock) }
     val correctBloodPressure by lazy { com.ayuno.domain.usecase.CorrectBloodPressure(catalog, fasts, records, alerts, audit, transactions, clock) }
     val setEntryDeleted by lazy { com.ayuno.domain.usecase.SetEntryDeleted(records, audit, transactions, clock) }
+    val recordQuickIntake by lazy { com.ayuno.domain.usecase.RecordQuickIntake(catalog, recordIntake, clock) }
+    val markBaseline by lazy { com.ayuno.domain.usecase.MarkBaseline(catalog, fasts, records, alerts, audit, transactions, clock) }
+    val saveFastPlan by lazy { com.ayuno.domain.usecase.SaveFastPlan(fasts) }
 
     val settings: com.ayuno.domain.port.SettingsRepository by lazy { com.ayuno.data.repository.RoomSettingsRepository(database) }
     val saveQuietHours by lazy { com.ayuno.domain.usecase.SaveQuietHours(settings) }

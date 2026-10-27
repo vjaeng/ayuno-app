@@ -52,7 +52,7 @@ class TestWorld {
     val duplicateTemplate = com.ayuno.domain.usecase.DuplicateTemplate(templates)
     val setTemplateDeleted = com.ayuno.domain.usecase.SetTemplateDeleted(templates, audit, DirectTransactions, clock)
     val createFast = CreateFast(templates, fasts, DirectTransactions, clock)
-    val startFast = StartFast(fasts, DirectTransactions, clock)
+    val startFast = StartFast(fasts, DirectTransactions, clock, catalog)
     val registerLastMeal = RegisterLastMeal(fasts, audit, DirectTransactions, clock)
     val correctClockStart = CorrectClockStart(fasts, audit, DirectTransactions, clock)
     val endFast = EndFast(fasts, refeed, catalog, records, DirectTransactions, clock)
@@ -117,10 +117,10 @@ class TestWorld {
         return (result as Outcome.Ok).value
     }
 
-    /** Ayuno en curso iniciado a las 22:10 del jueves. */
+    /** Ayuno en curso iniciado a las 22:10 del jueves (con lo que quede pendiente de la revisión previa, H-057). */
     suspend fun startedFast(plan: Plan = plan57h()): Fast {
         val planned = plannedFast(plan)
         clock.instant = java.time.Instant.parse("2026-10-23T03:10:00Z")
-        return (startFast(planned.fast.id) as Outcome.Ok).value
+        return (startFast(planned.fast.id, anyway = true) as Outcome.Ok).value
     }
 }

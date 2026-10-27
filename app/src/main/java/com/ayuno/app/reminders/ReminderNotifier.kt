@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat
 import com.ayuno.app.MainActivity
 import com.ayuno.app.R
 import com.ayuno.app.ui.format.Formats
+import com.ayuno.app.ui.format.standingMoment
+import com.ayuno.domain.derived.IntakeNudgeItem
 import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.model.Alert
 import com.ayuno.domain.model.RuleLevel
@@ -30,6 +32,16 @@ object ReminderNotifier {
     const val EXTRA_ALERT_ID = "alert_id"
     const val EXTRA_NOT_DONE = "not_done"
     const val EXTRA_SNOOZE_MINUTES = "snooze_minutes"
+    const val EXTRA_SITTING_ID = "sitting_id"
+    const val EXTRA_STANDING_SINCE = "standing_since"
+    const val EXTRA_STANDING_SECONDS = "standing_seconds"
+
+    const val EXTRA_INTAKE_TYPE = "intake_type"
+    const val EXTRA_NOTIFICATION_ID = "notification_id"
+
+    fun nudgeId(fastId: String, intakeTypeCode: String): Int = "nudge|$fastId|$intakeTypeCode".hashCode()
+
+    fun standingId(sittingId: String, seconds: Int): Int = "standing|$sittingId|$seconds".hashCode()
 
     fun idOf(reminder: DueReminder): Int =
         "${reminder.fastId}|${reminder.item.kind}|${reminder.item.code}|${LocalTimes.format(reminder.item.scheduledAt)}".hashCode()
@@ -98,6 +110,53 @@ object ReminderNotifier {
         )
         post(context, id, reminder.fastId, CHANNEL_REMINDERS, title, Formats.dateTime(reminder.item.scheduledAt), open, R.string.notification_public_title, actions)
     }
+
+    /**
+     * H-053: toca tomar la presión de pie. Abre el temporizador de esa sentada con su hora de inicio, para que los
+     * segundos de pie no se pierdan aunque la app se haya cerrado. Sin cifras en el texto.
+     */
+    fun notifyStanding(context: Context, alarm: Intent) {
+        if (!canNotify(context)) return
+        val fastId = alarm.getStringExtra(EXTRA_FAST_ID) ?: return
+        val sittingId = alarm.getStringExtra(EXTRA_SITTING_ID) ?: return
+        val since = alarm.getStringExtra(EXTRA_STANDING_SINCE) ?: return
+        val seconds = alarm.getIntExtra(EXTRA_STANDING_SECONDS, 0)
+        val id = standingId(sittingId, seconds)
+        val open = Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .putExtra(EXTRA_FAST_ID, fastId)
+            .putExtra(EXTRA_SITTING_ID, sittingId)
+            .putExtra(EXTRA_STANDING_SINCE, since)
+        val title = context.getString(R.string.notification_standing_title, standingMoment(context.resources, seconds))
+        post(context, id, fastId, CHANNEL_REMINDERS, title, context.getString(R.string.notification_standing_text), open, R.string.notification_public_title)
+    }
+
+    /**
+     * H-052: «¿Has tomado sal desde las 07:00?». Nombra el tipo, nunca cantidades (S4). No es una alerta: va por el
+     * canal de recordatorios y no escribe nada.
+     */
+    fun notifyNudge(context: Context, fastId: String, nudge: IntakeNudgeItem, typeName: String) {
+        if (!canNotify(context)) return
+        val id = nudgeId(fastId, nudge.intakeTypeCode)
+        val open = Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .putExtra(EXTRA_FAST_ID, fastId)
+            .putExtra(EXTRA_INTAKE_TYPE, nudge.intakeTypeCode)
+        val notYet = PendingIntent.getBroadcast(
+            context, id,
+            Intent(context, NotificationActionReceiver::class.java).setAction(NotificationActionReceiver.ACTION_DISMISS).putExtra(EXTRA_NOTIFICATION_ID, id),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val actions = listOf(
+            NotificationCompat.Action(0, context.getString(R.string.nudge_yes), activity(context, id, open)),
+            NotificationCompat.Action(0, context.getString(R.string.nudge_not_yet), notYet),
+        )
+        val title = nudgeText(context, typeName, nudge.anchor)
+        post(context, id, fastId, CHANNEL_REMINDERS, title, Formats.dateTime(nudge.at), open, R.string.notification_public_title, actions)
+    }
+
+    fun nudgeText(context: Context, typeName: String, anchor: java.time.LocalDateTime): String =
+        context.getString(R.string.nudge_question, typeName.replaceFirstChar { it.lowercase(java.util.Locale.forLanguageTag("es")) }, Formats.time(anchor))
 
     fun cancel(context: Context, id: Int) = NotificationManagerCompat.from(context).cancel(id)
 

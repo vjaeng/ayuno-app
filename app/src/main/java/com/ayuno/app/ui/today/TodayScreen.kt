@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,6 +18,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
+import com.ayuno.app.reminders.ReminderNotifier
 import com.ayuno.app.ui.components.EmptyState
 import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
@@ -28,6 +30,7 @@ import com.ayuno.app.ui.theme.AyunoThemeTokens
 import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.derived.DayAgenda
 import com.ayuno.domain.derived.FastClock
+import com.ayuno.domain.derived.IntakeNudge
 import com.ayuno.domain.derived.PendingItem
 import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.derived.PendingRecords
@@ -63,12 +66,16 @@ data class TodayRow(
     val entry: Pair<EntryKind, String>? = null,
 )
 
+/** H-052: pregunta que ya sonó y sigue sin ingesta del tipo. */
+data class NudgeRow(val intakeTypeCode: String, val typeName: String, val anchor: LocalDateTime, val at: LocalDateTime)
+
 data class TodayState(
     val fastId: String?,
     val day: LocalDate,
     val rows: List<TodayRow>,
     /** Productos que salen durante el ayuno (sección gris al pie, H-014). */
     val stopped: List<String>,
+    val nudges: List<NudgeRow> = emptyList(),
 )
 
 /**
@@ -92,6 +99,7 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
                     container.records.observeProductLogs(current.id).map { },
                     container.alerts.observeAlerts(current.id).map { },
                     container.refeed.observeChecks(current.id).map { },
+                    container.records.observeIntakes(current.id).map { },
                 )
                 merge(*changes.toTypedArray()).map { build(current.id) }
             }
@@ -154,7 +162,12 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
             TodayRow(item, s.state, label, detail, FastClock.fastHour(source.fast, item.scheduledAt), answer.takeIf { s.state == PendingState.DONE || s.state == PendingState.NOT_DONE })
         }
         val stopped = source.plan.products.filter { it.duringFast == DuringFast.STOPS }.mapNotNull { p -> products.firstOrNull { it.code == p.productCode }?.name }
-        return TodayState(fastId, now.toLocalDate(), rows, stopped)
+        // Una ingesta nueva del tipo mueve la pregunta al futuro y la fila desaparece.
+        val intakeTypes = c.catalog.intakeTypes()
+        val nudges = IntakeNudge.items(source, c.records.intakes(fastId), c.settings.get())
+            .filter { !it.at.isAfter(now) && it.at.toLocalDate() == now.toLocalDate() }
+            .map { n -> NudgeRow(n.intakeTypeCode, intakeTypes.firstOrNull { it.code == n.intakeTypeCode }?.name ?: n.intakeTypeCode, n.anchor, n.at) }
+        return TodayState(fastId, now.toLocalDate(), rows, stopped, nudges)
     }
 }
 
@@ -162,6 +175,7 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
 fun TodayScreen(
     onOpen: (fastId: String, item: PendingItem, notDone: Boolean) -> Unit,
     onOpenEntry: (kind: EntryKind, id: String) -> Unit = { _, _ -> },
+    onOpenIntake: (fastId: String, intakeTypeCode: String) -> Unit = { _, _ -> },
     viewModel: TodayViewModel = viewModel(factory = containerFactory { TodayViewModel(it) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -170,7 +184,11 @@ fun TodayScreen(
         Text(Formats.date(s.day.atStartOfDay()), style = MaterialTheme.typography.titleLarge)
         val fastId = s.fastId
         if (fastId == null) { EmptyState(stringResource(R.string.today_no_fast)); return@ScreenScaffold }
-        if (s.rows.isEmpty()) EmptyState(stringResource(R.string.today_empty))
+        val context = LocalContext.current
+        s.nudges.forEach { n ->
+            ListRow("? ${Formats.time(n.at)}  " + ReminderNotifier.nudgeText(context, n.typeName, n.anchor), null, onClick = { onOpenIntake(fastId, n.intakeTypeCode) })
+        }
+        if (s.rows.isEmpty() && s.nudges.isEmpty()) EmptyState(stringResource(R.string.today_empty))
         // Agrupado por franjas para no superar 9 filas por bloque (Miller); las filas ya llegan en orden de hora.
         s.rows.groupBy { slotOf(it.item.scheduledAt) }.forEach { (slot, rows) ->
             SectionTitle(stringResource(slot))

@@ -1,11 +1,33 @@
 # Formato `fasting-log` — registro de cambios
 
-El esquema vigente `fasting-log-1.1.schema.json` (JSON Schema draft 2020-12) se **genera** desde la descripción del
+El esquema vigente `fasting-log-1.2.schema.json` (JSON Schema draft 2020-12) se **genera** desde la descripción del
 formato en `data/src/main/java/com/ayuno/data/exchange/ExchangeFormat.kt`; una prueba (`ExchangeTest`) falla si el
 archivo publicado no coincide. Para regenerarlo: `./gradlew :data:testDebugUnitTest -PregenerateSchema=true --tests '*ExchangeTest*'`
-(reescribe también `fasting-log-1.1.example.json`, un ayuno simulado completo). Un cambio incompatible sube la
+(reescribe también `fasting-log-1.2.example.json`, un ayuno simulado completo). Un cambio incompatible sube la
 versión mayor; la app rechaza importar una versión mayor que la suya (ADR-007). Los archivos de versiones anteriores
-(`fasting-log-1.0.*`) se conservan como referencia.
+(`fasting-log-1.0.*`, `fasting-log-1.1.*`) se conservan como referencia.
+
+## 1.2 — 2026-10-26 (EV-006, app 0.14.0)
+
+- **Medidas caseras** (MODELO-DATOS D-22, H-050): `catalogs.household_units`, una fila por medida con `intake_type_code`,
+  `code`, `name`, `equivalent` (en la unidad del tipo), `imprecise` y `position`. Las 7 de fábrica (vaso y taza de agua e
+  infusión; cucharadita rasa, ¼ de cucharadita y pizca de sal) tienen identificadores fijos. `intake_types` suma
+  `quick_unit_code` (botón rápido, H-051).
+- **Ingestas**: `amount_entered` y `unit_entered` (lo tecleado, en la unidad del tipo o una medida suya) y `group_id`
+  («agua con sal» en una sola anotación). `amount` y `unit` siguen siendo el equivalente en la unidad del tipo.
+- **Metas**: `intake_goals.daily_amount` puede ser `null` (meta sin cifra) y suma `nudge_after_hours` (H-052).
+- **Presión entre lecturas** (D-24, H-053 a H-056): `blood_pressure_readings.seconds_standing` e `is_baseline`;
+  `measurements.is_baseline`; `plan_metrics.standing_check_seconds` (lista de enteros, solo en presión); `rules` suma los
+  tipos `pair_difference`, `change_from_baseline` y `trend` con `direction`, `trend_count`, `trend_of`, y `goal_percent`
+  para `intake_below_goal`.
+- **Revisión antes de empezar** (D-25, H-057): `rules.is_placeholder` (regla «de ejemplo») y
+  `fasts.started_with_warnings`, lista de `{kind, ref_id, text}` con lo que quedaba pendiente al empezar «de todos modos».
+- Cambio **aditivo**: la app sigue importando archivos 1.0 y 1.1. Lo que no traen toma su valor por defecto: lo tecleado
+  de cada ingesta es su cantidad y unidad, las marcas son falsas, la presión de un plan toma los tiempos de pie 60 y 180 s
+  y el resto queda vacío. Al importar se rechaza el archivo entero si una medida no tiene equivalencia positiva o repite
+  `code` en su tipo, lo tecleado no está en la unidad del tipo ni en una de sus medidas, el botón rápido apunta a una
+  medida ajena o a un tipo que rompe el ayuno, una regla nueva no trae dirección o su racha es menor de 3, hay segundos de
+  pie en una lectura que no es de pie enlazada a una sentada del mismo ayuno, o hay dos «de partida» de lo mismo.
 
 ## 1.1 — 2026-10-23 (EV-005, app 0.13.0)
 

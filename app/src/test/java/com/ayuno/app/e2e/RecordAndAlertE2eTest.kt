@@ -71,16 +71,18 @@ class RecordAndAlertE2eTest {
     }
 
     @Test
-    fun `H009 presion sentado y luego de pie, vinculadas, con la diferencia`() {
+    fun `H009 presion sentado y luego de pie sin esperar, vinculadas, con la diferencia`() {
         val id = seedStartedFast(seedTemplate())
         compose.activityRule.scenario.recreate()
         compose.tap("Anotar"); compose.tap("Presión arterial")
         compose.type("Sistólica", "118"); compose.type("Diastólica", "76"); compose.type("Pulso (opcional)", "64")
         compose.tap("Guardar")
-        compose.tap("Anotar de pie")
+        // EV-006: tras la sentada se abre el temporizador de pie (H-053).
+        compose.tap("Anotar sin esperar")
+        compose.assertShown("tomada sin esperar")
         compose.type("Sistólica", "104"); compose.type("Diastólica", "70"); compose.type("Pulso (opcional)", "76")
         compose.tap("Guardar")
-        compose.assertShown("Sistólica -14 · diastólica -6 · pulso +12")
+        compose.assertShown("sin esperar: -14 arriba · -6 abajo · +12 pulso")
         compose.eventually { assertEquals(2, runBlocking { app.container.records.bloodPressure(id) }.size) }
         val readings = runBlocking { app.container.records.bloodPressure(id) }
         assertEquals(listOf(Position.SITTING, Position.STANDING), readings.map { it.position })

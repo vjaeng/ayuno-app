@@ -38,6 +38,11 @@ class MainActivity : ComponentActivity() {
     private fun Intent.toDeepLink(): DeepLink? {
         getStringExtra(ReminderNotifier.EXTRA_ALERT_ID)?.let { return DeepLink.OpenAlert(it) }
         val fastId = getStringExtra(ReminderNotifier.EXTRA_FAST_ID) ?: return null
+        getStringExtra(ReminderNotifier.EXTRA_SITTING_ID)?.let { sittingId ->
+            val since = getStringExtra(ReminderNotifier.EXTRA_STANDING_SINCE)?.let { runCatching { LocalTimes.parse(it) }.getOrNull() } ?: return null
+            return DeepLink.Standing(fastId, sittingId, since)
+        }
+        getStringExtra(ReminderNotifier.EXTRA_INTAKE_TYPE)?.let { return DeepLink.Intake(fastId, it) }
         val code = getStringExtra(ReminderNotifier.EXTRA_CODE) ?: return null
         val at = getStringExtra(ReminderNotifier.EXTRA_SCHEDULED_FOR)?.let { runCatching { LocalTimes.parse(it) }.getOrNull() } ?: return null
         val notDone = getBooleanExtra(ReminderNotifier.EXTRA_NOT_DONE, false)

@@ -8,9 +8,16 @@ import com.ayuno.domain.derived.PendingItem
 import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.time.LocalTimes
 
-/** H-017: posponer desde la notificación. Cierra el aviso y vuelve a avisar dentro de 10 o 30 minutos. */
+/**
+ * H-017: posponer desde la notificación. Cierra el aviso y vuelve a avisar dentro de 10 o 30 minutos.
+ * H-052: «Todavía no» solo cierra la pregunta; no escribe nada ni vuelve a preguntar por ese hueco.
+ */
 class NotificationActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ACTION_DISMISS) {
+            ReminderNotifier.cancel(context, intent.getIntExtra(ReminderNotifier.EXTRA_NOTIFICATION_ID, 0))
+            return
+        }
         if (intent.action != ACTION_SNOOZE) return
         val reminder = intent.toReminder() ?: return
         val minutes = intent.getLongExtra(ReminderNotifier.EXTRA_SNOOZE_MINUTES, 10)
@@ -20,6 +27,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     companion object {
         const val ACTION_SNOOZE = "com.ayuno.app.SNOOZE"
+        const val ACTION_DISMISS = "com.ayuno.app.DISMISS"
     }
 }
 

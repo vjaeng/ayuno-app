@@ -1,6 +1,7 @@
 package com.ayuno.data.repository
 
 import com.ayuno.data.db.ChecklistItemEntity
+import com.ayuno.data.db.HouseholdUnitEntity
 import com.ayuno.data.db.IntakeEntity
 import com.ayuno.data.db.IntakeGoalEntity
 import com.ayuno.data.db.IntakeTypeEntity
@@ -14,6 +15,7 @@ import com.ayuno.data.db.SymptomEntity
 import com.ayuno.data.db.SymptomTypeEntity
 import com.ayuno.domain.model.ChecklistItem
 import com.ayuno.domain.model.DuringFast
+import com.ayuno.domain.model.HouseholdUnit
 import com.ayuno.domain.model.Intake
 import com.ayuno.domain.model.IntakeGoal
 import com.ayuno.domain.model.IntakeType
@@ -37,8 +39,13 @@ private fun PlanOwner.fId(): String? = (this as? PlanOwner.OfFast)?.id
 internal fun SymptomTypeEntity.toDomain() = SymptomType(code, name, groupName, isAlarm, active)
 internal fun SymptomType.toEntity(createdAt: String, updatedAt: String?) = SymptomTypeEntity(code, name, groupName, isAlarm, active, createdAt, updatedAt, null)
 
-internal fun IntakeTypeEntity.toDomain() = IntakeType(code, name, unit, breaksFast, sodiumFactor)
-internal fun IntakeType.toEntity(createdAt: String, updatedAt: String?) = IntakeTypeEntity(code, name, unit, breaksFast, sodiumFactor, createdAt, updatedAt, null)
+internal fun IntakeTypeEntity.toDomain(units: List<HouseholdUnitEntity> = emptyList()) = IntakeType(
+    code, name, unit, breaksFast, sodiumFactor, quickUnitCode,
+    units = units.filter { it.intakeTypeCode == code && it.deletedAt == null }.sortedBy { it.position }.map { it.toDomain() },
+)
+internal fun IntakeType.toEntity(createdAt: String, updatedAt: String?) =
+    IntakeTypeEntity(code, name, unit, breaksFast, sodiumFactor, quickUnitCode.takeIf { !breaksFast }, createdAt, updatedAt, null)
+internal fun HouseholdUnitEntity.toDomain() = HouseholdUnit(id, code, intakeTypeCode, name, equivalent, imprecise, position)
 
 internal fun ProductEntity.toDomain(schedules: List<ProductScheduleEntity>) = Product(
     code, name, codeOf<ProductKind>(kind), defaultAmount, unit, avoid, active,
@@ -49,8 +56,9 @@ internal fun Product.toEntity(createdAt: String, updatedAt: String?) = ProductEn
 internal fun SymptomEntity.toDomain() = Symptom(id, fastId, symptomTypeCode, notedAt.localDateTime(), severity, note)
 internal fun Symptom.toEntity(now: String) = SymptomEntity(id, fastId, symptomTypeCode, takenAt.text(), severity, note, now, null, null)
 
-internal fun IntakeEntity.toDomain() = Intake(id, fastId, intakeTypeCode, takenAt.localDateTime(), amount, unit, note)
-internal fun Intake.toEntity(now: String) = IntakeEntity(id, fastId, intakeTypeCode, takenAt.text(), amount, unit, note, now, null, null)
+internal fun IntakeEntity.toDomain() = Intake(id, fastId, intakeTypeCode, takenAt.localDateTime(), amount, unit, note, amountEntered, unitEntered, groupId)
+internal fun Intake.toEntity(now: String) =
+    IntakeEntity(id, fastId, intakeTypeCode, takenAt.text(), amount, unit, note, amountEntered, unitEntered, groupId, now, null, null)
 
 internal fun ProductLogEntity.toDomain() = ProductLog(
     id, fastId, productCode, scheduledAt?.localDateTime(), codeOf<ProductLogStatus>(status), takenAt?.localDateTime(), plannedAmount, amount, unit, reason,
@@ -62,8 +70,9 @@ internal fun ProductLog.toEntity(now: String) = ProductLogEntity(
 internal fun NoteEntity.toDomain() = Note(id, fastId, notedAt.localDateTime(), text)
 internal fun Note.toEntity(now: String) = NoteEntity(id, fastId, notedAt.text(), text, now, null, null)
 
-internal fun IntakeGoalEntity.toDomain() = IntakeGoal(id, intakeTypeCode, dailyAmount, unit)
-internal fun IntakeGoal.toEntity(owner: PlanOwner, now: String) = IntakeGoalEntity(id, owner.tId(), owner.fId(), intakeTypeCode, dailyAmount, unit, now, null, null)
+internal fun IntakeGoalEntity.toDomain() = IntakeGoal(id, intakeTypeCode, dailyAmount, unit, nudgeAfterHours)
+internal fun IntakeGoal.toEntity(owner: PlanOwner, now: String) =
+    IntakeGoalEntity(id, owner.tId(), owner.fId(), intakeTypeCode, dailyAmount, unit, nudgeAfterHours, now, null, null)
 
 internal fun ChecklistItemEntity.toDomain() = ChecklistItem(id, text, isChecked)
 internal fun ChecklistItem.toEntity(owner: PlanOwner, now: String) = ChecklistItemEntity(id, owner.tId(), owner.fId(), text, isChecked, now, null, null)

@@ -27,6 +27,14 @@
     {
       "name": "Algo no va bien", "active": true, "condition_kind": "manual", "metric_type_code": null,
       "level": "alert", "message": "Escribe aquí qué harás si algo no va bien.", "action": "offer_end"
+    },
+    {
+      "name": "Sal por debajo de ___ % de la meta a las ___", "active": false, "condition_kind": "intake_below_goal", "metric_type_code": null,
+      "intake_type_code": "salt", "level": "notice", "message": "Escribe aquí qué harás si vas corto de sal.", "action": "none"
     }
+  ],
+  "goals": [
+    { "intake_type_code": "water", "nudge_after_hours": 6.0 },
+    { "intake_type_code": "salt", "nudge_after_hours": 6.0 }
   ]
 }

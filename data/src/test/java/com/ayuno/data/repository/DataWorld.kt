@@ -36,7 +36,7 @@ class DataWorld {
 
     val saveTemplate = SaveTemplate(templates)
     val createFast = CreateFast(templates, fasts, tx, clock)
-    val startFast = StartFast(fasts, tx, clock)
+    val startFast = StartFast(fasts, tx, clock, catalog)
     val correctClockStart = CorrectClockStart(fasts, audit, tx, clock)
     val recordMeasurement = RecordMeasurement(catalog, fasts, records, alerts, tx, clock)
     val recordBloodPressure = RecordBloodPressure(catalog, fasts, records, alerts, tx, clock)
