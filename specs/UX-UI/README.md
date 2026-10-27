@@ -14,18 +14,18 @@ Flujos y pantallas de la app móvil. Cada flujo cita sus historias (`specs/HISTO
 
 | Flujo | Archivo | Historias |
 |---|---|---|
-| Inicio y reloj | [ayuno-inicio.md](ayuno-inicio.md) | H-005, H-006, H-041, H-046 |
-| Ayunos planificados | [ayuno-planificados.md](ayuno-planificados.md) | H-046, H-005, H-044, H-045 |
+| Inicio y reloj | [ayuno-inicio.md](ayuno-inicio.md) | H-005, H-006, H-041, H-046, H-047, H-048, H-051, H-057 |
+| Ayunos planificados | [ayuno-planificados.md](ayuno-planificados.md) | H-046, H-005, H-044, H-045, H-057 |
 | Crear o cambiar un ayuno | [ayuno-crear.md](ayuno-crear.md) | H-004, H-044 |
-| Anotar | [registro-anotar.md](registro-anotar.md) | H-008, H-009, H-010, H-012, H-013, H-015, H-035 |
-| Recordatorios y Hoy | [recordatorios-hoy.md](recordatorios-hoy.md) | H-015, H-016, H-017, H-018 |
-| Seguridad y alertas | [seguridad-alertas.md](seguridad-alertas.md) | H-023, H-025, H-026, H-027, H-028, H-029 |
+| Anotar | [registro-anotar.md](registro-anotar.md) | H-008, H-009, H-010, H-012, H-013, H-015, H-035, H-049, H-050, H-051, H-053 |
+| Recordatorios y Hoy | [recordatorios-hoy.md](recordatorios-hoy.md) | H-015, H-016, H-017, H-018, H-052 |
+| Seguridad y alertas | [seguridad-alertas.md](seguridad-alertas.md) | H-023, H-025, H-026, H-027, H-028, H-029, H-054, H-055, H-056 |
 | Terminar el ayuno | [fin-terminar.md](fin-terminar.md) | H-012, H-027, H-030 |
 | Vuelta a comer | [vuelta-a-comer.md](vuelta-a-comer.md) | H-031, H-032 |
-| Plantillas | [plantillas-editar.md](plantillas-editar.md) | H-001, H-002, H-003, H-014, H-031 |
-| Reglas de alerta | [reglas-editar.md](reglas-editar.md) | H-019, H-020, H-021, H-022, H-023, H-024, H-025, H-026 |
-| Historial | [historial-revisar.md](historial-revisar.md) | H-033, H-034, H-035, H-045 |
-| Catálogos | [ajustes-catalogos.md](ajustes-catalogos.md) | H-007, H-010, H-011, H-013 |
+| Plantillas | [plantillas-editar.md](plantillas-editar.md) | H-001, H-002, H-003, H-014, H-031, H-052, H-053, H-057 |
+| Reglas de alerta | [reglas-editar.md](reglas-editar.md) | H-019, H-020, H-021, H-022, H-023, H-024, H-025, H-026, H-054, H-055, H-056 |
+| Historial | [historial-revisar.md](historial-revisar.md) | H-033, H-034, H-035, H-045, H-048, H-053, H-055, H-057 |
+| Catálogos | [ajustes-catalogos.md](ajustes-catalogos.md) | H-007, H-010, H-011, H-013, H-049, H-050, H-051 |
 | Ajustes generales | [ajustes-generales.md](ajustes-generales.md) | H-017, H-029, H-038, H-042, H-043 |
 | Exportar e importar | [datos-exportar-importar.md](datos-exportar-importar.md) | H-036, H-037, H-038, H-039, H-040 |
 
@@ -52,6 +52,14 @@ flowchart TD
     DET -->|Cambiar| CREAR
     DET -->|Empieza el ayuno ahora| INI
     INI -->|Empieza el ayuno ahora| INI
+    INI -->|Empieza con pendientes| REV[Revisión antes de empezar]
+    DET -->|Empieza con pendientes| REV
+    REV -->|Empezar de todos modos| INI
+    REV -->|Arreglar| EPL
+    INI -->|botón rápido| INI
+    FORM -->|presión sentado| TMP[Temporizador de pie]
+    TMP --> FORM
+    NOTIF -->|¿Has tomado …?| FORM
     INI -->|Anotar| REJ[Rejilla Anotar]
     HOY -->|tocar pendiente| FORM[Formulario de registro]
     REJ --> FORM

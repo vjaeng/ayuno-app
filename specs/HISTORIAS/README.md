@@ -57,14 +57,14 @@ Total: **57** historias · alta 42 · media 14 · baja 1. H-001 a H-043 son la v
 | H-047 | [Anotar mi peso al empezar y al terminar y ver cuánto cambió](mediciones-047-peso-inicio-fin.md) | mediciones | media | entregada (EV-003) |
 | H-048 | [Ver y corregir las mediciones del ayuno en curso](mediciones-048-ver-corregir-mediciones.md) | mediciones | alta | entregada (EV-004) |
 | H-049 | [Elegir con palabras en las escalas de cómo me siento](mediciones-049-escalas-con-palabras.md) | mediciones | alta | entregada (EV-005) |
-| H-050 | [Anotar lo que tomo en mis medidas caseras](liquidos-050-medidas-caseras.md) | liquidos | alta | nueva (EV-006) |
-| H-051 | [Anotar agua y sal con un toque desde el reloj](liquidos-051-anotar-en-un-toque.md) | liquidos | alta | nueva (EV-006) |
-| H-052 | [Que la app me pregunte si llevo horas sin anotar lo que pide mi plan](recordatorios-052-preguntar-si-no-anoto.md) | recordatorios | alta | nueva (EV-006) |
-| H-053 | [Medir la presión de pie a su tiempo con un temporizador](mediciones-053-temporizador-de-pie.md) | mediciones | alta | nueva (EV-006) |
-| H-054 | [Definir una regla sobre la diferencia al ponerme de pie](reglas-054-regla-diferencia-de-pie.md) | reglas | alta | nueva (EV-006) |
-| H-055 | [Definir una regla sobre el cambio respecto a mi valor de partida](reglas-055-regla-cambio-desde-partida.md) | reglas | alta | nueva (EV-006) |
-| H-056 | [Definir una regla de tendencia](reglas-056-regla-tendencia.md) | reglas | alta | nueva (EV-006) |
-| H-057 | [Revisar lo que falta antes de empezar y empezar igual si quiero](reloj-057-revision-antes-de-empezar.md) | reloj | alta | nueva (EV-006) |
+| H-050 | [Anotar lo que tomo en mis medidas caseras](liquidos-050-medidas-caseras.md) | liquidos | alta | tejida (EV-006) |
+| H-051 | [Anotar agua y sal con un toque desde el reloj](liquidos-051-anotar-en-un-toque.md) | liquidos | alta | tejida (EV-006) |
+| H-052 | [Que la app me pregunte si llevo horas sin anotar lo que pide mi plan](recordatorios-052-preguntar-si-no-anoto.md) | recordatorios | alta | tejida (EV-006) |
+| H-053 | [Medir la presión de pie a su tiempo con un temporizador](mediciones-053-temporizador-de-pie.md) | mediciones | alta | tejida (EV-006) |
+| H-054 | [Definir una regla sobre la diferencia al ponerme de pie](reglas-054-regla-diferencia-de-pie.md) | reglas | alta | tejida (EV-006) |
+| H-055 | [Definir una regla sobre el cambio respecto a mi valor de partida](reglas-055-regla-cambio-desde-partida.md) | reglas | alta | tejida (EV-006) |
+| H-056 | [Definir una regla de tendencia](reglas-056-regla-tendencia.md) | reglas | alta | tejida (EV-006) |
+| H-057 | [Revisar lo que falta antes de empezar y empezar igual si quiero](reloj-057-revision-antes-de-empezar.md) | reloj | alta | tejida (EV-006) |
 
 ## Épicas
 

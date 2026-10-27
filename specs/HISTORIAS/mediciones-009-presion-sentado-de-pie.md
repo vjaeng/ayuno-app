@@ -16,7 +16,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | sistólica | `blood_pressure_reading.systolic` | ✓ | ✓ |  |  |
@@ -25,3 +25,6 @@
 | posición (sentado, de pie, acostado) | `blood_pressure_reading.position` | ✓ | ✓ |  |  |
 | hora de la toma | `blood_pressure_reading.taken_at` | ✓ |  |  |  |
 | toma de pie vinculada a la sentada | `blood_pressure_reading.paired_reading_id` | ✓ | ✓ |  |  |
+| se ofrece la de pie con temporizador o sin esperar (EV-006) | `plan_metric.standing_check_seconds`, `blood_pressure_reading.seconds_standing` (vía H-053) |  | ✓ |  |  |
+| varias de pie vinculadas a una sentada (EV-006) | `blood_pressure_reading.paired_reading_id` | ✓ | ✓ |  |  |
+| diferencia de las tres cifras por cada de pie (EV-006) | derivado «Diferencia de pareja» |  | ✓ |  |  |

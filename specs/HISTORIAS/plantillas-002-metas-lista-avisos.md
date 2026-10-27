@@ -17,7 +17,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | meta diaria por tipo de ingesta | `intake_goal.intake_type_code` | ✓ | ✓ |  | ✓ |
@@ -28,3 +28,5 @@
 | aviso fijo de texto libre | `stage_notice.text` | ✓ | ✓ | ✓ | ✓ |
 | etapas en que se muestra el aviso | `stage_notice.stage_kinds` | ✓ | ✓ | ✓ |  |
 | etapa en curso (para mostrar el aviso) | `stage.kind` |  | ✓ |  |  |
+| meta sin cifra («por llenar») (EV-006) | `intake_goal.daily_amount` (nulo) | ✓ | ✓ | ✓ |  |
+| preguntar tras N horas sin anotar (EV-006) | `intake_goal.nudge_after_hours` | ✓ | ✓ | ✓ |  |

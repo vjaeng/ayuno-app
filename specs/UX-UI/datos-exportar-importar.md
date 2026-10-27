@@ -51,7 +51,7 @@ El formato del archivo se especifica en Diseño (ver `specs/CONTRATO-API/README.
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Nombre del archivo | `fast.clock_start_actual` (fecha) + identificador del ayuno (control `id`, 8 primeros caracteres) | derivado |
-| Contenido | `fast` y todas sus entradas y su plan, catálogos, `fast.tz_offset` en cabecera; `person_profile.*` solo si `settings.export_person_enabled` | lectura |
+| Contenido | `fast` y todas sus entradas y su plan, catálogos (incluidas las medidas caseras, `household_unit`), `fast.tz_offset` en cabecera; `person_profile.*` solo si `settings.export_person_enabled`. Formato **1.2** (EV-006): añade `intake.amount_entered`, `unit_entered`, `group_id`, `blood_pressure_reading.seconds_standing`, `is_baseline`, `rule.direction`, `trend_count`, `trend_of`, `goal_percent`, `is_placeholder`, `intake_goal.nudge_after_hours`, `plan_metric.standing_check_seconds` y `fast.started_with_warnings` | lectura |
 | Datos personales | `settings.export_person_enabled` | lectura |
 
 **Acciones:** Exportar → genera el archivo en el teléfono y abre la hoja de compartir; la app no envía nada por su cuenta. Ayuno `planned` (sin inicio real): el nombre usa la fecha del inicio previsto (ver decisión abierta).
@@ -81,7 +81,7 @@ El formato del archivo se especifica en Diseño (ver `specs/CONTRATO-API/README.
 | Campos ignorados | claves desconocidas del archivo | derivado |
 
 **Acciones:** Importar → escribe todo o nada (si algo falla, no queda ninguna importación parcial) · Cancelar. Tras importar: «Importado: 1 ayuno, 2 plantillas…».
-**Estados:** vacío (archivo sin contenido reconocible: «Este archivo no contiene datos de la app») · cargando (validando y luego importando) · error (archivo inválido: «No es un archivo de la app o está dañado», nada se modifica; versión de formato mayor que la soportada: «Este archivo es de una versión más nueva de la app. Actualiza la app para importarlo.»; fallo a mitad: se revierte todo) · sin permisos (acceso a archivos denegado: aviso con botón a ajustes; bloqueo activo: huella o PIN antes de importar).
+**Estados:** vacío (archivo sin contenido reconocible: «Este archivo no contiene datos de la app») · cargando (validando y luego importando) · error (archivo inválido: «No es un archivo de la app o está dañado», nada se modifica — también si trae medidas o reglas nuevas con valores imposibles, como una equivalencia ≤ 0 o una tendencia de menos de 3 lecturas; versión de formato mayor que la soportada: «Este archivo es de una versión más nueva de la app. Actualiza la app para importarlo.»; fallo a mitad: se revierte todo) · sin permisos (acceso a archivos denegado: aviso con botón a ajustes; bloqueo activo: huella o PIN antes de importar).
 
 ## Validación Laws of UX
 - **Hick:** 2 acciones principales (Exportar todo, Importar). ✔
@@ -97,3 +97,5 @@ El formato del archivo se especifica en Diseño (ver `specs/CONTRATO-API/README.
 - **Nombre del archivo de un ayuno sin inicio real** (planificado o desde cero sin empezar): H-036 usa la fecha del inicio real. Propuesta: usar la del inicio previsto.
 - **Conflicto al restaurar:** si una entrada del archivo existe con otro contenido (editada en el teléfono después de exportar), ¿gana el archivo o el teléfono? Propuesta: gana la de `updated_at` más reciente y el resumen lo indica.
 - **Exportar todo — nombre del archivo:** H-036 solo define el de un ayuno. Propuesta: `ayuno_todo_<AAAA-MM-DD de hoy>.json`.
+
+*Cambio EV-006 (2026-10-26):* el archivo pasa al formato **1.2**, solo con campos añadidos (H-036). Un archivo 1.0 o 1.1 se importa sin perder nada: lo tecleado de cada ingesta toma su cantidad y unidad, y el resto de campos nuevos su valor por defecto (H-040). La pantalla no cambia; el resumen cuenta las medidas caseras como parte de los catálogos.

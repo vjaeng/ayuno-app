@@ -1,7 +1,7 @@
 # Flujo: Plantillas
 
-**Historias que cubre:** H-001, H-002, H-003, H-014, H-031 (definir el plan de vuelta a comer)
-**Entrada:** Más → Plantillas; Crear ayuno → «Crear una plantilla» · **Salida:** lista de plantillas; editor de reglas
+**Historias que cubre:** H-001, H-002, H-003, H-014, H-031 (definir el plan de vuelta a comer), H-052 (preguntar tras N horas), H-053 (tiempos de pie), H-057 (arreglar el plan de un ayuno desde la revisión previa)
+**Entrada:** Más → Plantillas; Crear ayuno → «Crear una plantilla»; Revisión antes de empezar → «Arreglar ›» de una meta (plan del ayuno, solo la subpantalla Líquidos y metas) · **Salida:** lista de plantillas; editor de reglas; Revisión antes de empezar
 
 ## Pantallas
 
@@ -73,12 +73,14 @@ Secciones plegables; cada una se edita en su propia subpantalla.
 │     Posterior: 07:00          [+]│
 │ [✔] Presión arterial             │
 │     Ayuno: 07:00 21:00        [+]│
+│     De pie a los: 60 s · 180 s [+]│
 │ [ ] Cetonas                      │
 ```
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Interruptor por tipo | `plan_metric.metric_type_code` (existencia de la fila); lista de `metric_type.name` activos | escritura |
 | Horarios por etapa | `metric_schedule.stage_kind`, `metric_schedule.time_of_day` | escritura |
+| «De pie a los: …» (solo presión arterial) | `plan_metric.standing_check_seconds` (cada uno > 0, sin repetir; se ordenan solos; vacío = sin temporizador) | escritura |
 
 #### Subpantalla: Productos
 | Elemento UI | Campo canónico | Modo |
@@ -89,11 +91,23 @@ Secciones plegables; cada una se edita en su propia subpantalla.
 | Motivo | `plan_product.reason` | escritura (opcional) |
 
 #### Subpantalla: Líquidos y metas
+```
+│ Agua    Meta [ 2000 ] mL         │
+│         Preguntar tras [ 6 ] h   │
+│         sin anotar               │
+│ Sal     Meta [ ____ ] g  por llenar│
+│         Preguntar tras [ 6 ] h   │
+│ Potasio [+ Meta]                 │
+```
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Tipo de ingesta | `intake_type.name` | lectura |
-| Meta diaria | `intake_goal.daily_amount` | escritura (opcional) |
+| Meta (existencia de la fila) | `intake_goal.intake_type_code` | escritura («+ Meta» / quitar) |
+| Meta diaria | `intake_goal.daily_amount` | escritura (opcional: vacía = «por llenar», EV-006) |
 | Unidad de la meta | `intake_goal.unit` | escritura |
+| «por llenar» | `intake_goal.daily_amount` nulo | lectura |
+| «Preguntar tras N h sin anotar» | `intake_goal.nudge_after_hours` (> 0; vacío = no pregunta) | escritura (opcional) |
+| Franja «Estás cambiando el plan de este ayuno, no la plantilla» (solo al llegar desde la revisión previa) | — | lectura |
 
 #### Subpantalla: Reglas de alerta
 Lista de reglas (`rule.name`, `rule.level`, `rule.active`) → [reglas-editar.md](reglas-editar.md).
@@ -129,7 +143,9 @@ Lista de reglas (`rule.name`, `rule.level`, `rule.active`) → [reglas-editar.md
 | Etapas en que se muestra | `stage_notice.stage_kinds` | escritura (al menos una) |
 
 **Acciones:** Guardar (valida y guarda la plantilla completa; no afecta a ayunos ya creados) · Atrás con cambios sin guardar → «¿Descartar cambios?».
-**Estados:** vacío (plantilla nueva: secciones con «Sin configurar») · cargando · error (nombre vacío, objetivo ≤ 0, repetición sin duración, aviso sin etapas: mensaje en el campo; fallo al guardar: se conserva lo editado) · sin permisos (bloqueo activo).
+**Estados:** vacío (plantilla nueva: secciones con «Sin configurar») · cargando · error (nombre vacío, objetivo ≤ 0, repetición sin duración, aviso sin etapas, tiempo de pie ≤ 0 o repetido, horas de pregunta ≤ 0: mensaje en el campo; fallo al guardar: se conserva lo editado) · sin permisos (bloqueo activo).
+
+**Plan de un ayuno (desde la revisión previa, EV-006):** «Arreglar ›» abre la misma subpantalla o el mismo editor de regla sobre la copia del plan del ayuno planificado (D-03), con la FranjaInformativa «Estás cambiando el plan de este ayuno, no la plantilla». Guardar escribe solo en el plan del ayuno y vuelve a la revisión. La plantilla no cambia.
 
 ## Validación Laws of UX
 - **Hick:** 1 acción principal (Guardar); la complejidad se reparte en 8 secciones de una sola tarea cada una. ✔
@@ -146,3 +162,5 @@ Lista de reglas (`rule.name`, `rule.level`, `rule.active`) → [reglas-editar.md
 *Propuestas aceptadas por el humano el 2026-10-08.*
 - ¿El editor de plantilla sirve también para editar el plan copiado de un ayuno? Ligado a la pregunta de [ayuno-crear.md](ayuno-crear.md). Propuesta: sí, mismo editor con un aviso «Estás editando el plan de este ayuno, no la plantilla».
 - Duplicar: ¿nombre por defecto «Copia de …»? Propuesta: sí.
+
+*Cambio EV-006 (2026-10-26):* las metas de ingesta pueden quedar **sin cifra** («por llenar») y tener «Preguntar tras N h sin anotar» (H-002, H-052); la presión arterial tiene sus tiempos de pie (60 s y 180 s de fábrica, H-053). La plantilla de ejemplo trae metas de agua y sal sin cifra que preguntan tras 6 h, sus reglas marcadas «de ejemplo» y la regla desactivada «Sal por debajo de ___ % de la meta a las ___» (H-003). Por primera vez se edita el **plan de un ayuno** (no la plantilla), solo desde la revisión antes de empezar y solo en las partes que esta señala (reglas y metas); con ello se aplica la propuesta aceptada el 2026-10-08 («mismo editor con un aviso»), que no se había construido.

@@ -1,6 +1,6 @@
 # Flujo: Ayunos planificados
 
-**Historias que cubre:** H-046, H-005 (empezar y registrar la última comida desde el detalle), H-044 (acceso a «Cambiar»), H-045 (acceso a «Borrar ayuno»), H-004 (acceso a «Planificar ayuno»)
+**Historias que cubre:** H-046, H-005 (empezar y registrar la última comida desde el detalle), H-057 (revisión antes de empezar), H-044 (acceso a «Cambiar»), H-045 (acceso a «Borrar ayuno»), H-004 (acceso a «Planificar ayuno»)
 **Entrada:** pestaña Planificados; Inicio → «Ver y preparar este ayuno» del próximo · **Salida:** Crear ayuno, Cambiar ayuno, Inicio (al empezar)
 
 ## Pantallas
@@ -64,12 +64,13 @@
 | Objetivo | `fast.target_hours` | lectura |
 | Notas | `fast.notes` | lectura |
 | Lista previa | `checklist_item.text`, `checklist_item.is_checked` | lectura / escritura |
+| Línea «Antes de empezar: 2 reglas de ejemplo · 2 metas sin cifra» (solo si hay pendientes de reglas o metas) | derivado «Revisión previa» | derivado (informa; no bloquea) |
 | Botón «Registrar última comida» / «Corregir última comida» | `fast.last_meal_actual` | escritura (default `fast.last_meal_planned`, editable) |
 | Botón «Empieza el ayuno ahora» | `fast.clock_start_actual`, `fast.status` | acción → escritura (H-005) |
 | Menú ⋮ → «Cambiar» | — | acción → [ayuno-crear.md](ayuno-crear.md), modo cambio (H-044) |
 | Menú ⋮ → «Borrar ayuno» | `fast` (D) + recuento de registros del ayuno | acción → confirmación de [historial-revisar.md](historial-revisar.md) (H-045) |
 
-**Acciones:** «Empieza el ayuno ahora» → fija `clock_start_actual` con segundos, `status = in_progress`, reprograma recordatorios y lleva a Inicio con el reloj (sin confirmación, igual que en Inicio), donde se abre la hoja «Peso al empezar» ([ayuno-inicio.md](ayuno-inicio.md), H-047). Si ya hay otro ayuno en curso, el botón no aparece y en su lugar una FranjaInformativa dice «Termina el ayuno en curso para poder empezar este.» «Cambiar» → modo cambio y vuelta a este detalle. «Borrar ayuno» → confirmación «Borrar para siempre»; al confirmar, vuelve a Planificados.
+**Acciones:** «Empieza el ayuno ahora» → si la revisión previa tiene pendientes, abre antes **Revisión antes de empezar** ([ayuno-inicio.md](ayuno-inicio.md#pantalla-revisión-antes-de-empezar-h-057-ev-006), H-057); sin pendientes, fija `clock_start_actual` con segundos, `status = in_progress`, reprograma recordatorios y lleva a Inicio con el reloj (sin confirmación cuando no hay pendientes, igual que en Inicio), donde se abre la hoja «Peso al empezar» ([ayuno-inicio.md](ayuno-inicio.md), H-047). Si ya hay otro ayuno en curso, el botón no aparece y en su lugar una FranjaInformativa dice «Termina el ayuno en curso para poder empezar este.» «Cambiar» → modo cambio y vuelta a este detalle. «Borrar ayuno» → confirmación «Borrar para siempre»; al confirmar, vuelve a Planificados.
 **Estados:** vacío (n/a) · cargando (esqueleto; al empezar, botón deshabilitado con indicador) · error (fallo al leer → mensaje y «Reintentar»; el ayuno ya no está planificado — se empezó desde Inicio o una notificación, o se borró → «Este ayuno ya no está planificado.» y vuelta a Planificados) · sin permisos (bloqueo activo; notificaciones denegadas → FranjaInformativa como en Inicio).
 
 ## Validación Laws of UX
@@ -77,3 +78,7 @@
 - **Jakob:** lista → detalle con acciones en la barra superior, patrón estándar de Android. ✔
 - **Fitts:** «Planificar ayuno» y «Empieza el ayuno ahora» al pie, ancho completo; filas FilaLista de 56 dp. ✔
 - **Miller:** detalle en 3 bloques (horas, lista previa, acciones); la lista rara vez pasa de 5-9 filas y se desplaza. ✔
+
+## Decisiones de producto
+
+*Cambio EV-006 (2026-10-26):* «Empieza el ayuno ahora» del detalle pasa por la misma pantalla **Revisión antes de empezar** que Inicio cuando hay pendientes (H-057), y el detalle adelanta en una línea cuántas reglas de ejemplo y metas sin cifra tiene el plan, para poder arreglarlas mientras se prepara el ayuno. Sin pendientes, empezar sigue siendo un toque (H-005).

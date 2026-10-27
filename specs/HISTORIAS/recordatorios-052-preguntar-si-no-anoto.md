@@ -20,6 +20,15 @@
 ### Consideraciones de Seguridad
 La notificación nombra el tipo («sal»), nunca cantidades ni lecturas (S4). No aconseja: pregunta y ofrece anotar.
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| «preguntar tras N horas sin anotar» de la meta | `intake_goal.nudge_after_hours` |  | ✓ |  |  |
+| tipo de la meta («sal») | `intake_goal.intake_type_code`, `intake_type.name` |  | ✓ |  |  |
+| hora de la última ingesta de ese tipo | `intake.taken_at`, `intake.intake_type_code` (no borradas) |  | ✓ |  |  |
+| o, si no hay, la del inicio del reloj | `fast.clock_start_actual` |  | ✓ |  |  |
+| con el ayuno en curso | `fast.status` |  | ✓ |  |  |
+| horas del silencio nocturno no cuentan | `settings.quiet_start`, `settings.quiet_end` |  | ✓ |  |  |
+| cuándo pregunta y que no repite el hueco | derivado «Próxima pregunta por tipo» (MODELO §2.5, D-23) |  | ✓ |  |  |
+| «Sí, anotar» abre el formulario | `intake.*` (vía H-012) | ✓ |  |  |  |
+| fila en Hoy | derivado «Pendientes del día» |  | ✓ |  |  |

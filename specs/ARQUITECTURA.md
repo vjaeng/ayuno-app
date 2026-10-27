@@ -84,13 +84,13 @@ Los paquetes de `ui/`, `usecase/` y `repository/` se agrupan por las mismas áre
 | Área | Historias | Entidades principales |
 |---|---|---|
 | `plan` | H-001–H-003, H-014, H-031 (definir) | template, stage, plan_metric, metric_schedule, intake_goal, checklist_item, stage_notice, plan_product, refeed_step |
-| `fast` | H-004–H-006, H-030, H-044 | fast |
+| `fast` | H-004–H-006, H-030, H-044, H-057 (revisión antes de empezar) | fast |
 | `planned` | H-046 | fast (lista y detalle de planificados; reutiliza los casos de uso de `fast`) |
-| `record` | H-008–H-010, H-012, H-015, H-032, H-035, H-047, H-048, H-049 (anotar con palabras) | measurement, blood_pressure_reading, symptom, intake, product_log, meal, note |
-| `catalog` | H-007, H-010, H-011, H-013, H-049 | metric_type, metric_option, symptom_type, intake_type, product, product_schedule |
-| `rules` | H-019–H-029 | rule, alert |
+| `record` | H-008–H-010, H-012, H-015, H-032, H-035, H-047, H-048, H-049 (anotar con palabras), H-050 y H-051 (medidas caseras y botón rápido), H-053 (temporizador de pie) | measurement, blood_pressure_reading, symptom, intake, product_log, meal, note |
+| `catalog` | H-007, H-010, H-011, H-013, H-049, H-050 | metric_type, metric_option, symptom_type, intake_type, household_unit, product, product_schedule |
+| `rules` | H-019–H-029, H-054–H-056 | rule, alert |
 | `refeed` | H-031, H-032 | refeed_step, refeed_check, meal |
-| `reminders` | H-016–H-018 | (derivados de horarios) |
+| `reminders` | H-016–H-018, H-052, H-053 (alarmas del temporizador) | (derivados de horarios) |
 | `history` | H-033, H-034, H-045 | todas las de registro, edit_log; fast (borrado definitivo) |
 | `exchange` | H-036–H-040 | todas |
 | `settings` | H-017, H-029, H-038, H-042, H-043 | settings, person_profile, emergency_contact |
@@ -124,10 +124,10 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 |---|---|---|
 | Crear ayuno desde plantilla | H-004 | Escribe `fast` y copia 9 entidades de plan; programa alarmas. La semana de separación (D-17) se valida dentro de la transacción |
 | Duplicar plantilla | H-003 | Copia multi-entidad |
-| Empezar el ayuno | H-005 | `fast` + `edit_log` (si corrige) + reprogramar alarmas (efecto externo) |
-| Guardar entrada con evaluación de reglas | H-008–H-012, H-019–H-027, H-049 | Entrada + `alert` en una transacción; programa recordatorio de regla |
+| Empezar el ayuno | H-005, H-057 | `fast` + `edit_log` (si corrige) + reprogramar alarmas (efecto externo); la revisión previa se recalcula dentro de la transacción y «de todos modos» guarda `started_with_warnings` (EV-006) |
+| Guardar entrada con evaluación de reglas | H-008–H-012, H-019–H-027, H-049, H-050, H-051, H-053–H-056 | Entrada + `alert` en una transacción; programa recordatorio de regla. «Agua con sal»: dos `intake` con un `group_id` y una sola evaluación, todo o nada (EV-006) |
 | Terminar el ayuno | H-030, H-031, H-047 | `fast` + generación de `refeed_check` + peso opcional (`measurement`) + alarmas |
-| Corregir o borrar entrada | H-034, H-048, H-005 | Entrada + `edit_log` + `alert` si se corrige con el ayuno en curso (D-20); reprograma recordatorios ([corregir-entrada.md](TRANSACCIONES-CLAVE/corregir-entrada.md)) |
+| Corregir o borrar entrada | H-034, H-048, H-005, H-051 («Deshacer»), H-055 (marcar de partida) | Entrada + `edit_log` + `alert` si se corrige con el ayuno en curso (D-20); reprograma recordatorios ([corregir-entrada.md](TRANSACCIONES-CLAVE/corregir-entrada.md)) |
 | Cambiar un ayuno planificado | H-044 | `fast` + sustitución de la copia del plan + `edit_log`; reprograma alarmas; semana de separación si cambian las horas (D-17). Las alertas resuelven su regla también entre las sustituidas (D-16) |
 | Borrar un ayuno para siempre | H-045 | Borrado físico de `fast` y de todo lo que cuelga de él (~19 tablas) todo o nada (ADR-SEG-007); retira notificaciones y reprograma alarmas |
 | Exportar | H-036, H-037 | Efecto externo (archivo, hoja de compartir) |
@@ -175,6 +175,7 @@ Operaciones que califican según doc 12; se documentan al construirlas (paso 8):
 | 2026-10-23 | EV-005, construcción: las palabras viajan dentro de `MetricType.options` (como los horarios dentro de `Product`), así que toda pantalla que ya lee el catálogo las recibe; `RoomCatalogRepository.saveMetricType` guarda tipo y palabras en una transacción y borra en blando las que faltan. `RecordMeasurement` y `CorrectMeasurement` aceptan `metricOptionId` y lo resuelven contra las palabras vigentes del tipo (`OPTION_NOT_FOUND`). `Formats.measurementValue` es el único formato del valor de una medición en `:app`. La validación de palabras al importar va en `JsonDataExchange` (sobre el resultado de la fusión) | ADR-003, ADR-007 |
 | 2026-10-10 | Tanda 4: una sola vía de importación para H-039 y H-040 (importa lo que traiga el archivo; fusión por clave, gana `updated_at` más reciente). El bloque `person` del archivo no se importa (la copia cifrada de H-042 lo restaurará) | ADR-SEG-006 |
 | 2026-10-11 | EV-002: área `planned` (H-046) en `:app` reutilizando los casos de uso de `fast`; la semana de separación vive en el dominio (`derived/FastSpacing`) y la UI la usa para el mensaje detallado, sin añadir datos al resultado tipado. El diálogo de borrado, el borrado con recordatorios y el recuento de registros se comparten entre Historial y Planificados | Un solo cálculo de la regla (D-17) para el caso de uso y el mensaje; sin puertos nuevos (`FastRepository.all()` basta) |
+| 2026-10-26 | EV-006, diseño (H-050–H-057, MODELO-DATOS D-22–D-25): `:domain` gana los derivados `derived/HouseholdMeasures` (equivalente y línea de la medida imprecisa), `ExpectedIntake` (avance esperado), `IntakeNudge` (próxima pregunta por tipo), `PreStartReview` (pendientes al empezar) y `StandingMoment` (momento de pie y valor de partida). `RuleEngine` recibe en su contexto la sentada enlazada, el valor de partida y la serie previa del mismo momento; los carga `AlertRecorder`, compartido por anotar, corregir y marcar de partida. Casos de uso: `RecordIntake` ampliado (medida casera), `RecordQuickIntake`, `RecordWaterWithSalt`, `MarkBaseline`, y `StartFast` con revisión (`PRE_START_REVIEW_PENDING`). `RuleValidator` admite las tres condiciones nuevas y sigue sin activar reglas con `is_placeholder` o sin cifra. `:data`: `HouseholdUnitEntity` y su DAO, columnas nuevas, **base de datos 9 con `Migrations.From8To9` aditiva** (tabla, columnas con valores por defecto, `amount_entered`/`unit_entered` copiados de lo guardado, [60, 180] en las filas de presión de `plan_metric`, siembra sin duplicar y `is_placeholder` solo en el ejemplo intacto); formato 1.2 en `ExchangeFormat`. `:app`: `ReminderScheduler` incluye la pregunta de H-052; `StandingTimer` con su propio `PendingIntent` (ADR-005); componentes BotonRapido, Temporizador e Insignia. Sin dependencias nuevas | ADR-005, ADR-006, ADR-007, ADR-008 |
 
 ## 7. Versiones y dependencias
 

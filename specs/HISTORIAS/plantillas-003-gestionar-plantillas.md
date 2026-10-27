@@ -18,7 +18,7 @@
 ### Consideraciones de Seguridad
 La app no aconseja: ningún valor clínico precargado.
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | duplicar la plantilla con todo su contenido | `template.name` | ✓ | ✓ |  |  |
@@ -29,3 +29,7 @@ La app no aconseja: ningún valor clínico precargado.
 | plantilla de ejemplo con mediciones | `plan_metric.metric_type_code` | ✓ |  |  |  |
 | plantilla de ejemplo con estructura de reglas, sin umbrales | `rule.condition_kind` | ✓ |  |  |  |
 | ayunos creados desde la plantilla no cambian | `fast.template_id` |  | ✓ |  |  |
+| reglas del ejemplo marcadas «de ejemplo» (EV-006) | `rule.is_placeholder` | ✓ | ✓ | ✓ |  |
+| metas de agua y sal sin cifra que preguntan tras 6 h (EV-006) | `intake_goal.intake_type_code`, `intake_goal.daily_amount` (nulo), `intake_goal.nudge_after_hours` | ✓ |  |  |  |
+| regla «Sal por debajo de ___ % de la meta a las ___» desactivada (EV-006) | `rule.condition_kind`, `rule.intake_type_code`, `rule.goal_percent`, `rule.check_time`, `rule.active` | ✓ |  |  |  |
+| al actualizar, solo el ejemplo sin tocar (EV-006) | `rule.name`, `rule.message`, `rule.threshold` (comparación con la semilla, D-25) |  | ✓ |  |  |

@@ -113,6 +113,11 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 
 **Alternativas consideradas.** `setExactAndAllowWhileIdle`: sujeta a límites de frecuencia en reposo profundo (dos recordatorios cercanos podrían retrasarse). WorkManager: no garantiza hora exacta. Notificaciones remotas: requieren servidor, fuera de alcance.
 
+**Aclaración (EV-006, 2026-10-26).** Dos usos nuevos de las mismas alarmas exactas, sin permisos nuevos:
+- **Pregunta por falta de ingesta (H-052):** es un pendiente más del cálculo de 48 h (derivado «Próxima pregunta por tipo», MODELO-DATOS D-23), así que entra en la cadena de «la siguiente alarma» y se reprograma tras reiniciar o cambiar la hora como cualquier recordatorio. Su hora se cuenta fuera del silencio nocturno, así que nunca cae dentro de él. No se guarda si ya se preguntó: el `ReminderScheduler` solo programa momentos futuros, y una ingesta nueva mueve el ancla y con ella el momento.
+- **Temporizador de pie (H-053):** no pasa por el cálculo de pendientes, porque su hora de inicio no es un dato del modelo. Usa un `PendingIntent` propio, distinto del de los recordatorios, y programa con `setAlarmClock()` solo el siguiente tiempo del plan. El intent lleva la lectura sentada y los segundos de ese tiempo, y al sonar programa el siguiente. Así sobrevive a que Android cierre la app, e ignora el silencio nocturno igual que los recordatorios de reglas. «Cancelar» retira ese intent. Tras un reinicio el temporizador no se restaura (dura minutos): la lectura se puede anotar «sin esperar».
+
+
 ## ADR-006: Motor de reglas como función pura del dominio
 **Fecha:** 2026-10-08 · **Estado:** aceptada
 
@@ -130,6 +135,14 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - Paga: la semántica de episodio es una decisión nueva que las historias no fijan (resuelta en Q-01); el contexto a cargar por evaluación crece con el número de lecturas (acotado al ayuno en curso).
 
 **Alternativas consideradas.** Evaluar en la UI al guardar: duplicaría lógica y no cubriría las horas programadas. Un motor de reglas genérico (biblioteca externa): superficie innecesaria (S7) para cinco tipos de condición.
+
+**Aclaración (EV-006, 2026-10-26).** Tres condiciones que comparan lecturas entre sí: `pair_difference`, `change_from_baseline` y `trend` (MODELO-DATOS D-24). El motor sigue siendo puro: el caso de uso carga y pasa en el contexto la lectura sentada enlazada, el valor de partida y la serie previa del mismo tipo (en la presión, del mismo momento de pie); el motor no consulta nada. La dirección va en `rule.direction` y el umbral es un dato de la regla, nunca del código (H-019). Episodios con el mismo criterio de Q-01:
+- `pair_difference` y `change_from_baseline`: se rearman con una lectura que ya no cumple la condición.
+- `trend`: se rearma cuando la racha se corta (una lectura igual o en sentido contrario).
+- `intake_below_goal` con `goal_percent`: compara contra el porcentaje de la meta (nulo = 100, el comportamiento anterior) y sigue rearmándose al cambiar de día.
+
+Marcar otra lectura «de partida» con el ayuno en curso vuelve a evaluar `change_from_baseline` en la misma transacción. Las alertas ya registradas no cambian (como D-20). Una regla con `is_placeholder` o sin cifra sigue sin poder activarse (`RuleValidator`), así que el motor nunca la ve. Ahora hay ocho tipos de condición; sigue sin justificarse una biblioteca externa.
+
 
 ## ADR-007: Formato de intercambio: JSON canónico con JSON Schema
 **Fecha:** 2026-10-08 · **Estado:** aceptada
@@ -155,6 +168,19 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 
 **Versión 1.1 (EV-005, 2026-10-23).** `catalogs` añade `metric_options` (MODELO-DATOS D-21). Cambio aditivo: `schema_version` pasa a **1.1** (menor); la app sigue importando archivos 1.0 (sin la lista: se conservan las palabras del teléfono) y rechaza una versión mayor 2.x. Esquema `schema/fasting-log-1.1.schema.json` y entrada en `schema/CHANGELOG.md`.
 
+**Versión 1.2 (EV-006, 2026-10-26).** Todo aditivo (MODELO-DATOS D-22 a D-25):
+- `catalogs.household_units`;
+- en `intake_types`, `quick_unit_code`;
+- en `intakes`, `amount_entered`, `unit_entered` (código en inglés, p. ej. `pinch`, D-01) y `group_id`;
+- en `intake_goals`, `nudge_after_hours`, con `daily_amount` admitiendo `null`;
+- en `plan_metrics`, `standing_check_seconds`;
+- en `blood_pressure_readings`, `seconds_standing` e `is_baseline`; en `measurements`, `is_baseline`;
+- en `rules`, `direction`, `trend_count`, `trend_of`, `goal_percent` e `is_placeholder` y tres valores nuevos de `condition_kind`;
+- en `fasts`, `started_with_warnings`.
+
+`schema_version` pasa a **1.2**. Los archivos 1.0 y 1.1 se importan con los valores por defecto (`amount_entered = amount`, `unit_entered = unit`, `is_placeholder = false`, el resto `null` o el valor por defecto de la columna). Un 2.x se sigue rechazando. Esquema `schema/fasting-log-1.2.schema.json`, ejemplo y entrada en `schema/CHANGELOG.md`. Solo entra lo de M1-M5; las mejoras P2/P3 subirán la versión menor en sus evoluciones.
+
+
 ## ADR-008: Datos precargados y textos fuera del código
 **Fecha:** 2026-10-08 · **Estado:** aceptada
 
@@ -171,6 +197,12 @@ Dependencias permitidas: `:app → :domain`, `:data → :domain`, y `:app → :d
 - Paga: la carga inicial es una operación más que probar; los textos de recursos no están disponibles en `:domain` (los mensajes de dominio se devuelven como códigos y la UI los traduce).
 
 **Alternativas consideradas.** Datos iniciales en una migración SQL: más difícil de leer y de mantener alineada con el formato de intercambio.
+
+**Aclaración (EV-006, 2026-10-26).**
+- Las medidas caseras de fábrica se siembran desde `assets/seed/household_units.json`, con identificadores fijos (UUID por nombre, como `metric_options.json`): vaso 250 mL y taza 240 mL en agua e infusión; cucharadita rasa 5 g, ¼ de cucharadita 1.25 g y pizca 0.3 g imprecisa en la sal. En `intake_types.json`, el botón rápido es `glass` para el agua y `pinch` para la sal. Son conversiones de cocina, no dosis.
+- La plantilla de ejemplo (`example_template.json`) añade la regla de sal «por debajo del ___ % de la meta» y metas sin cifra con `nudge_after_hours` 6. Sus reglas de fábrica llevan `is_placeholder = true`.
+- La migración 8 → 9 siembra lo mismo sin duplicar y solo para tipos que existan. Marca `is_placeholder` solo en las reglas del ejemplo instalado que sigan idénticas a la semilla (D-25). Ninguna semilla trae un umbral.
+
 
 ## ADR-009: Inyección de dependencias manual
 **Fecha:** 2026-10-08 · **Estado:** aceptada

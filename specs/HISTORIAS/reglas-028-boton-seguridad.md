@@ -15,7 +15,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | reglas activas | `rule.active` |  | ✓ |  |  |
@@ -33,3 +33,4 @@
 | filtro de posición | `rule.filter_position` |  | ✓ |  |  |
 | nivel (alerta roja) | `rule.level` |  | ✓ |  |  |
 | acción | `rule.action` |  | ✓ |  |  |
+| frases de las condiciones nuevas (EV-006) | `rule.direction`, `rule.trend_count`, `rule.trend_of`, `rule.goal_percent` |  | ✓ |  |  |

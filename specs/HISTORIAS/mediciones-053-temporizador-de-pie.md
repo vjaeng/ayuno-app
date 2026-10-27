@@ -20,6 +20,14 @@
 ### Consideraciones de Seguridad
 Lecturas y segundos de pie son datos de salud (Crítico, S4). El temporizador usa las alarmas que la app ya tiene; sin permisos nuevos.
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| tiempos del temporizador (60 y 180 s), en la plantilla | `plan_metric.standing_check_seconds` | ✓ | ✓ | ✓ |  |
+| toma sentado | `blood_pressure_reading.position`, `blood_pressure_reading.id` |  | ✓ |  |  |
+| lectura de pie enlazada a la sentada | `blood_pressure_reading.paired_reading_id`, `blood_pressure_reading.position` | ✓ |  |  |  |
+| cifras y hora de cada lectura de pie | `blood_pressure_reading.systolic`, `diastolic`, `pulse`, `taken_at` | ✓ |  |  |  |
+| segundos de pie, calculados (nulo = «tomada sin esperar») | `blood_pressure_reading.seconds_standing` | ✓ | ✓ | ✓ |  |
+| diferencia de las tres cifras por lectura de pie | derivado «Diferencia de pareja» (MODELO §2.5) |  | ✓ |  |  |
+| momento de pie (1 min, 3 min, sin esperar) | derivado «Momento de pie» |  | ✓ |  |  |
+| exportación con los segundos | `blood_pressure_reading.seconds_standing` (vía H-036) |  | ✓ |  |  |

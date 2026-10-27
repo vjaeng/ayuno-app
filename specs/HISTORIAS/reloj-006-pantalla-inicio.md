@@ -23,7 +23,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002; re-tejida el 2026-10-14, EV-004; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-11, EV-002; re-tejida el 2026-10-14, EV-004; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | tiempo transcurrido desde la hora de inicio guardada | `fast.clock_start_actual` |  | ✓ |  |  |
@@ -43,3 +43,7 @@
 | última medición: unidad | `measurement.unit_entered` |  | ✓ |  |  |
 | última medición: hora | `measurement.taken_at` |  | ✓ |  |  |
 | número de mediciones del ayuno (acceso a H-048) | `measurement.fast_id`, `blood_pressure_reading.fast_id` (control) |  | ✓ |  |  |
+| «llevas X de Y» por meta con cifra (EV-006) | `intake_goal.daily_amount`, `intake_goal.unit`, `intake.amount` |  | ✓ |  |  |
+| sodio frente al de la meta (EV-006) | `intake_type.sodium_factor` |  | ✓ |  |  |
+| «a esta hora» repartido entre fin e inicio del silencio (EV-006) | `settings.quiet_start`, `settings.quiet_end` → derivado «Avance esperado a esta hora» |  | ✓ |  |  |
+| botones rápidos (EV-006) | `intake_type.quick_unit_code`, `household_unit.name` (vía H-051) |  | ✓ |  |  |

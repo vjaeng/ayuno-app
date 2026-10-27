@@ -16,10 +16,12 @@
 ### Consideraciones de Seguridad
 Toda entrada es hostil hasta validarse (S1); fallar cerrado (S6) ante versión incompatible.
 
-### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | ayunos restaurados | `fast.*` | ✓ |  |  |  |
 | plantillas restauradas | `template.*` | ✓ |  |  |  |
 | entradas restauradas con las horas al segundo | `measurement.*` | ✓ |  |  |  |
 | palabras de las mediciones restauradas (EV-005; un archivo 1.0 no las trae) | `metric_option.*` | ✓ |  | ✓ |  |
+| 1.0 o 1.1 sin perder nada: lo tecleado = cantidad y unidad (EV-006) | `intake.amount_entered`, `intake.unit_entered` | ✓ |  |  |  |
+| demás campos nuevos vacíos o de fábrica (EV-006) | `household_unit.*`, `intake_type.quick_unit_code`, `intake.group_id`, `intake_goal.nudge_after_hours`, `plan_metric.standing_check_seconds`, `blood_pressure_reading.seconds_standing`, `*.is_baseline`, `rule.direction`, `rule.trend_count`, `rule.trend_of`, `rule.goal_percent`, `rule.is_placeholder`, `fast.started_with_warnings` | ✓ |  |  |  |

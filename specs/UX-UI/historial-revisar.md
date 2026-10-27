@@ -1,6 +1,6 @@
 # Flujo: Historial
 
-**Historias que cubre:** H-033, H-034, H-035 (notas en la línea de tiempo), H-045 (borrar un ayuno para siempre), H-048 (ver y corregir las mediciones del ayuno en curso)
+**Historias que cubre:** H-033, H-034, H-035 (notas en la línea de tiempo), H-045 (borrar un ayuno para siempre), H-048 (ver y corregir las mediciones del ayuno en curso), H-050 y H-051 (ingestas en medidas caseras y agrupadas), H-053 (segundos de pie), H-055 (marcar «de partida»), H-057 (empezado con pendientes)
 **Entrada:** pestaña Historial; Inicio → último ayuno; Inicio en curso → «Mediciones de este ayuno»; Hoy → tocar un hecho · **Salida:** Exportar; formulario de corrección
 
 ## Pantallas
@@ -39,6 +39,7 @@
 ┌──────────────────────────────────┐
 │ ← Ayuno · 22 al 25 oct [Exportar]⋮│
 │ 57 h 3 min · objetivo cumplido   │
+│ Empezó con pendientes (4)      › │  ← solo si los hubo (EV-006)
 │ Peso: 71.4 kg → 68.9 kg · −2.5 kg│
 │ Notas: «Semana tranquila»        │
 │ [Todo ▾]  (filtro por tipo)      │
@@ -61,13 +62,14 @@
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Cabecera: fechas, duración, motivo | `fast.clock_start_actual`, `fast.end_actual`, duración final, `fast.end_reason` | lectura / derivado |
+| «Empezó con pendientes (N) ›» → lista agrupada de lo que faltaba (solo lectura) | `fast.started_with_warnings` (`kind`, `text`) | lectura (H-057; no se edita) |
 | Línea de peso (H-047) | peso inicial, final y diferencia (derivado, D-19) | derivado; sin pesos no aparece; texto neutro, sin colores |
 | Notas del ayuno | `fast.notes` | lectura / escritura (editar) |
 | Totales por día | totales del día, sodio | derivado |
 | Entrada: medición | `measurement.taken_at`, `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.not_done_reason`; con palabras, derivado «Palabra de una medición» (EV-005) | lectura |
-| Entrada: presión | `blood_pressure_reading.taken_at`, `.systolic`, `.diastolic`, `.pulse`, `.position` | lectura |
+| Entrada: presión | `blood_pressure_reading.taken_at`, `.systolic`, `.diastolic`, `.pulse`, `.position`; de pie enlazada: «de pie 60 s» (`seconds_standing`) o «tomada sin esperar» (nulo) y su diferencia con la sentada (derivado); «de partida» si `is_baseline` | lectura |
 | Entrada: síntoma | `symptom.noted_at`, `symptom_type.name`, `symptom.severity` | lectura |
-| Entrada: ingesta | `intake.taken_at`, `intake_type.name`, `intake.amount`, `intake.unit` | lectura |
+| Entrada: ingesta | `intake.taken_at`, `intake_type.name`, `intake.amount_entered` + `intake.unit_entered` (en medida: `household_unit.name`) y su equivalente `intake.amount` + `intake.unit` («1 pizca · 0.3 g»); las de un mismo `intake.group_id` en una sola fila («1 vaso de agua con ¼ de cucharadita de sal») | lectura |
 | Entrada: toma de producto | `product_log.taken_at`, `product.name`, `product_log.status`, `product_log.amount` | lectura |
 | Entrada: alerta | `alert.fired_at`, `rule.name`, `rule.level`, `alert.user_choice`, `alert.choice_reason` | lectura |
 | Entrada: nota | `note.noted_at`, `note.text` | lectura |
@@ -134,7 +136,8 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 | Fila medición: tipo, valor y unidad | `metric_type.name`, `measurement.value_entered`, `measurement.unit_entered`, `measurement.value_text`; con palabras, derivado «Palabra de una medición» («Mucha · 7»; sin coincidencia, «4 de 0 a 10») (EV-005) | lectura |
 | Fila medición: detalle | `measurement.source`, `measurement.trend`, `measurement.on_waking` | lectura |
 | Fila medición no hecha | `measurement.not_done_reason` | lectura |
-| Fila presión | `blood_pressure_reading.taken_at`, `.systolic`, `.diastolic`, `.pulse`, `.position`, `.on_waking`, `.not_done_reason` | lectura |
+| Fila presión | `blood_pressure_reading.taken_at`, `.systolic`, `.diastolic`, `.pulse`, `.position`, `.on_waking`, `.not_done_reason`; «de pie 60 s» / «tomada sin esperar» (`seconds_standing`); «de partida» (`is_baseline`) | lectura |
+| Fila medición: «de partida» | `measurement.is_baseline` | lectura |
 | Marca «corregida» | `edit_log.row_id`, `edit_log.action = edit` | lectura |
 | Lista y orden | derivado «Mediciones del ayuno» (MODELO-DATOS §2.5) | derivado |
 | «Borradas (n) ›» | entradas con `deleted_at` (control) | lectura → lista con «Restaurar» |
@@ -169,6 +172,10 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 | Menú ⋮ → «Borrar» (MenuAcciones) | `edit_log.action = delete` (+ control `deleted_at`) | acción (DialogoConfirmacion) |
 | Texto «Si el valor nuevo cumple una de tus reglas, verás su aviso» (solo con el ayuno en curso) | — | lectura |
 | Botón «Restaurar» (si borrada) | `edit_log.action = restore` | acción |
+| Menú ⋮ → «Marcar como de partida» / «Quitar de partida» (mediciones numéricas y presión con valores) | `measurement.is_baseline` / `blood_pressure_reading.is_baseline` (y la anterior de su tipo y posición pasa a false) + `edit_log` | acción → escritura (H-055) |
+| Presión de pie: «de pie 60 s» o «tomada sin esperar» | `blood_pressure_reading.seconds_standing` | lectura (no se edita: se calculó al medir) |
+
+**Marcar como de partida (EV-006):** «Marcar como de partida» no abre formulario: escribe al momento, quita la marca a la que la tuviera en ese ayuno (misma medición y, en la presión, misma posición), deja `edit_log` de las dos y, con el ayuno en curso, vuelve a evaluar las reglas «cambio desde mi valor de partida» (D-24). Snackbar «Glucosa 72 marcada como de partida». Una entrada «no se hizo» no se puede marcar.
 
 **Entrada «no se hizo»:** solo se corrigen su hora y su motivo; para anotar el valor se usa «Anotar» (una entrada nueva). Una presión de pie conserva su vínculo con la sentada (`blood_pressure_reading.paired_reading_id` no se edita) y la diferencia se recalcula (EV-004).
 
@@ -198,3 +205,5 @@ Se abre desde Inicio en curso. Muestra solo mediciones y presiones del ayuno; la
 *Implementación (EV-004, 2026-10-14):* «Borradas (n)» de las mediciones se despliega en la misma lista (como en Plantillas) en vez de abrir otra pantalla. Tras guardar se vuelve a la lista sin Snackbar: la app no tiene ese componente construido y la marca «corregida» ya confirma el cambio. El filtro solo ofrece los tipos que tienen mediciones y vuelve a «Todas» si un tipo se queda vacío, así que el estado «No hay mediciones de este tipo» no puede darse y no se construyó. El detalle del ayuno añade la fila «Mediciones de este ayuno ›» (también para ayunos terminados) y sus mediciones y presiones de la línea de tiempo se pueden tocar para corregirlas; el resto de entradas, cuando se complete H-034.
 
 *Cambio EV-005 (2026-10-23):* línea de tiempo, «Mediciones de este ayuno» y el Detalle de entrada muestran las escalas con su palabra y número; corregir una de ellas usa los botones de palabras (H-049). Mockup: https://claude.ai/artifact/ERYg3yGCNPWG7x6tdGkjCq
+
+*Cambio EV-006 (2026-10-26):* el detalle de un ayuno empezado con pendientes lo dice en la cabecera y lista lo que faltaba (H-057). Las ingestas se muestran como se anotaron y con su equivalente; las de un mismo grupo, juntas (H-050, H-051). Las presiones de pie muestran sus segundos o «tomada sin esperar» (H-053). Mediciones y presiones se pueden marcar «de partida» desde el menú ⋮ del Detalle de entrada (H-055). La corrección de ingestas sigue pendiente de H-034.

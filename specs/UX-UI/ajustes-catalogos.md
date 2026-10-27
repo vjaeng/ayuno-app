@@ -1,6 +1,6 @@
 # Flujo: Catálogos
 
-**Historias que cubre:** H-007, H-010, H-011, H-013, H-049
+**Historias que cubre:** H-007, H-010, H-011, H-013, H-049, H-050 (medidas caseras), H-051 (medida del botón rápido)
 **Entrada:** Más → Catálogos; enlaces desde estados vacíos de Anotar · **Salida:** Más
 
 ## Pantallas
@@ -78,14 +78,45 @@
 
 ### Pantalla: Líquidos y electrolitos (lista y editor)
 
+```
+──── editor (EV-006) ────
+│ ← Sal                            │
+│ Nombre [Sal]   Unidad [g]        │
+│ [ ] Rompe el ayuno               │
+│ Factor de sodio [0.393]          │
+│ Medidas caseras                  │
+│ Cambiarlas no altera lo ya       │
+│ anotado.                         │
+│ [cucharadita rasa] = [5   ] g    │
+│   [ ] imprecisa       [Subir] ✕  │
+│ [¼ de cucharadita] = [1.25] g    │
+│   [ ] imprecisa       [Subir] ✕  │
+│ [pizca           ] = [0.3 ] g    │
+│   [✔] imprecisa       [Subir] ✕  │
+│ [+ Medida]                       │
+│ Botón rápido en Inicio           │
+│ (○) Ninguno (●) pizca            │
+│ (○) ¼ de cucharadita ...         │
+│ [          Guardar           ]   │
+```
+
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
 | Nombre | `intake_type.name` | escritura |
 | Unidad | `intake_type.unit` | escritura |
 | «Rompe el ayuno» | `intake_type.breaks_fast` | escritura |
 | Factor de sodio | `intake_type.sodium_factor` | escritura (opcional; la sal trae 0.393) |
+| Sección «Medidas caseras» | `household_unit` sin `deleted_at` del tipo, en orden de `position` | lectura |
+| Nombre de la medida | `household_unit.name` | escritura |
+| Equivalencia «= N unidad» | `household_unit.equivalent` (en `intake_type.unit`) | escritura (teclado numérico) |
+| «imprecisa» | `household_unit.imprecise` | escritura |
+| «Subir» | `household_unit.position` | escritura |
+| ✕ Quitar medida | control `deleted_at` de `household_unit` | acción (sin confirmación; se aplica al Guardar) |
+| «+ Medida» | alta de `household_unit` (código generado del nombre, inmutable) | acción |
+| «Botón rápido en Inicio» (Ninguno + cada medida) | `intake_type.quick_unit_code` | escritura (oculto si «Rompe el ayuno» está marcado) |
 
-**Errores:** nombre vacío; factor ≤ 0.
+**Errores:** nombre vacío; factor ≤ 0. Medidas: nombre vacío («Escribe el nombre de la medida»), repetido en el mismo líquido («Ya hay una medida con ese nombre»), equivalencia vacía o ≤ 0 («La equivalencia debe ser mayor que 0»); quitar la medida del botón rápido deja el botón en «Ninguno»; marcar «Rompe el ayuno» quita el botón rápido («Un líquido que rompe el ayuno no tiene botón rápido»).
+**Estados de la sección:** vacío («Sin medidas: se anota en la unidad del líquido» + «+ Medida») · cargando · error (fallo al guardar conserva lo editado) · sin permisos (bloqueo activo).
 
 ### Pantalla: Productos (lista y editor)
 
@@ -125,7 +156,7 @@
 - **Hick:** 1 acción principal por pantalla (abrir / guardar). ✔
 - **Jakob:** listas de ajustes con interruptor y detalle. ✔
 - **Fitts:** interruptores y filas ≥ 48 pt. ✔
-- **Miller:** 4 catálogos; listas largas con búsqueda y agrupación (síntomas por grupo). ✔
+- **Miller:** 4 catálogos; listas largas con búsqueda y agrupación (síntomas por grupo). Medidas caseras: de fábrica 2-3 por líquido. ✔
 
 ## Decisiones de producto
 
@@ -136,3 +167,5 @@
 *Cambio EV-005 (2026-10-23):* el editor de una medición numérica añade «Palabras para elegir» (H-049): texto y número de cada palabra, orden, alta y baja, hasta 9. Las de fábrica de Hambre, Energía, Ánimo y Claridad mental se editan igual. Mockup: https://claude.ai/artifact/ERYg3yGCNPWG7x6tdGkjCq
 
 *Implementación (EV-005, 2026-10-23):* el orden se cambia con el botón «Subir» de cada palabra en lugar de arrastrar por el asa ⋮⋮ (mismo resultado con un objetivo de 48 pt, sin gesto de arrastre). Los errores de rango usan un único mensaje («El número de cada palabra debe estar dentro del rango válido. Si cambias el rango, cambia antes las palabras que quedan fuera.»), y un número sin escribir da «Escribe el número de cada palabra».
+
+*Cambio EV-006 (2026-10-26):* el editor de cada líquido añade «Medidas caseras» (nombre, equivalencia en la unidad del líquido, «imprecisa», orden con «Subir», alta y baja) y «Botón rápido en Inicio» (H-050, H-051). De fábrica: vaso 250 mL y taza 240 mL (agua e infusión); cucharadita rasa 5 g, ¼ de cucharadita 1.25 g y pizca 0.3 g, imprecisa (sal); botón rápido agua → vaso, sal → pizca. Son conversiones de cocina, no dosis. Mismo patrón que «Palabras para elegir» (EV-005).

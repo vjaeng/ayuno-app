@@ -19,6 +19,15 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| condición «tendencia» | `rule.condition_kind` = `trend` | ✓ | ✓ | ✓ |  |
+| N lecturas seguidas (3 o más, 3 de fábrica) | `rule.trend_count` | ✓ | ✓ | ✓ |  |
+| suben o bajan cada vez | `rule.direction` | ✓ | ✓ | ✓ |  |
+| de la lectura o de la diferencia de pie | `rule.trend_of` | ✓ | ✓ | ✓ |  |
+| medición numérica o cifra de la presión | `rule.metric_type_code`, `rule.bp_component` | ✓ | ✓ | ✓ |  |
+| lecturas en orden | `measurement.taken_at`, `value_num`; `blood_pressure_reading.taken_at`, cifras, `paired_reading_id` |  | ✓ |  |  |
+| cada momento de pie con su igual | `blood_pressure_reading.seconds_standing` → derivado «Momento de pie»; `plan_metric.standing_check_seconds` |  | ✓ |  |  |
+| no vuelve a saltar mientras la racha siga | episodio sobre `alert.trigger_entry_ids` (ADR-006) |  | ✓ |  |  |
+| alerta | `alert.*` (vía H-027) | ✓ |  |  |  |

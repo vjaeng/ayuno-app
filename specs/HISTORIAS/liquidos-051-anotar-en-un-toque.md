@@ -20,6 +20,17 @@
 ### Consideraciones de Seguridad
 Guardar antes de confirmar (requisito transversal de fiabilidad): la confirmación solo aparece tras escribir. «Deshacer» deja rastro (S8). El grupo agua + sal se escribe todo o nada.
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| medida del botón rápido de cada líquido (o ninguna) | `intake_type.quick_unit_code` | ✓ | ✓ | ✓ |  |
+| un tipo que rompe el ayuno no tiene botón | `intake_type.breaks_fast` |  | ✓ |  |  |
+| texto del botón («+1 pizca de sal») | `household_unit.name`, `intake_type.name` |  | ✓ |  |  |
+| ingesta de 1 de esa medida con la hora actual | `intake.intake_type_code`, `intake.taken_at`, `intake.amount_entered`, `intake.unit_entered`, `intake.amount`, `intake.unit` | ✓ |  |  |  |
+| equivalente de la medida | `household_unit.equivalent` |  | ✓ |  |  |
+| total del día sube al instante | derivado «Totales del día» |  | ✓ |  |  |
+| solo durante el ayuno | `fast.status` |  | ✓ |  |  |
+| «Deshacer» quita la ingesta | `intake.deleted_at` (control) |  |  |  | ✓ |
+| constancia en la bitácora | `edit_log.entity_name`, `edit_log.row_id`, `edit_log.action`, `edit_log.edited_at` | ✓ |  |  |  |
+| agua con sal: dos ingestas con la misma hora, enlazadas | `intake.group_id`, `intake.taken_at` | ✓ |  |  |  |
+| reglas evaluadas como con cualquier ingesta | `rule.*` (vía H-022) → `alert.*` |  | ✓ |  |  |

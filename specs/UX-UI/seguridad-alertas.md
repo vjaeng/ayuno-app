@@ -1,6 +1,6 @@
 # Flujo: Seguridad y alertas
 
-**Historias que cubre:** H-023, H-025, H-026, H-027, H-028, H-029
+**Historias que cubre:** H-023, H-025, H-026, H-027, H-028, H-029, H-054, H-055, H-056 (frases y «Por:» de las condiciones nuevas)
 **Entrada:** botón de seguridad (Inicio, Hoy) o una regla que se cumple al guardar una entrada o al llegar una hora programada · **Salida:** Terminar el ayuno, o vuelta a la pantalla de origen
 
 ## Pantallas
@@ -17,7 +17,11 @@
 │ • Si la sistólica de pie baja de │
 │   90: alerta roja.               │
 │ • Si a las 14:00 llevas menos    │
-│   sodio que tu meta: aviso.      │
+│   del 50 % de tu meta de sal:    │
+│   aviso.                         │
+│ • Si el pulso sube más de 30 al  │
+│   ponerme de pie: aviso y medir  │
+│   de nuevo en 30 minutos.        │
 │──────────────────────────────────│
 │ [ Algo no va bien ]              │
 │ [ Llamar a Ana  ☎ ]              │
@@ -28,7 +32,7 @@
 **Campos:**
 | Elemento UI | Campo canónico | Modo |
 |---|---|---|
-| Frase de cada regla | `rule.name`, `rule.condition_kind`, `rule.metric_type_code`, `rule.bp_component`, `rule.threshold`, `rule.sustained_minutes`, `rule.symptom_type_code`, `rule.intake_type_code`, `rule.check_time`, `rule.filter_stage_kinds`, `rule.filter_on_waking`, `rule.filter_position`, `rule.level`, `rule.action` (solo `rule.active`) | lectura (frase compuesta en lenguaje llano) |
+| Frase de cada regla | `rule.name`, `rule.condition_kind`, `rule.metric_type_code`, `rule.bp_component`, `rule.threshold`, `rule.sustained_minutes`, `rule.symptom_type_code`, `rule.intake_type_code`, `rule.check_time`, `rule.goal_percent`, `rule.direction`, `rule.trend_count`, `rule.trend_of`, `rule.filter_stage_kinds`, `rule.filter_on_waking`, `rule.filter_position`, `rule.level`, `rule.action` (solo `rule.active`) | lectura (frase compuesta en lenguaje llano) |
 | Botón «Algo no va bien» | regla con `rule.condition_kind = manual` | acción → dispara Alerta |
 | Botón «Llamar a …» | `emergency_contact.name`, `emergency_contact.phone` | lectura → acción (llamada del sistema) |
 | Botón «Terminar el ayuno» | — | acción → [fin-terminar.md](fin-terminar.md) |
@@ -74,7 +78,7 @@
 | Nivel (amarillo / rojo pantalla completa) | `rule.level` | lectura |
 | Hora | `alert.fired_at` | escritura al dispararse / lectura |
 | Mensaje tal cual | `rule.message` | lectura |
-| «Por:» lecturas que la dispararon | `alert.trigger_entry_ids` → `measurement.*` (con palabras, derivado «Palabra de una medición», EV-005), `blood_pressure_reading.*`, `symptom.*`, `intake.*` | lectura |
+| «Por:» lecturas que la dispararon | `alert.trigger_entry_ids` → `measurement.*` (con palabras, derivado «Palabra de una medición», EV-005), `blood_pressure_reading.*`, `symptom.*`, `intake.*`; en las condiciones nuevas (EV-006): la pareja con su diferencia («sentado 83 → de pie 126 a 1 min: +43»), la lectura y su valor de partida («86; partida 70: +16») o la racha («+20, +25, +43») | lectura / derivado |
 | Regla | `alert.rule_id` → `rule.name` | lectura |
 | Aviso de recordatorio programado | `rule.action = schedule_measurement`, `rule.action_minutes` | lectura / derivado |
 | Botón «Termino el ayuno» | `alert.user_choice = end_fast` | escritura → [fin-terminar.md](fin-terminar.md) con motivo «regla de alerta» prellenado |
@@ -98,3 +102,5 @@
 - **Alerta sin decisión:** ¿se repite la notificación cada N minutos hasta que se decida? Propuesta: sí, cada 5 minutos durante 30 minutos para alertas rojas.
 
 *Cambio EV-005 (2026-10-23):* en «Por:», una lectura de una escala con palabras se muestra con su palabra y número (H-049). El umbral de la regla sigue siendo un número ([reglas-editar.md](reglas-editar.md) sin cambios, decisión E5-3).
+
+*Cambio EV-006 (2026-10-26):* las condiciones nuevas se leen como frase completa en la pantalla de Seguridad («Si el pulso sube más de 30 al ponerme de pie…», «Si el pulso sentado queda más de 15 por encima de mi valor de partida…», «Si el pulso sube en 3 lecturas seguidas…», «…menos del 50 % de tu meta de sal…») (H-028); el «Por:» de su aviso o alerta muestra la pareja, el valor de partida o la racha que la disparó. Ninguna frase usa colores por valor.

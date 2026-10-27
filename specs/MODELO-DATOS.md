@@ -41,11 +41,14 @@ erDiagram
     METRIC_TYPE ||--o{ MEASUREMENT : "tipo"
     METRIC_TYPE ||--o{ METRIC_OPTION : "palabras"
     FAST ||--o{ BLOOD_PRESSURE_READING : "registra"
-    BLOOD_PRESSURE_READING |o--o| BLOOD_PRESSURE_READING : "de pie tras sentado"
+    BLOOD_PRESSURE_READING |o--o{ BLOOD_PRESSURE_READING : "de pie tras sentado"
     FAST ||--o{ SYMPTOM : "registra"
     SYMPTOM_TYPE ||--o{ SYMPTOM : "tipo"
     FAST ||--o{ INTAKE : "registra"
     INTAKE_TYPE ||--o{ INTAKE : "tipo"
+    INTAKE_TYPE ||--o{ HOUSEHOLD_UNIT : "medidas caseras"
+    HOUSEHOLD_UNIT |o--o{ INTAKE : "anotada en"
+    HOUSEHOLD_UNIT |o--o| INTAKE_TYPE : "botón rápido"
     FAST ||--o{ PRODUCT_LOG : "registra"
     PRODUCT ||--o{ PRODUCT_LOG : "toma de"
     FAST ||--o{ ALERT : "registra"
@@ -101,10 +104,11 @@ erDiagram
 | end_rule_id | UUID → RULE | obligatorio si `end_reason = alert_rule` | Crítico | qué regla motivó el fin |
 | tz_offset | TEXT (`±HH:MM`) | no nulo | Sensible | desfase del dispositivo al iniciar el reloj; va una vez en la cabecera de la exportación |
 | notes | TEXT | opcional | Crítico | notas generales del ayuno, sin hora; distintas de `note` (con hora, en la línea de tiempo) |
+| started_with_warnings | LIST<{kind: ENUM(placeholder_rule, goal_without_amount, unchecked_item), ref_id: UUID, text: TEXT}> | nulo si se empezó sin pendientes; al menos un elemento si existe | Sensible | lo que faltaba al elegir «Empezar de todos modos»: `ref_id` apunta a la `rule`, `intake_goal` o `checklist_item` del plan del ayuno y `text` copia su nombre o texto en ese momento; se escribe en la transacción que empieza el ayuno y no se edita (D-25, S8) |
 
-*Justificación:* H-004 (creación desde plantilla o desde cero, hitos planificado/real, estado planificado, notas generales), H-005 (inicio real, corrección con motivo, un solo ayuno en curso), H-006 (reloj calculado desde la hora de inicio), H-030 (fin, motivo, regla, sin reanudar), H-033 (lista con duración, objetivo y motivo), H-036 (nombre del archivo, desfase en cabecera), H-044 (cambiar horas previstas, notas y plantilla mientras está planificado), H-045 (borrar el ayuno para siempre con todos sus datos, D-15), H-046 (lista y detalle de los planificados; semana de separación, D-17).
+*Justificación:* H-004 (creación desde plantilla o desde cero, hitos planificado/real, estado planificado, notas generales), H-005 (inicio real, corrección con motivo, un solo ayuno en curso), H-006 (reloj calculado desde la hora de inicio), H-030 (fin, motivo, regla, sin reanudar), H-033 (lista con duración, objetivo y motivo), H-036 (nombre del archivo, desfase en cabecera), H-044 (cambiar horas previstas, notas y plantilla mientras está planificado), H-045 (borrar el ayuno para siempre con todos sus datos, D-15), H-046 (lista y detalle de los planificados; semana de separación, D-17), H-057 (lista de lo que faltaba al empezar de todos modos; se exporta y se ve en Historial).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-003 | R | template_id |
@@ -126,6 +130,10 @@ erDiagram
 | H-034 | R | status (al corregir: decide si se evalúan reglas, D-20) |
 | H-047 | R | clock_start_actual, end_actual |
 | H-048 | R | status, clock_start_actual |
+| H-057 | C, R | started_with_warnings (escrito al empezar de todos modos; nunca U); status, clock_start_actual, tz_offset (U vía H-005) |
+| H-036 | R | started_with_warnings (formato 1.2, EV-006) |
+| H-040 | C | started_with_warnings (nulo al importar 1.0 / 1.1) |
+| H-052 | R | status, clock_start_actual (ancla si no hay ingestas) |
 
 #### STAGE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -153,10 +161,11 @@ erDiagram
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
 |---|---|---|---|---|
 | metric_type_code | TEXT → METRIC_TYPE | no nulo; único por propietario | Público | la presencia de la fila activa los recordatorios de esa medición en la plantilla o ayuno y la pone primero en la rejilla Anotar; anotar no exige la fila (D-18) |
+| standing_check_seconds | LIST<INTEGER> | solo si `metric_type_code` es la presión arterial; cada valor > 0, sin repetir, en orden creciente; default [60, 180] | Sensible | segundos de pie a los que el temporizador pide cada lectura de pie (H-053); vacío = sin temporizador, solo «Anotar sin esperar»; la migración 8 → 9 pone [60, 180] en las filas de presión existentes. Son tiempos de un protocolo de medida, no umbrales clínicos |
 
-*Justificación:* H-001 (activar o desactivar mediciones por plantilla; una desactivada no genera recordatorios), H-003 (la plantilla de ejemplo lleva todas las del catálogo), H-008 (orden de la rejilla: las del plan primero).
+*Justificación:* H-001 (activar o desactivar mediciones por plantilla; una desactivada no genera recordatorios), H-003 (la plantilla de ejemplo lleva todas las del catálogo), H-008 (orden de la rejilla: las del plan primero), H-053 (tiempos del temporizador de pie, configurables en la plantilla).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-001 | C, R, D | metric_type_code |
@@ -166,6 +175,11 @@ erDiagram
 | H-036 | R | metric_type_code |
 | H-044 | C, D | todos |
 | H-045 | D | todos |
+| H-053 | C, R, U | standing_check_seconds |
+| H-009 | R | standing_check_seconds (ofrece el temporizador) |
+| H-056 | R | standing_check_seconds (momento de pie) |
+| H-036 | R | standing_check_seconds |
+| H-040 | C | standing_check_seconds ([60, 180] en presión al importar 1.0 / 1.1) |
 
 #### METRIC_SCHEDULE (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -192,12 +206,13 @@ erDiagram
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
 |---|---|---|---|---|
 | intake_type_code | TEXT → INTAKE_TYPE | no nulo; único por propietario | Público | meta opcional: sin fila, solo se muestra el total |
-| daily_amount | DECIMAL | > 0 | Sensible | se compara con el total del día («llevas X de Y») |
+| daily_amount | DECIMAL | > 0; **opcional** (EV-006) | Sensible | se compara con el total del día («llevas X de Y»); nulo = meta «por llenar»: no muestra «llevas X de Y», no evalúa reglas `intake_below_goal` y la revisión previa la señala (D-25) |
 | unit | TEXT | no nulo | Público | unidad de la meta |
+| nudge_after_hours | DECIMAL | > 0; opcional | Sensible | horas despierto sin ninguna ingesta de ese tipo tras las que la app pregunta una vez (H-052); nulo = no pregunta; las metas del ejemplo traen 6 (D-23) |
 
-*Justificación:* H-002 (metas por tipo de ingesta), H-006 y H-012 (totales frente a la meta), H-022 (regla de ingesta bajo la meta).
+*Justificación:* H-002 (metas por tipo de ingesta; meta sin cifra; «preguntar tras N horas»), H-006 y H-012 (totales frente a la meta), H-022 (regla de ingesta bajo la meta), H-052 (pregunta por horas sin anotar), H-057 (metas sin cifra en la revisión previa).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-002 | C, R, U, D | todos |
@@ -208,6 +223,15 @@ erDiagram
 | H-036 | R | todos |
 | H-044 | C, D | todos |
 | H-045 | D | todos |
+| H-002 | C, R, U | daily_amount (nulo = por llenar), nudge_after_hours (EV-006) |
+| H-003 | C | intake_type_code, daily_amount (nulo), nudge_after_hours (metas del ejemplo) |
+| H-006 | R | daily_amount, unit (llevas X de Y, a esta hora) |
+| H-022 | R | daily_amount (nulo = no evalúa; porcentaje) |
+| H-050 | R | daily_amount (línea de la medida imprecisa) |
+| H-052 | R | intake_type_code, nudge_after_hours |
+| H-057 | R, U | intake_type_code, daily_amount (nulo = pendiente; se arregla en la copia del ayuno) |
+| H-036 | R | nudge_after_hours |
+| H-040 | C | nudge_after_hours (nulo al importar 1.0 / 1.1) |
 
 #### CHECKLIST_ITEM (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -217,7 +241,7 @@ erDiagram
 
 *Justificación:* H-002 (lista previa marcable que no bloquea); H-046 (se marca desde el detalle del planificado).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-11, EV-002; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-002 | C, R, U, D | todos |
@@ -226,6 +250,7 @@ erDiagram
 | H-044 | C, D | todos |
 | H-045 | D | todos |
 | H-046 | R, U | text (R), is_checked (R, U) |
+| H-057 | R, U | text (R), is_checked (R, U) |
 
 #### STAGE_NOTICE (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -269,14 +294,19 @@ erDiagram
 |---|---|---|---|---|
 | name | TEXT | no nulo | Sensible | — |
 | active | BOOLEAN | default true | Sensible | solo las activas se evalúan y se listan en la pantalla de seguridad |
-| condition_kind | ENUM(metric_below, metric_above, alarm_symptom, intake_below_goal, manual) | no nulo | Sensible | — |
-| metric_type_code | TEXT → METRIC_TYPE | obligatorio en `metric_below` / `metric_above` | Sensible | — |
+| condition_kind | ENUM(metric_below, metric_above, alarm_symptom, intake_below_goal, manual, pair_difference, change_from_baseline, trend) | no nulo | Sensible | las tres últimas comparan lecturas entre sí (EV-006, D-24) |
+| metric_type_code | TEXT → METRIC_TYPE | obligatorio en `metric_below`, `metric_above`, `change_from_baseline` y `trend`; en `pair_difference` es siempre la presión arterial | Sensible | en `change_from_baseline` y `trend`, cualquier medición numérica o la presión |
 | bp_component | ENUM(systolic, diastolic, pulse) | obligatorio si `metric_type_code` es la presión arterial | Sensible | qué valor de la lectura de presión se compara |
-| threshold | DECIMAL | obligatorio en `metric_below` / `metric_above` | Sensible | en la unidad del catálogo; la app no trae valores precargados |
-| sustained_minutes | INTEGER | > 0; opcional, solo en condiciones de medición | Sensible | si existe: se cumple con dos o más lecturas fuera del umbral que abarquen al menos esos minutos; una sola lectura no basta |
+| threshold | DECIMAL | obligatorio para activar en `metric_below`, `metric_above`, `pair_difference` y `change_from_baseline`; no aplica en `trend` | Sensible | en la unidad del catálogo; la app no trae valores precargados. En `pair_difference` es la diferencia de pie − sentado, con signo (puede ser negativa); en `change_from_baseline`, la distancia al valor de partida, > 0 |
+| direction | ENUM(above, below) | obligatorio en `pair_difference`, `change_from_baseline` y `trend`; nulo en el resto | Sensible | `pair_difference`: above = diferencia > `threshold`, below = diferencia < `threshold`; `change_from_baseline`: above = valor > partida + `threshold`, below = valor < partida − `threshold`; `trend`: above = sube cada vez, below = baja cada vez. Las condiciones anteriores llevan la dirección en su tipo (`metric_below` / `metric_above`) |
+| trend_count | INTEGER | ≥ 3; obligatorio en `trend`, default 3 | Sensible | cuántas lecturas seguidas forman la racha; una igual a la anterior la corta |
+| trend_of | ENUM(value, pair_difference) | obligatorio en `trend`, default `value`; `pair_difference` exige la presión | Sensible | `value` = la lectura (o su `bp_component`); `pair_difference` = la diferencia de pie − sentado, cada momento de pie con su igual (D-24) |
+| sustained_minutes | INTEGER | > 0; opcional, solo en `metric_below` / `metric_above` | Sensible | si existe: se cumple con dos o más lecturas fuera del umbral que abarquen al menos esos minutos; una sola lectura no basta |
 | symptom_type_code | TEXT → SYMPTOM_TYPE | opcional, solo en `alarm_symptom` | Sensible | vacío = cualquier síntoma de alarma |
 | intake_type_code | TEXT → INTAKE_TYPE | obligatorio en `intake_below_goal` | Sensible | — |
-| check_time | LOCAL_TIME | obligatorio en `intake_below_goal` | Sensible | hora a la que se compara el total del día con la meta |
+| check_time | LOCAL_TIME | obligatorio para activar en `intake_below_goal` | Sensible | hora a la que se compara el total del día con la meta |
+| goal_percent | DECIMAL | 1 a 100; opcional, solo en `intake_below_goal` | Sensible | salta si el total del día es menor que ese porcentaje de `intake_goal.daily_amount`; nulo = 100 (comportamiento anterior). Sin cifra en la meta, la regla no se evalúa |
+| is_placeholder | BOOLEAN | default false | Sensible | «de ejemplo»: solo la app lo pone a true (semilla del ejemplo y migración); pasa a false al cambiar `name`, `message`, `threshold`, `goal_percent` o `check_time`; se copia al ayuno con el plan. Nunca se deduce del texto (D-25) |
 | filter_stage_kinds | LIST<ENUM(preparation, fast, refeed, post)> | opcional | Sensible | vacío = todas las etapas |
 | filter_on_waking | BOOLEAN | default false | Sensible | si es true, solo evalúa lecturas marcadas al despertar |
 | filter_position | ENUM(sitting, standing, lying) | opcional; solo con `bp_component` | Sensible | solo evalúa lecturas de presión con esa posición |
@@ -285,9 +315,9 @@ erDiagram
 | action | ENUM(none, schedule_measurement, offer_end) | no nulo, default `none` | Sensible | — |
 | action_minutes | INTEGER | > 0; obligatorio si `action = schedule_measurement` | Sensible | el recordatorio resultante ignora el silencio nocturno |
 
-*Justificación:* H-019 (umbral, campos comunes, pertenece a la plantilla y se copia al ayuno, sin umbrales precargados), H-020 (sostenida), H-021 (síntoma de alarma concreto o cualquiera), H-022 (ingesta bajo meta a una hora), H-023 (regla manual), H-024 (filtros), H-025 (nivel y mensaje), H-026 (acción), H-028 (reglas activas en lenguaje llano). Clasificadas *Sensible*: alterarlas puede suprimir una alerta de seguridad.
+*Justificación:* H-019 (umbral, campos comunes, pertenece a la plantilla y se copia al ayuno, sin umbrales precargados), H-020 (sostenida), H-021 (síntoma de alarma concreto o cualquiera), H-022 (ingesta bajo meta a una hora), H-023 (regla manual), H-024 (filtros), H-025 (nivel y mensaje), H-026 (acción), H-028 (reglas activas en lenguaje llano), H-022 (porcentaje de la meta, EV-006), H-054 (diferencia al ponerse de pie), H-055 (cambio desde el valor de partida), H-056 (tendencia), H-003 y H-057 (marca «de ejemplo»). Clasificadas *Sensible*: alterarlas puede suprimir una alerta de seguridad. Las cifras (`threshold`, `check_time`) solo son obligatorias para activar la regla: una regla inactiva puede quedar sin cifra, como las del ejemplo.
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-003 | C | condition_kind |
@@ -307,6 +337,15 @@ erDiagram
 | H-036 | R | todos |
 | H-044 | C, D | todos |
 | H-045 | D | todos |
+| H-003 | C, R, U | is_placeholder (semilla y migración; U a false al editar), condition_kind, intake_type_code, goal_percent, check_time, active (regla de sal del ejemplo) |
+| H-022 | C, R, U | goal_percent |
+| H-054 | C, R, U | condition_kind (`pair_difference`), metric_type_code, bp_component, direction, threshold |
+| H-055 | C, R, U | condition_kind (`change_from_baseline`), metric_type_code, bp_component, direction, threshold; R: filter_position |
+| H-056 | C, R, U | condition_kind (`trend`), metric_type_code, bp_component, direction, trend_count, trend_of |
+| H-028 | R | direction, trend_count, trend_of, goal_percent (frases, EV-006) |
+| H-057 | R, U | is_placeholder, name, active; U: los campos editables de la copia del ayuno |
+| H-051 | R | todos los de evaluación (vía H-022) |
+| H-040 | C | direction, trend_count, trend_of, goal_percent, is_placeholder (defaults al importar 1.0 / 1.1) |
 
 #### REFEED_STEP (dominio, plan)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -401,15 +440,41 @@ erDiagram
 | unit | TEXT | no nulo | Público | — |
 | breaks_fast | BOOLEAN | default false | Sensible | anotarlo durante el ayuno pregunta si se está terminando |
 | sodium_factor | DECIMAL | opcional, > 0 | Público | gramos de sodio por gramo; la sal trae 0.393, editable |
+| quick_unit_code | TEXT → HOUSEHOLD_UNIT | opcional; una medida no borrada del mismo tipo; nulo si `breaks_fast` | Público | medida del botón rápido de Inicio (H-051); nulo = sin botón. De fábrica: agua → `glass`, sal → `pinch` |
 
-*Justificación:* H-011 (tipos editables, «rompe el ayuno», factor de sodio), H-012 (sodio calculado, pregunta al anotar).
+*Justificación:* H-011 (tipos editables, «rompe el ayuno», factor de sodio), H-012 (sodio calculado, pregunta al anotar), H-051 (medida del botón rápido; un tipo que rompe el ayuno no tiene botón).
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-011 | C, R, U | todos |
 | H-012 | R | breaks_fast, sodium_factor |
 | H-036 | R | todos |
+| H-050 | R | unit, sodium_factor |
+| H-051 | C, R, U | quick_unit_code; R: name, breaks_fast |
+| H-006 | R | quick_unit_code, sodium_factor |
+| H-040 | C | quick_unit_code |
+
+#### HOUSEHOLD_UNIT (dominio, catálogo)
+| Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
+|---|---|---|---|---|
+| intake_type_code | TEXT → INTAKE_TYPE | no nulo | Público | líquido al que pertenece la medida |
+| name | TEXT | no nulo, no vacío; único por tipo entre las no borradas | Público | nombre visible en español («pizca», «vaso») |
+| equivalent | DECIMAL | no nulo, > 0 | Público | cuánto es 1 de esta medida en `intake_type.unit`; cambiarla no reescribe ingestas anotadas (D-22) |
+| imprecise | BOOLEAN | default false | Público | si es true, el formulario muestra la línea que la traduce (H-050) |
+| position | INTEGER | no nulo | Público | orden en el selector de medida |
+
+*Justificación:* H-050 (medidas caseras por tipo con nombre, equivalencia e «imprecisa»; editables, ordenables y quitables en Catálogos; de fábrica vaso 250 mL y taza 240 mL para agua e infusión, cucharadita rasa 5 g, ¼ de cucharadita 1.25 g y pizca 0.3 g imprecisa para la sal), H-051 (medida del botón rápido y «Agua con sal»). Su `code` (control) es único **por tipo**: `glass` existe en agua y en infusión. Las unicidades se comprueban en el dominio porque el borrado es blando (como D-21). Las equivalencias de fábrica son conversiones de cocina, no dosis.
+
+**Mapa de Consumo** (tejido el 2026-10-26, EV-006)
+| Historia | Operaciones | Campos |
+|---|---|---|
+| H-050 | C, R, U, D | todos |
+| H-051 | R | name, equivalent |
+| H-006 | R | name (botón rápido) |
+| H-012 | R | name, equivalent |
+| H-036 | R | todos |
+| H-040 | C | todos (de fábrica si el archivo es 1.0 / 1.1) |
 
 #### PRODUCT (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -467,10 +532,11 @@ erDiagram
 | on_waking | BOOLEAN | default false | Crítico | lectura al despertar (filtro de reglas) |
 | not_done_reason | TEXT | obligatorio si la medición se marca «no se hizo» | Crítico | excluyente con un valor |
 | note | TEXT | opcional | Crítico | — |
+| is_baseline | BOOLEAN | default false; como mucho una true por ayuno y `metric_type_code` entre las no borradas; solo con `value_num` | Crítico | marcada «de partida» por la persona; marcar otra quita la anterior en la misma transacción y ambas dejan `edit_log` (D-24) |
 
-*Justificación:* H-008 (anotar con fecha y hora editable, nota, origen y tendencia de la glucosa, unidad tecleada y equivalente, fuera de rango tal cual), H-017 (no se hizo con motivo, hora programada), H-020 y H-024 (lecturas para reglas sostenidas y al despertar). La presión arterial **no** se guarda aquí: tiene entidad propia (D-09).
+*Justificación:* H-008 (anotar con fecha y hora editable, nota, origen y tendencia de la glucosa, unidad tecleada y equivalente, fuera de rango tal cual), H-017 (no se hizo con motivo, hora programada), H-020 y H-024 (lecturas para reglas sostenidas y al despertar), H-055 (marcar una lectura como «de partida»). La presión arterial **no** se guarda aquí: tiene entidad propia (D-09).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-23, EV-005)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-13, EV-003; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-23, EV-005; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | metric_type_code, taken_at, value_entered, unit_entered; número del ayuno (`fast_id`) |
@@ -493,6 +559,10 @@ erDiagram
 | H-047 | C, R | metric_type_code, taken_at, value_num, value_entered, unit_entered |
 | H-048 | R, U, D | R: metric_type_code, taken_at, value_entered, unit_entered, value_text, source, trend, on_waking, not_done_reason; U (vía H-034): esos + value_num, note; D (vía H-034): `deleted_at` |
 | H-049 | C, R, U | C: metric_type_code, taken_at, value_entered, value_num, unit_entered, on_waking, note, not_done_reason; R: metric_type_code, value_entered, value_num, unit_entered; U (vía H-034): value_entered, value_num, unit_entered |
+| H-055 | C, R, U | is_baseline (false al anotar; U al marcar, con `edit_log`); R: metric_type_code, taken_at, value_num |
+| H-056 | R | metric_type_code, taken_at, value_num |
+| H-036 | R | is_baseline |
+| H-040 | C | is_baseline (false al importar 1.0 / 1.1) |
 
 #### BLOOD_PRESSURE_READING (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -504,13 +574,15 @@ erDiagram
 | pulse | INTEGER | opcional | Crítico | latidos por minuto |
 | position | ENUM(sitting, standing, lying) | no nulo | Crítico | — |
 | on_waking | BOOLEAN | default false | Crítico | lectura al despertar (filtro de reglas) |
-| paired_reading_id | UUID → BLOOD_PRESSURE_READING | opcional; solo en `standing`, apunta a una lectura `sitting` | Crítico | vincula la toma de pie con la sentada |
+| paired_reading_id | UUID → BLOOD_PRESSURE_READING | opcional; solo en `standing`, apunta a una lectura `sitting` del mismo ayuno; una sentada puede tener **varias** de pie (EV-006) | Crítico | vincula la toma de pie con la sentada |
+| seconds_standing | INTEGER | ≥ 0; opcional, solo en `standing` con `paired_reading_id` | Crítico | segundos de pie, calculados desde «Ya estoy de pie» hasta `taken_at`, nunca tecleados; nulo = «tomada sin esperar» (H-053) |
+| is_baseline | BOOLEAN | default false; como mucho una true por ayuno y `position` entre las no borradas; solo con valores | Crítico | marcada «de partida» por la persona; marcar otra quita la anterior en la misma transacción y ambas dejan `edit_log` (D-24) |
 | not_done_reason | TEXT | obligatorio si se marca «no se hizo» | Crítico | excluyente con los valores |
 | note | TEXT | opcional | Crítico | — |
 
-*Justificación:* H-009 (sistólica, diastólica, pulso y posición; tras la sentada se ofrece la de pie; ambas vinculadas; diferencia calculada; se puede guardar solo la sentada), H-008 (hora editable, nota, rango válido), H-017 (no se hizo), H-019 y H-024 (reglas por componente y por posición). Activación y horarios siguen en `metric_type` / `plan_metric` con el tipo «presión arterial».
+*Justificación:* H-009 (sistólica, diastólica, pulso y posición; tras la sentada se ofrece la de pie; vinculadas, varias de pie por sentada; diferencia calculada de las tres cifras; se puede guardar solo la sentada), H-008 (hora editable, nota, rango válido), H-017 (no se hizo), H-019 y H-024 (reglas por componente y por posición), H-053 (segundos de pie y «tomada sin esperar»), H-054 y H-056 (reglas sobre la pareja), H-055 (lectura «de partida» por posición). Activación y horarios siguen en `metric_type` / `plan_metric` con el tipo «presión arterial».
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-14, EV-004)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | número del ayuno (`fast_id`) |
@@ -525,6 +597,12 @@ erDiagram
 | H-036 | R | todos |
 | H-045 | R, D | todos |
 | H-048 | R, U, D | R: taken_at, systolic, diastolic, pulse, position, on_waking, not_done_reason; U (vía H-034): esos + note; D (vía H-034): `deleted_at` |
+| H-009 | C, R | paired_reading_id (varias de pie por sentada, EV-006) |
+| H-053 | C, R, U | seconds_standing (U solo vía H-034, al corregir `taken_at`); C, R: paired_reading_id, position, taken_at, systolic, diastolic, pulse |
+| H-054 | R | paired_reading_id, position, systolic, diastolic, pulse |
+| H-055 | C, R, U | is_baseline (false al anotar; U al marcar, con `edit_log`); R: position, taken_at, systolic, diastolic, pulse |
+| H-056 | R | taken_at, systolic, diastolic, pulse, paired_reading_id, seconds_standing |
+| H-040 | C | seconds_standing, is_baseline (nulo / false al importar 1.0 / 1.1) |
 
 #### SYMPTOM (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -552,13 +630,16 @@ erDiagram
 |---|---|---|---|---|
 | intake_type_code | TEXT → INTAKE_TYPE | no nulo | Crítico | — |
 | taken_at | LOCAL_DATETIME | no nulo | Crítico | — |
-| amount | DECIMAL | > 0 | Crítico | — |
-| unit | TEXT | no nulo | Crítico | — |
+| amount | DECIMAL | > 0 | Crítico | equivalente en `intake_type.unit`: lo que suman totales, sodio, metas y reglas (D-22) |
+| unit | TEXT | no nulo | Crítico | `intake_type.unit` |
+| amount_entered | DECIMAL | no nulo, > 0 | Crítico | lo tecleado, nunca sustituido (como `measurement.value_entered`) |
+| unit_entered | TEXT | no nulo | Crítico | `intake_type.unit` o el `household_unit.code` de una medida del mismo tipo; si es una medida, `amount = amount_entered × equivalent` al guardar |
+| group_id | UUID | opcional | Crítico | enlaza las ingestas guardadas en una sola entrada («Agua con sal»): mismo `taken_at`, se escriben todas o ninguna (H-051) |
 | note | TEXT | opcional | Crítico | — |
 
-*Justificación:* H-012 (hora, tipo, cantidad, unidad y nota; se guarda aunque se responda que no se termina el ayuno), H-022 (totales del día para reglas).
+*Justificación:* H-012 (hora, tipo, cantidad, unidad y nota; se guarda aunque se responda que no se termina el ayuno), H-022 (totales del día para reglas), H-050 (lo tecleado en su medida casera y su equivalente), H-051 (botón rápido y «Agua con sal» enlazadas). La migración 8 → 9 rellena `amount_entered = amount` y `unit_entered = unit` en las filas existentes.
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-006 | R | amount |
@@ -569,6 +650,12 @@ erDiagram
 | H-036 | R | todos |
 | H-041 | C | amount |
 | H-045 | R, D | todos |
+| H-012 | C, R | amount_entered, unit_entered (EV-006) |
+| H-050 | C, R | amount_entered, unit_entered, amount, unit |
+| H-051 | C, R, D | intake_type_code, taken_at, amount_entered, unit_entered, amount, unit, group_id; D: `deleted_at` («Deshacer») |
+| H-052 | R | intake_type_code, taken_at |
+| H-022 | R | amount (porcentaje de la meta) |
+| H-040 | C | amount_entered, unit_entered (= amount, unit al importar 1.0 / 1.1), group_id |
 
 #### PRODUCT_LOG (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -608,7 +695,7 @@ erDiagram
 
 *Justificación:* H-027 (decisión obligatoria, motivo al seguir, registro con hora, regla, lecturas y decisión), H-023 (la alerta manual queda registrada igual), H-026 (punto de partida del recordatorio programado). Es un registro de seguridad: no se edita sin rastro (S8).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-14, EV-004)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-019 | C | rule_id, fired_at, trigger_entry_ids |
@@ -622,6 +709,7 @@ erDiagram
 | H-034 | C | rule_id, fired_at, trigger_entry_ids (al corregir con el ayuno en curso, D-20) |
 | H-036 | R | todos |
 | H-045 | R, D | todos |
+| H-051, H-054, H-055, H-056 | C | todos (vía H-027) |
 
 #### REFEED_CHECK (dominio)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -692,7 +780,7 @@ erDiagram
 
 *Justificación:* H-034 (bitácora con valor anterior, nuevo, hora y motivo; borrar y restaurar quedan registrados), H-005 (corrección de la hora de inicio con motivo). Es dominio, no control: las historias la piden expresamente (S8).
 
-**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-14, EV-004)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-10, EV-001; re-tejido el 2026-10-14, EV-004; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-005 | C | todos |
@@ -701,6 +789,8 @@ erDiagram
 | H-044 | C | todos |
 | H-045 | D | todos |
 | H-048 | C, R | C: todos (vía H-034); R: row_id, action |
+| H-051 | C | todos («Deshacer» = `delete`) |
+| H-055 | C | todos (`field = is_baseline`, dos filas al mover la marca) |
 
 ### 2.4 Configuración y datos personales
 
@@ -714,13 +804,15 @@ erDiagram
 
 *Justificación:* H-017 (silencio nocturno), H-038 (datos personales opt-in), H-042 (bloqueo opcional). Las unidades por defecto (H-043) viven en `metric_type.entry_unit`, no aquí.
 
-**Mapa de Consumo** (tejido el 2026-10-08)
+**Mapa de Consumo** (tejido el 2026-10-08; re-tejido el 2026-10-26, EV-006)
 | Historia | Operaciones | Campos |
 |---|---|---|
 | H-008 | R | quiet_end |
 | H-017 | C, R, U | quiet_start, quiet_end |
 | H-038 | C, R, U | export_person_enabled |
 | H-042 | C, R, U | app_lock_enabled |
+| H-006 | R | quiet_start, quiet_end (avance esperado) |
+| H-052 | R | quiet_start, quiet_end (horas despierto) |
 
 #### PERSON_PROFILE (dominio, registro único)
 | Campo | Tipo | Restricciones | Clasificación | Regla de negocio |
@@ -760,7 +852,14 @@ erDiagram
 | Duración final | `end_actual` − `clock_start_actual` | H-030, H-033 |
 | Sodio | `intake.amount` × `intake_type.sodium_factor` | H-012 |
 | Totales del día | suma de `intake.amount` por tipo y día | H-006, H-012, H-022, H-033 |
-| Diferencia sentado / de pie | entre una lectura `standing` y su `paired_reading_id` | H-009 |
+| Diferencia sentado / de pie | por cada lectura `standing` y su `paired_reading_id`: de pie − sentado de `systolic`, `diastolic` y `pulse` (nula la cifra que falte en cualquiera de las dos) | H-009, H-053, H-054 |
+| Momento de pie | `seconds_standing` nulo → «sin esperar»; si no, el valor de `plan_metric.standing_check_seconds` del ayuno más cercano a `seconds_standing` (empate → el menor); sin tiempos en el plan → «sin esperar». Agrupa las diferencias para la tendencia (D-24) | H-053, H-056 |
+| Valor de partida | por ayuno y medición (y `position` en la presión): la lectura con `is_baseline` no borrada; si no hay, la primera por `taken_at` con valor | H-055 |
+| Equivalente de una medida casera | `amount_entered` × `household_unit.equivalent` en el momento de guardar (se guarda en `intake.amount`); traducción de la meta en medidas = `intake_goal.daily_amount` ÷ `equivalent` | H-050 |
+| Sodio de la meta | `intake_goal.daily_amount` × `intake_type.sodium_factor` | H-006 |
+| Avance esperado a esta hora | `intake_goal.daily_amount` × (minutos despierto transcurridos hoy ÷ minutos despierto del día), con el día despierto de `settings.quiet_end` a `settings.quiet_start`; 0 antes de levantarse, la meta entera tras dormirse; sin silencio nocturno o sin cifra en la meta, no se muestra | H-006 |
+| Próxima pregunta por tipo | por cada `intake_goal` del ayuno en curso con `nudge_after_hours`: ancla = `taken_at` de la última `intake` no borrada de ese tipo o, si no hay, `clock_start_actual`; momento = ancla + `nudge_after_hours` contando solo horas fuera del silencio nocturno (sin silencio, todas); una vez preguntado, no hay otra hasta que cambie el ancla (D-23) | H-052, H-016 |
+| Revisión previa (pendientes al empezar) | sobre el plan del ayuno: `rule` con `is_placeholder` (activas o no) + `intake_goal` sin `daily_amount` + `checklist_item` sin `is_checked`, sin `deleted_at` | H-057 |
 | Pendientes del día y su estado (hecho, pendiente, atrasado, no hecho) | `metric_schedule`, `product_schedule` + `plan_product`, `refeed_check`, recordatorios de reglas, cruzados con los registros | H-016, H-017, H-018 |
 | Recuento de registros del ayuno | número de filas visibles de `measurement`, `blood_pressure_reading`, `symptom`, `intake`, `product_log`, `alert`, `note` y `meal` con su `fast_id` | H-045 |
 | Franja del ayuno | planificado: de `last_meal_planned` al fin previsto · en curso: de `last_meal_actual` (o `last_meal_planned`) al mayor entre el fin previsto y ahora · terminado: de `last_meal_actual` (o `last_meal_planned`) a `end_actual` | H-004, H-044 |
@@ -776,7 +875,7 @@ Exentas de trazabilidad (P4). Se declaran una vez y aplican a todas las entidade
 | Campo | Aplica a | Tipo | Regla |
 |---|---|---|---|
 | `id` | todas salvo catálogos con código y registros únicos | UUID v4 | estable: no cambia al editar; base de la importación sin duplicados |
-| `code` | metric_type, symptom_type, intake_type | TEXT | llave del catálogo; minúsculas y `_`; inmutable |
+| `code` | metric_type, symptom_type, intake_type, household_unit | TEXT | llave del catálogo; minúsculas y `_`; inmutable; en `household_unit`, único por `intake_type_code` |
 | `created_at` | todas | LOCAL_DATETIME | — |
 | `updated_at` | todas | LOCAL_DATETIME | nulo hasta la primera edición |
 | `deleted_at` | todas salvo `edit_log` | LOCAL_DATETIME | borrado blando: se restaura vaciándolo; se exporta. Excepción: borrar un `fast` es definitivo y elimina todo lo que cuelga de él (D-15, ADR-SEG-007) |
@@ -808,7 +907,18 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | Palabra / lista de valores / opción de una escala | `metric_option` | «escala» = medición con palabras (hambre, energía, ánimo, claridad mental); la palabra mostrada en una medición es el derivado «Palabra de una medición» (§2.5) |
 | Síntoma | `symptom` / `symptom_type` | — |
 | Ingesta / líquido / electrolito | `intake` / `intake_type` | «líquidos y electrolitos» es el módulo; *ingesta* incluye caldo y comida |
-| Meta del día | `intake_goal` | — |
+| Meta del día | `intake_goal` | «meta por llenar» / «sin cifra» = `daily_amount` nulo |
+| Medida casera (vaso, taza, cucharadita, pizca) | `household_unit` | lo anotado en ella es `intake.amount_entered` + `intake.unit_entered`; su equivalente, `intake.amount` |
+| Botón rápido («+1 vaso de agua») | `intake_type.quick_unit_code` | toque = ingesta de 1 de esa medida; mantener pulsado = formulario |
+| Agua con sal | dos `intake` con el mismo `group_id` | una sola entrada en la UI |
+| Avance esperado / «a esta hora» | derivado «Avance esperado a esta hora» (§2.5) | — |
+| Preguntar tras N horas sin anotar | `intake_goal.nudge_after_hours` | la pregunta es una notificación, no una regla ni una alerta |
+| Temporizador de pie / segundos de pie | `blood_pressure_reading.seconds_standing` | «tomada sin esperar» = nulo |
+| Diferencia al ponerse de pie | derivado «Diferencia sentado / de pie»; regla `condition_kind = pair_difference` | «de pie − sentado» |
+| Valor de partida / «de partida» | `measurement.is_baseline`, `blood_pressure_reading.is_baseline`; derivado «Valor de partida» | regla `change_from_baseline` |
+| Tendencia | `rule.condition_kind = trend` | distinto de `measurement.trend` (flecha de la glucosa) |
+| De ejemplo / regla de relleno | `rule.is_placeholder` | lo marca la app, nunca el texto |
+| Revisión antes de empezar / pendientes al empezar | derivado «Revisión previa» (§2.5); lo guardado es `fast.started_with_warnings` | «empezado con pendientes» en Historial |
 | Producto / suplemento / medicamento | `product` (`kind`) | *producto* engloba ambos |
 | Sigue / sale / opcional | `plan_product.during_fast` = continues / stops / optional | — |
 | Toma (de producto) | `product_log` | — |
@@ -849,6 +959,10 @@ La versión del formato de exportación, la versión de la app y la hora de expo
 | D-19 | 2026-10-13 | EV-003 (H-047): el peso al empezar y al terminar es un `measurement` normal (`weight`); no hay campos de peso en `fast`. El de terminar se inserta en la transacción del fin con `taken_at = end_actual` y no evalúa reglas; el de empezar se guarda después como cualquier entrada y sí las evalúa. Inicial y final se derivan (§2.5). | Sin cambio de esquema; el peso se corrige, se borra y se exporta como el resto de mediciones. Una regla que ofrezca terminar no tiene sentido sobre un ayuno que ya termina. |
 | D-20 | 2026-10-14 | EV-004 (H-034, H-048): corregir una `measurement` o `blood_pressure_reading` actualiza la fila conservando su `id`, recalcula `value_num` desde `value_entered` + `unit_entered` y escribe una fila de `edit_log` por campo cambiado, todo en una transacción. Si el ayuno está `in_progress`, en esa misma transacción se evalúan las reglas con la entrada corregida (puede crear `alert`); las `alert` ya registradas no se modifican. Borrar (`deleted_at`) y restaurar escriben `edit_log` y no evalúan reglas. Guardar sin cambios no escribe nada. | Petición del humano: corregir un error de dedo durante el ayuno debe tener el mismo efecto de seguridad que anotarlo bien; las alertas pasadas son registro de seguridad (S8). `value_entered` sigue siendo «lo tecleado»: la corrección lo sustituye por lo nuevo tecleado y el anterior queda en `edit_log`. Sin cambio de esquema. |
 | D-21 | 2026-10-23 | EV-005 (H-049): las palabras de una medición viven en la entidad nueva `metric_option` (`metric_type_code`, `label`, `value`, `position`), con borrado blando. Elegir una palabra guarda en `measurement` solo el número: `value_entered = value_num = metric_option.value` y `unit_entered = metric_type.entry_unit`; no se guarda qué palabra se eligió, se deriva del número (§2.5). Editar o quitar palabras nunca reescribe mediciones. Se precargan 20 palabras (5 por escala, valores 0, 3, 5, 7, 10). Cambio **compatible**: tabla nueva; ninguna existente cambia. | Petición del humano: elegir con palabras sin perder el número que usan reglas, historial y exportación. Guardar solo el número deja intactas las mediciones ya anotadas (también las del ayuno en curso) y las reglas existentes; requisito transversal «Todo configurable» (HISTORIAS/README): las palabras son datos editables, no código. |
+| D-22 | 2026-10-26 | EV-006 (H-050, H-051): las medidas caseras viven en la entidad nueva `household_unit` (catálogo por tipo de ingesta, borrado blando). Una `intake` guarda lo tecleado (`amount_entered`, `unit_entered` = unidad del tipo o código de la medida) **y** su equivalente (`amount`, `unit`), calculado al guardar; totales, sodio, metas y reglas solo leen el equivalente. Cambiar o quitar una medida no reescribe ingestas. «Agua con sal» son dos `intake` con el mismo `group_id`, escritas en una transacción. El botón rápido es `intake_type.quick_unit_code`. «Deshacer» del botón es un borrado blando con `edit_log` (D-20). | Mismo patrón que `measurement.value_entered` / `value_num`: lo tecleado nunca se sustituye y el cálculo no depende del catálogo de hoy. Cambio **compatible**: tabla nueva y columnas nuevas; la migración rellena lo tecleado con lo ya guardado. Los códigos de medida van en inglés (`pinch`, `glass`, D-01). |
+| D-23 | 2026-10-26 | EV-006 (H-052): «preguntar tras N horas sin anotar» es `intake_goal.nudge_after_hours`. El momento de la pregunta se **deriva** (ancla = última ingesta del tipo o inicio del reloj, + N horas fuera del silencio nocturno); no hay tabla ni campo que guarde que ya se preguntó: la alarma se programa para ese momento y se reprograma cuando cambia el ancla, así una ingesta nueva reinicia la cuenta y no se repite la pregunta del mismo hueco. Las horas de dormir son el silencio nocturno de `settings`. | Decisiones 1 y 2 del reporte de impacto. Sin estructura de control nueva: el estado se recalcula tras reiniciar, como el resto de recordatorios (H-016). |
+| D-24 | 2026-10-26 | EV-006 (H-053 a H-056): tres condiciones nuevas que comparan lecturas entre sí: `pair_difference` (de pie − sentado, evaluada en cada lectura de pie enlazada), `change_from_baseline` (contra el valor de partida derivado: la lectura con `is_baseline` o la primera del ayuno) y `trend` (`trend_count` lecturas seguidas que suben o bajan cada vez; una igual corta la racha). La dirección va en `rule.direction`; las condiciones antiguas no cambian. Una sentada admite varias de pie (`seconds_standing`); para la tendencia de la diferencia, cada momento de pie se compara con su igual (derivado «Momento de pie»). Marcar «de partida» deja `edit_log`. | Decisión 3 del reporte de impacto. El motor sigue siendo una función pura (ADR-006): recibe en su contexto la sentada enlazada, el valor de partida y la serie previa. Ninguna condición nueva trae cifra (H-019). |
+| D-25 | 2026-10-26 | EV-006 (H-003, H-022, H-057): `rule.is_placeholder` marca las reglas que la app trajo de ejemplo; solo la app lo pone, y deja de valer al cambiar el nombre, el mensaje o una cifra. `intake_goal.daily_amount` puede quedar nulo (meta por llenar). La revisión previa se deriva al empezar; con «Empezar de todos modos», `fast.started_with_warnings` guarda lo que faltaba, en la misma transacción que empieza el ayuno, y no se edita. `rule.goal_percent` (nulo = 100) permite la regla de sal «por debajo del ___ % de la meta». La migración 8 → 9 marca `is_placeholder` en las dos reglas de fábrica del ejemplo instalado solo si siguen idénticas a la semilla, y añade sus metas sin cifra y la regla de sal; en plantillas propias y ayunos solo aparecen los valores por defecto de las columnas nuevas, sin cambiar ningún dato existente. | Principio de la solicitud de mejoras: «si un dato lo pide el plan y no se anota, la app lo tiene que notar antes que el usuario». La marca va en la regla, no en la plantilla, así P-03 sigue en pie (la plantilla de ejemplo se trata como cualquier otra). `started_with_warnings` es registro de seguridad (S8). Base de datos 9 y formato **1.2** (ADR-007), ambos aditivos. |
 
 ## 6. Preguntas para el humano
 

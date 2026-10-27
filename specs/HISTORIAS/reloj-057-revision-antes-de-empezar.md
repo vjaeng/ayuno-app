@@ -19,6 +19,16 @@
 ### Consideraciones de Seguridad
 La lista guardada es registro de seguridad: se escribe en la misma transacción que empieza el ayuno y no se edita (S8). La revisión informa, no bloquea, y no aconseja.
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| pendientes del plan del ayuno | derivado «Revisión previa» (MODELO §2.5) |  | ✓ |  |  |
+| reglas de ejemplo sin tocar (activas o no) | `rule.is_placeholder`, `rule.name`, `rule.active` |  | ✓ |  |  |
+| metas sin cifra | `intake_goal.daily_amount` (nulo), `intake_goal.intake_type_code` |  | ✓ |  |  |
+| lista previa sin marcar | `checklist_item.is_checked`, `checklist_item.text` |  | ✓ |  |  |
+| arreglar en el plan de ese ayuno | `rule.*`, `intake_goal.daily_amount` (copia del ayuno); `checklist_item.is_checked` |  |  | ✓ |  |
+| deja de ser de ejemplo al cambiar nombre, mensaje o cifra | `rule.is_placeholder` |  |  | ✓ |  |
+| empezar igual que H-005 | `fast.status`, `fast.clock_start_actual`, `fast.tz_offset` (vía H-005) |  |  | ✓ |  |
+| lista de lo que faltaba, guardada en el ayuno | `fast.started_with_warnings` | ✓ | ✓ |  |  |
+| exportación con la lista | `fast.started_with_warnings` (vía H-036) |  | ✓ |  |  |
+| Historial dice que empezó con pendientes | `fast.started_with_warnings` (vía H-033) |  | ✓ |  |  |

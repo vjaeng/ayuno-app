@@ -20,6 +20,21 @@
 ### Consideraciones de Seguridad
 Las medidas son catálogo (Público); lo anotado es dato de salud (Crítico, S4). Equivalencias > 0, validadas al guardar y al importar (S1). Ninguna equivalencia de fábrica es una dosis ni un umbral clínico.
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| medidas caseras de cada líquido | `household_unit.intake_type_code` | ✓ | ✓ |  |  |
+| nombre de la medida («pizca», «vaso») | `household_unit.name` | ✓ | ✓ | ✓ |  |
+| equivalencia en la unidad del tipo (> 0) | `household_unit.equivalent` | ✓ | ✓ | ✓ |  |
+| marca «imprecisa» | `household_unit.imprecise` | ✓ | ✓ | ✓ |  |
+| orden de las medidas | `household_unit.position` | ✓ | ✓ | ✓ |  |
+| quitar una medida | `household_unit.deleted_at` (control) |  |  |  | ✓ |
+| medidas de fábrica (código en inglés: `pinch`, `glass`) | `household_unit.code` (control) | ✓ | ✓ |  |  |
+| unidad del tipo | `intake_type.unit` |  | ✓ |  |  |
+| lo tecleado y su medida («1 pizca») | `intake.amount_entered`, `intake.unit_entered` | ✓ | ✓ |  |  |
+| equivalente guardado (0.3 g) | `intake.amount`, `intake.unit` | ✓ | ✓ |  |  |
+| sodio del equivalente (0.12 g) | `intake_type.sodium_factor` |  | ✓ |  |  |
+| totales, metas y reglas usan el equivalente | derivado «Totales del día» sobre `intake.amount`; `intake_goal.daily_amount` |  | ✓ |  |  |
+| línea de la medida imprecisa («unas 8 pizcas») | derivado «Equivalente casero» (MODELO §2.5) con `intake_goal.daily_amount` |  | ✓ |  |  |
+| cambiar o quitar la medida no toca lo anotado | `intake.amount` (no se reescribe, D-22) |  | ✓ |  |  |
+| exportación con lo tecleado, la medida y el catálogo | `intake.*`, `household_unit.*` (vía H-036) |  | ✓ |  |  |

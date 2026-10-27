@@ -16,6 +16,14 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas. Sin cifras clínicas precargadas (H-019).
 
-### Matriz CRUD (pendiente del mini-Tejido, EV-006)
+### Matriz CRUD (tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
+| condición «diferencia al ponerme de pie» | `rule.condition_kind` = `pair_difference` | ✓ | ✓ | ✓ |  |
+| pulso, arriba o abajo | `rule.bp_component` | ✓ | ✓ | ✓ |  |
+| por encima o por debajo | `rule.direction` | ✓ | ✓ | ✓ |  |
+| cifra que pongo yo (sin cifra al crear) | `rule.threshold` | ✓ | ✓ | ✓ |  |
+| siempre la presión | `rule.metric_type_code` | ✓ |  |  |  |
+| lectura de pie enlazada y su sentada | `blood_pressure_reading.paired_reading_id`, `position`, `systolic`, `diastolic`, `pulse` |  | ✓ |  |  |
+| filtros, nivel, mensaje y acción | `rule.filter_*`, `rule.level`, `rule.message`, `rule.action`, `rule.action_minutes` (vía H-024 a H-026) | ✓ | ✓ | ✓ |  |
+| alerta con las dos lecturas | `alert.*` (vía H-027) | ✓ |  |  |  |

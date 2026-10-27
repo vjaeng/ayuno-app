@@ -5,16 +5,16 @@ Operaciones cuyo fallo parcial dejaría datos inconsistentes (doc 12). Todas se 
 | Transacción | Archivo | Historias | Estado |
 |---|---|---|---|
 | Crear ayuno desde plantilla | [crear-ayuno.md](crear-ayuno.md) | H-004 | construida |
-| Empezar el ayuno | [empezar-ayuno.md](empezar-ayuno.md) | H-005 | construida |
-| Guardar una entrada y evaluar reglas | [guardar-entrada.md](guardar-entrada.md) | H-008, H-009, H-010, H-012, H-019–H-022, H-027, H-049 | construida (palabra elegida, EV-005) |
+| Empezar el ayuno | [empezar-ayuno.md](empezar-ayuno.md) | H-005, H-057 | construida; revisión previa pendiente (EV-006) |
+| Guardar una entrada y evaluar reglas | [guardar-entrada.md](guardar-entrada.md) | H-008, H-009, H-010, H-012, H-019–H-022, H-027, H-049, H-050, H-051, H-053–H-056 | construida (palabra elegida, EV-005); medida casera, botón rápido, agua con sal, lectura de pie y condiciones entre lecturas pendientes (EV-006) |
 | «Algo no va bien» | [algo-no-va-bien.md](algo-no-va-bien.md) | H-023, H-027 | construida |
 | Corregir una hora del ayuno con bitácora | [corregir-hora.md](corregir-hora.md) | H-005 | construida |
 | Terminar el ayuno | [terminar-ayuno.md](terminar-ayuno.md) | H-030, H-031 | construida |
 | Exportar | [exportar.md](exportar.md) | H-036, H-037, H-038 | construida |
-| Importar o restaurar | [importar.md](importar.md) | H-039, H-040 | construida |
+| Importar o restaurar | [importar.md](importar.md) | H-039, H-040 | construida; formato 1.2 pendiente (EV-006) |
 | Cambiar un ayuno planificado | [cambiar-ayuno.md](cambiar-ayuno.md) | H-044 | construida |
 | Borrar un ayuno para siempre | [borrar-ayuno.md](borrar-ayuno.md) | H-045 | construida |
-| Corregir, borrar o restaurar una entrada | [corregir-entrada.md](corregir-entrada.md) | H-034, H-048, H-049 | construida (mediciones y presión, EV-004; con palabra, EV-005) |
+| Corregir, borrar o restaurar una entrada | [corregir-entrada.md](corregir-entrada.md) | H-034, H-048, H-049, H-051, H-055 | construida (mediciones y presión, EV-004; con palabra, EV-005); «Deshacer» de ingesta y «de partida» pendientes (EV-006) |
 
 Previstas, aún sin construir (ARQUITECTURA §4): duplicar plantilla, copia cifrada.
 

@@ -16,7 +16,7 @@
 ### Consideraciones de Seguridad
 Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | tipo de ingesta | `rule.intake_type_code` | ✓ | ✓ | ✓ |  |
@@ -25,3 +25,6 @@ Regla crítica de seguridad: requiere pruebas automáticas del motor de reglas.
 | meta | `intake_goal.daily_amount` |  | ✓ |  |  |
 | registro de la regla cumplida | `alert.rule_id` | ✓ |  |  |  |
 | hora en que se cumple | `alert.fired_at` | ✓ |  |  |  |
+| porcentaje de la meta (vacío = la meta entera) (EV-006) | `rule.goal_percent` | ✓ | ✓ | ✓ |  |
+| total del día frente al porcentaje (EV-006) | `intake_goal.daily_amount`, `intake.amount` |  | ✓ |  |  |
+| sin cifra en la meta no se evalúa (EV-006) | `intake_goal.daily_amount` (nulo) |  | ✓ |  |  |

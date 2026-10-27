@@ -1,6 +1,6 @@
 # Flujo: Recordatorios y Hoy
 
-**Historias que cubre:** H-015, H-016, H-017, H-018, H-048 (tocar un hecho)
+**Historias que cubre:** H-015, H-016, H-017, H-018, H-048 (tocar un hecho), H-052 (pregunta tras horas sin anotar)
 **Entrada:** notificación del sistema, o pestaña Hoy · **Salida:** formulario de registro prerrellenado; o vuelta a Hoy
 
 ## Pantallas
@@ -24,6 +24,26 @@
 | Acción directa «Anotar …» | — | acción → formulario con `*.scheduled_for` / `product_log.scheduled_at` ya puesto |
 | +10 min / +30 min | — | acción (reprograma la notificación; no escribe datos) |
 | No se hizo | `measurement.not_done_reason` / `blood_pressure_reading.not_done_reason` / `product_log.status = not_taken` + `product_log.reason` | escritura (abre la app para pedir el motivo) |
+
+### Pantalla: Notificación «¿Has tomado …?» (H-052, EV-006)
+
+```
+┌──────────────────────────────────┐
+│ Ayuno · 13:00                    │
+│ ¿Has tomado sal desde las 07:00? │
+│ [Sí, anotar]   [Todavía no]      │
+└──────────────────────────────────┘
+```
+
+| Elemento UI | Campo canónico | Modo |
+|---|---|---|
+| Momento de la notificación | derivado «Próxima pregunta por tipo» (`intake_goal.nudge_after_hours`, última `intake.taken_at` del tipo o `fast.clock_start_actual`, `settings.quiet_start`/`quiet_end`) | derivado |
+| Tipo («sal») | `intake_goal.intake_type_code` → `intake_type.name` | lectura (nunca cantidades, S4) |
+| «desde las 07:00» | `intake.taken_at` de la última ingesta del tipo, o `fast.clock_start_actual` | lectura |
+| «Sí, anotar» | — | acción → formulario de líquido con ese tipo ([registro-anotar.md](registro-anotar.md)) |
+| «Todavía no» | — | acción (cierra; no escribe datos ni vuelve a preguntar por ese hueco) |
+
+No es una regla ni una alerta: no escribe `alert` ni usa rojo. Suena una vez por hueco; una ingesta nueva de ese tipo la retira si estaba visible y reprograma la siguiente. Como cae fuera del silencio nocturno por construcción, el silencio no la retrasa.
 
 **Acciones:** como arriba. Las notificaciones se programan localmente, se reprograman solas tras reinicio y tras cambio de hora o de zona; suenan en modo avión. Durante el silencio nocturno (`settings.quiet_start`–`settings.quiet_end`) no suenan, **salvo** las programadas por una regla (`rule.action = schedule_measurement`).
 **Estados:** vacío (n/a) · cargando (n/a) · error (si el sistema rechazó programar: franja en Inicio y Hoy «Hay recordatorios que el teléfono no aceptó») · sin permisos (notificaciones denegadas: franja persistente con botón a ajustes del teléfono; con bloqueo activo, la acción directa pide huella o PIN antes de abrir el formulario).
@@ -58,6 +78,7 @@
 | Hora real (hechos) | `measurement.taken_at`, `blood_pressure_reading.taken_at`, `product_log.taken_at`, `refeed_check.done_at` | lectura |
 | Motivo (no hechos) | `measurement.not_done_reason`, `blood_pressure_reading.not_done_reason`, `product_log.reason` | lectura |
 | Productos que salen (sección gris al pie) | `plan_product.during_fast = stops`, `product.name` | lectura |
+| Fila «? 13:00 ¿Has tomado sal desde las 07:00?» (desde que suena hasta que se anota una ingesta del tipo) | derivado «Próxima pregunta por tipo», `intake_type.name` | derivado → tocar abre el formulario de líquido |
 
 **Acciones:** tocar un pendiente o atrasado → formulario prerrellenado con la hora programada · deslizar → «No se hizo» con motivo · tocar una medición o presión hecha → Detalle de entrada con sus valores, para verla o corregirla ([historial-revisar.md](historial-revisar.md), H-048; las tomas de producto y los pasos de vuelta a comer, cuando se complete H-034).
 **Estados:** vacío (sin ayuno en curso: «No hay nada programado hoy» + enlace a Inicio; con ayuno pero sin pendientes: «Hoy no hay mediciones programadas») · cargando · error (no se pudo leer: reintentar) · sin permisos (bloqueo activo; notificaciones denegadas: franja).
@@ -77,3 +98,5 @@
 *Cambio EV-004 (2026-10-14):* tocar una medición o presión hecha abre su Detalle de entrada (antes no hacía nada). Motivo: corregir desde donde se ve el hecho (H-018, H-048).
 
 *Cambio EV-005 (2026-10-23):* el valor de un hecho de una escala con palabras se muestra con su palabra y número («Mucha · 7») (H-049).
+
+*Cambio EV-006 (2026-10-26):* notificación nueva «¿Has tomado sal desde las 07:00?» con «Sí, anotar» / «Todavía no», cuando una meta con «preguntar tras N h» lleva N horas despierto sin ingestas de su tipo (H-052); también aparece como fila en Hoy hasta que se anota. Usa las mismas alarmas exactas y se reprograma tras reiniciar (H-016, ADR-005).

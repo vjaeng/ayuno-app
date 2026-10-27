@@ -18,7 +18,7 @@
 ### Consideraciones de Seguridad
 Lo crítico deja rastro (S8): la corrección de la hora de inicio queda en la bitácora de cambios.
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | hora real de inicio, con segundos | `fast.clock_start_actual` | ✓ |  | ✓ |  |
@@ -37,3 +37,4 @@ Lo crítico deja rastro (S8): la corrección de la hora de inicio queda en la bi
 | entidad corregida | `edit_log.entity_name` | ✓ |  |  |  |
 | tipo de cambio | `edit_log.action` | ✓ |  |  |  |
 | hora de la corrección | `edit_log.edited_at` | ✓ |  |  |  |
+| si el plan tiene pendientes, pasa antes por la revisión (EV-006) | derivado «Revisión previa» (vía H-057) |  | ✓ |  |  |

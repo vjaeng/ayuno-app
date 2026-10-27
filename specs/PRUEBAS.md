@@ -81,6 +81,16 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-047 | Anotar mi peso al empezar y al terminar y ver cuánto cambió | media | 7 | 13 | U + I + E2E | en verde |
 | H-048 | Ver y corregir las mediciones del ayuno en curso | alta | 7 | 23 | U + I + E2E | en verde |
 | H-049 | Elegir con palabras en las escalas de cómo me siento | alta | 9 | 16 | U + I + E2E + D | en verde |
+| H-050 | Anotar lo que tomo en mis medidas caseras | alta | 7 | 15 | U + I + E2E | pendiente (EV-006) |
+| H-051 | Anotar agua y sal con un toque desde el reloj | alta | 7 | 11 | U + I + E2E | pendiente (EV-006) |
+| H-052 | Que la app me pregunte si llevo horas sin anotar lo que pide mi plan | alta | 7 | 9 | U + I + E2E + D | pendiente (EV-006) |
+| H-053 | Medir la presión de pie a su tiempo con un temporizador | alta | 7 | 8 | U + I + E2E + D | pendiente (EV-006) |
+| H-054 | Definir una regla sobre la diferencia al ponerme de pie | alta | 5 | 8 | U + I + E2E | pendiente (EV-006) |
+| H-055 | Definir una regla sobre el cambio respecto a mi valor de partida | alta | 5 | 10 | U + I + E2E | pendiente (EV-006) |
+| H-056 | Definir una regla de tendencia | alta | 6 | 9 | U + I + E2E | pendiente (EV-006) |
+| H-057 | Revisar lo que falta antes de empezar y empezar igual si quiero | alta | 6 | 10 | U + I + E2E | pendiente (EV-006) |
+
+*EV-006:* filas CRUD de H-050 a H-057 según el mini-Tejido del 2026-10-26. H-002, H-003, H-005, H-006, H-009, H-012, H-022, H-028, H-036 y H-040 ganan criterios marcados «(EV-006)» y sus casos se añaden a sus pruebas actuales; su estado no cambia hasta construirlos.
 
 ## 4. Casos transversales
 
@@ -101,6 +111,23 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | Regla «solo al despertar» con lectura sin marca | No dispara |
 | Regla con acción «medir de nuevo en 15 min» | Programa un recordatorio a `fired_at` + 15 min que ignora el silencio nocturno |
 | Ninguna regla (de ninguna acción) | Nunca cambia `fast.status` |
+| *EV-006 (H-022, H-054–H-056):* pareja sentada 83 → de pie 126 con «diferencia > 30» | Dispara, `trigger_entry_ids` = sentada y de pie |
+| Parejas 60 → 80 y 61 → 86 con «diferencia > 30» | No dispara |
+| Dos lecturas de pie (60 s y 180 s) de una misma sentada | Se evalúa cada una con la sentada |
+| Diferencias +20, +25, +43 con «tendencia de 3 subiendo» | Dispara en la tercera |
+| +20, +20, +25 (una igual en medio) | No dispara: la igual corta la racha |
+| Tendencia de la diferencia con lecturas a 60 s y 180 s mezcladas | Cada momento se compara con su igual |
+| «Cambio desde la partida» sin ninguna lectura con valor | No dispara |
+| Lectura marcada «de partida» | Sustituye a la primera del ayuno como referencia |
+| Marcar otra «de partida» con el ayuno en curso | Reevalúa `change_from_baseline`; las alertas ya registradas no cambian |
+| «Sal por debajo del 50 % de la meta a las 14:00» con 0.6 de 2.5 g | Dispara |
+| Misma regla con `goal_percent` nulo | Se comporta como antes de EV-006 (100 %) |
+| Agua con sal (dos ingestas con un `group_id`) | Una sola evaluación; la regla de sal ya ve la sal disuelta |
+| Regla con `is_placeholder` o sin cifra | No se puede activar; el motor nunca la evalúa |
+| «Pulso sentado más de 15 sobre la partida», partida 70 y lectura de 86 / de 84 | Dispara / no dispara |
+| La propia lectura de partida | Nunca cumple `change_from_baseline` |
+| Lectura de pie sin sentada enlazada con regla `pair_difference` | No se evalúa |
+| «Sal por debajo del 50 %» con la meta sin cifra | No se evalúa |
 
 ### 4.2 Reloj y tiempo (H-005, H-006, H-018)
 
@@ -110,6 +137,8 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 
 ### 4.3 Recordatorios (H-016, H-017)
 
+- **U (EV-006, H-052):** la próxima pregunta cae tras 6 h despierto saltando el silencio nocturno (silencio de 23:00 a 06:30 y última ingesta a las 21:00 → 10:30); sin silencio cuenta las 24 h; una ingesta nueva del tipo mueve el ancla; no se repite con el mismo ancla; una meta sin `nudge_after_hours` no pregunta.
+- **I (EV-006, H-053):** «Ya estoy de pie» registra en `AlarmManager` el primer tiempo con su propio `PendingIntent` (distinto del de los recordatorios); al sonar programa el siguiente; «Cancelar» lo retira.
 - **U:** el cálculo de pendientes produce las horas correctas por etapa, solo productos que siguen u opcionales activados, respeta el silencio nocturno salvo recordatorios de reglas.
 - **I (Robolectric):** el `ReminderScheduler` registra en `AlarmManager` (sombra de Robolectric) exactamente las alarmas esperadas; los receptores de `BOOT_COMPLETED`, `TIME_SET` y `TIMEZONE_CHANGED` las vuelven a programar.
 - **D:** con la app cerrada, una alarma programada a 1 min dispara la notificación real; tras reiniciar el dispositivo las alarmas siguen programadas.
@@ -117,12 +146,14 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 
 ### 4.4 Intercambio (H-036 a H-040)
 
-- Cada exportación generada en pruebas valida contra el esquema vigente (`schema/fasting-log-1.1.schema.json` desde EV-005).
+- Cada exportación generada en pruebas valida contra el esquema vigente (`schema/fasting-log-1.1.schema.json` desde EV-005; `fasting-log-1.2.schema.json` desde EV-006).
 - Un campo no anotado se exporta como `null` (nunca `0` ni `""`); números como números con punto decimal; sin BOM.
 - Reexportar el mismo ayuno produce los mismos `id`; editar una entrada conserva su `id` y deja la fila en `edit_log`.
 - Exportar → borrar datos → importar restaura todo con horas al segundo; importar dos veces no duplica.
 - Archivo con campos desconocidos: se importa y se listan; `schema_version` mayor: se rechaza sin modificar nada; fallo a mitad: no queda nada importado.
 - EV-005: la exportación 1.1 lleva `catalogs.metric_options`; un archivo 1.0 sin ella se importa y conserva las palabras del teléfono; restaurar en un teléfono nuevo no duplica las 20 de fábrica; palabras con tipo inexistente, no numérico, número fuera de rango o duplicadas se rechazan sin modificar nada.
+
+- EV-006: la exportación 1.2 lleva `catalogs.household_units`, y una ingesta de «1 pizca» de sal sale con `amount_entered: 1`, `unit_entered: "pinch"`, `amount: 0.3`, `unit: "g"`. «Agua con sal» exporta dos ingestas con el mismo `group_id`. «Empezar de todos modos» exporta `started_with_warnings`. Los archivos 1.0 y 1.1 se importan sin perder nada y con los valores por defecto. Se rechazan sin modificar nada: equivalencia ≤ 0, `condition_kind` o `direction` desconocidos, `trend_count` < 3, `goal_percent` fuera de 1-100, `seconds_standing` < 0, dos «de partida» en el mismo ayuno y medición.
 
 ### 4.4b Actualizar la base sin perder datos (EV-005, H-049)
 
@@ -132,6 +163,20 @@ Restricción del humano: la app instalada tiene un ayuno en curso. Casos de inte
 - La migración no siembra palabras de un tipo que no exista o que la persona haya hecho no numérico, y no duplica si se ejecuta sobre una base que ya las tiene.
 - La cadena completa 1→8 sigue pasando; `ReleasedSchemasTest` registra la versión 8; Room valida el esquema 8 exportado (`8.json`).
 - Un fallo dentro de la migración deja la base en la versión 7 sin cambios (transacción de Room).
+
+### 4.4c Migración 8 → 9 (EV-006)
+
+Misma restricción: hay un ayuno en curso. Casos de integración en `MigrationTest`, obligatorios antes del APK:
+
+- Base 8 con un ayuno `in_progress` y filas en todas las tablas (incluidas `metric_option`, alertas, `edit_log` y borradas en blando) → migración 8→9 → cada fila existente es idéntica columna a columna. Además:
+  - las columnas nuevas tienen su valor por defecto;
+  - `intake.amount_entered = amount` y `unit_entered = unit`;
+  - las filas de presión de `plan_metric` tienen [60, 180];
+  - el ayuno sigue `in_progress` con su `clock_start_actual`.
+- `household_unit` tiene las medidas de fábrica, solo de tipos existentes y sin duplicar al repetir. `intake_type.quick_unit_code` vale `glass` en el agua y `pinch` en la sal, y nulo en los tipos que rompen el ayuno.
+- `is_placeholder` se marca solo en las reglas del ejemplo instalado que siguen idénticas a la semilla; una regla de ejemplo ya editada y las de plantillas propias o ayunos quedan en false.
+- Ninguna regla sembrada o migrada trae cifra.
+- La cadena completa 1→9 pasa; `ReleasedSchemasTest` registra la versión 9; Room valida `9.json`; un fallo deja la base en la 8.
 
 ### 4.5 Seguridad (S1-S8)
 
@@ -148,11 +193,18 @@ Restricción del humano: la app instalada tiene un ayuno en curso. Casos de inte
 | Copia cifrada con contraseña incorrecta o archivo alterado: mensaje único, nada se restaura | S6, ADR-SEG-005 | I |
 | Importación de archivo malicioso (tipos erróneos, referencias rotas, 60 MB, XOR de propietario violado): rechazo sin cambios | S1, ADR-SEG-006 | I |
 | Alertas no editables ni borrables; toda corrección deja fila en `edit_log` | S8 | U + I |
+| `started_with_warnings` se escribe en la transacción de empezar y no se edita; «Deshacer» del botón rápido y marcar «de partida» dejan `edit_log` (EV-006) | S8 | U + I |
+| Ni la semilla ni la migración traen umbrales; las notificaciones de H-052 nombran el tipo («sal») y nunca cifras (EV-006) | H-019, S4 | U + I |
 
 ### 4.6 Rendimiento y usabilidad con criterio cuantitativo
 
 - Inicio muestra el reloj en < 1 s en arranque en frío (H-006): prueba **D** con medición de tiempo hasta el primer fotograma con reloj, en el teléfono.
 - Anotar una medición en ≤ 3 toques desde Inicio (H-008): E2E que cuenta las interacciones.
+- EV-006, E2E en Robolectric con reloj avanzable:
+  - `H051QuickIntakeE2eTest`: un toque sube el total del día y «Deshacer» lo devuelve.
+  - `H053StandingTimerE2eTest`: lecturas con 60 y 180 s; sin esperar → «tomada sin esperar». Corregir la hora de una lectura de pie desplaza sus segundos (U, `corregir-entrada.md`).
+  - `H054PairDifferenceRuleE2eTest`: 83 → 126 muestra la alerta.
+  - `H057PreStartReviewE2eTest`: el ejemplo sin tocar lista sus reglas; «Empezar de todos modos» deja constancia en Historial.
 
 ### 4.7 Verificación en dispositivo (nivel D) — pendiente
 
@@ -169,6 +221,9 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 | Prueba manual de 3 días de recordatorios | H-016 |
 | Las notificaciones visibles de un ayuno borrado desaparecen — **verificado 2026-10-25** | H-045 |
 | Actualizar sobre la versión instalada (sin desinstalar) con un ayuno en curso: el ayuno, su reloj, sus mediciones y sus recordatorios siguen igual; las escalas muestran sus palabras (EV-005) — **verificado 2026-10-23** | H-049, ADR-003 |
+| El temporizador de pie suena a 1 y 3 min con la pantalla apagada y la app en segundo plano (EV-006) | H-053, ADR-005 |
+| La pregunta «¿Has tomado sal…?» llega con la app cerrada y tras reiniciar el teléfono (EV-006) | H-052, ADR-005 |
+| Actualizar 8 → 9 sin desinstalar con un ayuno en curso: todo sigue igual y aparecen las medidas caseras y los botones rápidos (EV-006) | H-050, ADR-003 |
 
 **Verificaciones manuales registradas:**
 
@@ -178,7 +233,7 @@ Robolectric no ejecuta código nativo ni el sistema real de alarmas, notificacio
 | 2026-10-23 | Teléfono de la persona, Android 16 (APK `ayuno-0.13.0-debug`, instalado encima de 0.12.0 con un ayuno en curso) | EV-005: actualización de la base 7→8 sin desinstalar; ayuno en curso, reloj, mediciones y recordatorios intactos; captura de pantalla posible; las escalas se anotan y se ven con sus palabras | Correcto (confirmado por la persona) |
 | 2026-10-25 | Teléfono de la persona, Android 16 (APK `ayuno-0.13.0-debug`) | EV-001: un ayuno de prueba en curso con un recordatorio visible en la barra de notificaciones; al borrarlo desde su detalle, la notificación desaparece | Correcto (confirmado por la persona) |
 
-**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017 y H-042.
+**Regla de entrega:** una historia con casos D pendientes puede quedar «construida», pero **no se marca «entregada»** hasta pasar sus casos D. Afecta a H-006, H-016, H-017, H-042, H-052 y H-053.
 
 ## 5. Excepciones registradas
 

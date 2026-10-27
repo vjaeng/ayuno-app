@@ -21,7 +21,7 @@
 ### Consideraciones de Seguridad
 Datos de salud (S4): la exportación es la única vía de salida y la decide el usuario.
 
-### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-23, EV-005; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | fecha del inicio real del reloj (nombre del archivo) | `fast.clock_start_actual` |  | ✓ |  |  |
@@ -54,3 +54,8 @@ Datos de salud (S4): la exportación es la única vía de salida y la decide el 
 | comidas | `meal.*` |  | ✓ |  |  |
 | notas | `note.*` |  | ✓ |  |  |
 | bitácora | `edit_log.*` |  | ✓ |  |  |
+| formato 1.2: lo tecleado, la medida y el grupo (EV-006) | `intake.amount_entered`, `intake.unit_entered`, `intake.group_id` |  | ✓ |  |  |
+| catálogo de medidas caseras y botón rápido (EV-006) | `household_unit.*`, `intake_type.quick_unit_code` |  | ✓ |  |  |
+| segundos de pie, marca de partida, tiempos del temporizador (EV-006) | `blood_pressure_reading.seconds_standing`, `blood_pressure_reading.is_baseline`, `measurement.is_baseline`, `plan_metric.standing_check_seconds` |  | ✓ |  |  |
+| condiciones nuevas y marca «de ejemplo» (EV-006) | `rule.direction`, `rule.trend_count`, `rule.trend_of`, `rule.goal_percent`, `rule.is_placeholder`; `intake_goal.nudge_after_hours` |  | ✓ |  |  |
+| pendientes con que se empezó (EV-006) | `fast.started_with_warnings` |  | ✓ |  |  |

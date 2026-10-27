@@ -17,7 +17,7 @@
 ### Consideraciones de Seguridad
 (ninguna evidente)
 
-### Matriz CRUD (tejida el 2026-10-08; **re-tejer: EV-006**)
+### Matriz CRUD (tejida el 2026-10-08; re-tejida el 2026-10-26, EV-006)
 | Concepto en criterio | Campo canónico | C | R | U | D |
 |---|---|---|---|---|---|
 | hora de la ingesta | `intake.taken_at` | ✓ |  |  |  |
@@ -29,3 +29,5 @@
 | meta del día («llevas X de Y») | `intake_goal.daily_amount` |  | ✓ |  |  |
 | tipo marcado «rompe el ayuno» | `intake_type.breaks_fast` |  | ✓ |  |  |
 | durante el ayuno | `fast.status` |  | ✓ |  |  |
+| cantidad en la unidad del tipo o en una medida casera (EV-006) | `intake.amount_entered`, `intake.unit_entered`; `household_unit.name`, `household_unit.equivalent` | ✓ | ✓ |  |  |
+| equivalente que usan totales, sodio, metas y reglas (EV-006) | `intake.amount`, `intake.unit` | ✓ | ✓ |  |  |
