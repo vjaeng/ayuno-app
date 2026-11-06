@@ -6,11 +6,9 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.ui.semantics.Role
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,17 +50,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
-import com.ayuno.app.ui.record.StartWeightDialog
 import com.ayuno.app.reminders.ReminderNotifier
 import com.ayuno.app.ui.components.AyunoTextField
 import com.ayuno.app.ui.components.DateTimeField
 import com.ayuno.app.ui.components.EmptyState
+import com.ayuno.app.ui.components.EntryIcon
 import com.ayuno.app.ui.components.ErrorState
 import com.ayuno.app.ui.components.FieldError
 import com.ayuno.app.ui.components.InfoBanner
@@ -73,6 +73,7 @@ import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.components.message
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
+import com.ayuno.app.ui.record.StartWeightDialog
 import com.ayuno.app.ui.refeed.RefeedContent
 import com.ayuno.app.ui.theme.AyunoThemeTokens
 import com.ayuno.app.ui.theme.Dimens
@@ -278,6 +279,7 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
                 if (next.kind == com.ayuno.domain.derived.PendingKind.PRODUCT) actions.onRecordProduct(state.fast.id, next.at)
                 else actions.onRecordMetric(state.fast.id, next.code, next.at)
             },
+            icon = next.icon,
         )
     }
     if (state.totals.isNotEmpty()) {
@@ -286,7 +288,11 @@ private fun InProgressContent(state: HomeUiState.InProgress, viewModel: HomeView
     }
     state.last?.let { last ->
         SectionTitle(stringResource(R.string.home_last_measurement))
-        Text(stringResource(R.string.home_last_measurement_value, last.metricName, last.value, Formats.dateTime(last.at)), style = MaterialTheme.typography.bodyLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            EntryIcon(last.icon)
+            Spacer(Modifier.size(Dimens.spaceM))
+            Text(stringResource(R.string.home_last_measurement_value, last.metricName, last.value, Formats.dateTime(last.at)), style = MaterialTheme.typography.bodyLarge)
+        }
     }
     // H-048: acceso secundario a todas las mediciones del ayuno, bajo la última (no compite con «Anotar»).
     com.ayuno.app.ui.components.ListRow(

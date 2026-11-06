@@ -1,7 +1,8 @@
 package com.ayuno.app.ui.record
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -23,6 +25,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
 import com.ayuno.app.ui.components.EmptyState
+import com.ayuno.app.ui.components.EntryIcon
+import com.ayuno.app.ui.components.EntryIcons
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.ScreenScaffold
 import com.ayuno.app.ui.containerFactory
@@ -68,14 +72,14 @@ fun RecordGridScreen(
                 // Mediciones y otros registros en bloques separados (Miller, UX-UI registro-anotar).
                 if (list.isEmpty()) EmptyState(stringResource(R.string.record_empty))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceM), verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
-                    list.forEach { type -> Tile(type.name) { onSelect(type) } }
+                    list.forEach { type -> Tile(type.name, EntryIcons.metric(type)) { onSelect(type) } }
                 }
                 com.ayuno.app.ui.components.SectionTitle(stringResource(R.string.record_other))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceM), verticalArrangement = Arrangement.spacedBy(Dimens.spaceM)) {
-                    Tile(stringResource(R.string.record_symptom), onSymptom)
-                    Tile(stringResource(R.string.record_intake), onIntake)
-                    Tile(stringResource(R.string.record_product), onProduct)
-                    Tile(stringResource(R.string.record_note), onNote)
+                    Tile(stringResource(R.string.record_symptom), EntryIcons.symptom, onSymptom)
+                    Tile(stringResource(R.string.record_intake), EntryIcons.intake, onIntake)
+                    Tile(stringResource(R.string.record_product), EntryIcons.product, onProduct)
+                    Tile(stringResource(R.string.record_note), EntryIcons.note, onNote)
                 }
             }
         }
@@ -83,15 +87,21 @@ fun RecordGridScreen(
 }
 
 @Composable
-private fun Tile(label: String, onClick: () -> Unit) {
+private fun Tile(label: String, @DrawableRes icon: Int, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         color = AyunoThemeTokens.colors.surfaceVariant,
         shape = RoundedCornerShape(Dimens.radiusM),
         modifier = Modifier.size(Dimens.tileSize),
     ) {
-        Box(Modifier.padding(Dimens.spaceS), contentAlignment = Alignment.Center) {
-            Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
+        Column(
+            Modifier.padding(Dimens.spaceS),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            // Decorativo: el lector lee el nombre (GUIA §2.1).
+            EntryIcon(icon, Dimens.iconTile)
+            Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
     }
 }

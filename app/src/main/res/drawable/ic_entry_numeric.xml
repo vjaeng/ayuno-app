@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Apache 2.0), Filled.Straighten. GUIA §2.1. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:fillColor="@android:color/white" android:pathData="M21,6 L3,6 c-1.1,0 -2,0.9 -2,2 v8 c0,1.1 0.9,2 2,2 h18 c1.1,0 2,-0.9 2,-2 L23,8 c0,-1.1 -0.9,-2 -2,-2 Z M21,16 L3,16 L3,8 h2 v4 h2 L7,8 h2 v4 h2 L11,8 h2 v4 h2 L15,8 h2 v4 h2 L19,8 h2 v8 Z" />
+</vector>

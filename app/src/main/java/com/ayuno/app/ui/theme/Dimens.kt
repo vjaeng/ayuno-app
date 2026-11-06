@@ -17,6 +17,8 @@ object Dimens {
     val touchMin = 48.dp
     val buttonHeight = 56.dp
     val tileSize = 96.dp
+    val iconTile = 32.dp
+    val iconRow = 24.dp
     val rowMinHeight = 56.dp
     val focusRing = 3.dp
 }

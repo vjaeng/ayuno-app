@@ -318,7 +318,13 @@ fun SwitchRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Uni
 
 /** Fila tocable de lista (≥ 56 dp). */
 @Composable
-fun ListRow(title: String, supporting: String? = null, onClick: () -> Unit, trailing: @Composable () -> Unit = {}) {
+fun ListRow(
+    title: String,
+    supporting: String? = null,
+    onClick: () -> Unit,
+    @androidx.annotation.DrawableRes icon: Int? = null,
+    trailing: @Composable () -> Unit = {},
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -327,6 +333,10 @@ fun ListRow(title: String, supporting: String? = null, onClick: () -> Unit, trai
             .padding(vertical = Dimens.spaceS),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (icon != null) {
+            EntryIcon(icon)
+            Spacer(Modifier.size(Dimens.spaceM))
+        }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             if (supporting != null) Text(supporting, style = MaterialTheme.typography.bodyMedium, color = AyunoThemeTokens.colors.onSurfaceVariant)

@@ -1,5 +1,6 @@
 package com.ayuno.app.ui.today
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -20,6 +21,7 @@ import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
 import com.ayuno.app.reminders.ReminderNotifier
 import com.ayuno.app.ui.components.EmptyState
+import com.ayuno.app.ui.components.EntryIcons
 import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.ScreenScaffold
@@ -36,9 +38,9 @@ import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.derived.PendingRecords
 import com.ayuno.domain.derived.PendingState
 import com.ayuno.domain.derived.RefeedSchedule
+import com.ayuno.domain.model.DuringFast
 import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.Fast
-import com.ayuno.domain.model.DuringFast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.ProductLogStatus
@@ -64,6 +66,7 @@ data class TodayRow(
     val detail: String?,
     val fastHour: Long?,
     val entry: Pair<EntryKind, String>? = null,
+    @DrawableRes val icon: Int,
 )
 
 /** H-052: pregunta que ya sonó y sigue sin ingesta del tipo. */
@@ -121,6 +124,7 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
         val now = LocalTimes.now(c.clock)
         val source = c.fasts.get(fastId)!!
         val types = c.catalog.metricTypes()
+        val typesByCode = types.associateBy { it.code }
         val products = c.catalog.products()
         val measurements = c.records.measurements(fastId)
         val readings = c.records.bloodPressure(fastId)
@@ -159,7 +163,11 @@ class TodayViewModel(private val container: AppContainer, tickMillis: Long = 60_
                         ?.let { m -> m.notDoneReason ?: "${Formats.measurementValue(m, types.firstOrNull { it.code == m.metricTypeCode })} · ${Formats.time(m.takenAt)}" }
                 }
             }
-            TodayRow(item, s.state, label, detail, FastClock.fastHour(source.fast, item.scheduledAt), answer.takeIf { s.state == PendingState.DONE || s.state == PendingState.NOT_DONE })
+            TodayRow(
+                item, s.state, label, detail, FastClock.fastHour(source.fast, item.scheduledAt),
+                answer.takeIf { s.state == PendingState.DONE || s.state == PendingState.NOT_DONE },
+                EntryIcons.pending(item.kind, item.code, typesByCode),
+            )
         }
         val stopped = source.plan.products.filter { it.duringFast == DuringFast.STOPS }.mapNotNull { p -> products.firstOrNull { it.code == p.productCode }?.name }
         // Una ingesta nueva del tipo mueve la pregunta al futuro y la fila desaparece.
@@ -186,7 +194,7 @@ fun TodayScreen(
         if (fastId == null) { EmptyState(stringResource(R.string.today_no_fast)); return@ScreenScaffold }
         val context = LocalContext.current
         s.nudges.forEach { n ->
-            ListRow("? ${Formats.time(n.at)}  " + ReminderNotifier.nudgeText(context, n.typeName, n.anchor), null, onClick = { onOpenIntake(fastId, n.intakeTypeCode) })
+            ListRow("? ${Formats.time(n.at)}  " + ReminderNotifier.nudgeText(context, n.typeName, n.anchor), null, onClick = { onOpenIntake(fastId, n.intakeTypeCode) }, icon = EntryIcons.intake)
         }
         if (s.rows.isEmpty() && s.nudges.isEmpty()) EmptyState(stringResource(R.string.today_empty))
         // Agrupado por franjas para no superar 9 filas por bloque (Miller); las filas ya llegan en orden de hora.
@@ -227,7 +235,7 @@ private fun Row(row: TodayRow, onOpen: (notDone: Boolean) -> Unit, onOpenEntry: 
     val open = row.state == PendingState.PENDING || row.state == PendingState.LATE
     val refeed = row.item.kind == PendingKind.REFEED
     val entry = row.entry
-    ListRow(title, supporting, onClick = { if (entry != null && !refeed) onOpenEntry(entry.first, entry.second) else if (open || refeed) onOpen(false) }) {
+    ListRow(title, supporting, onClick = { if (entry != null && !refeed) onOpenEntry(entry.first, entry.second) else if (open || refeed) onOpen(false) }, icon = row.icon) {
         if (open && !refeed) TextButton(onClick = { onOpen(true) }, modifier = Modifier.heightIn(min = Dimens.touchMin)) { Text(stringResource(R.string.record_not_done)) }
     }
 }

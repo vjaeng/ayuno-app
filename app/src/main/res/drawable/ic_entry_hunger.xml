@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Apache 2.0), Filled.Restaurant. GUIA §2.1. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:fillColor="@android:color/white" android:pathData="M11,9 L9,9 L9,2 L7,2 v7 L5,9 L5,2 L3,2 v7 c0,2.12 1.66,3.84 3.75,3.97 L6.75,22 h2.5 v-9.03 C11.34,12.84 13,11.12 13,9 L13,2 h-2 v7 Z M16,6 v8 h2.5 v8 L21,22 L21,2 c-2.76,0 -5,2.24 -5,4 Z" />
+</vector>

@@ -1,12 +1,17 @@
 package com.ayuno.app.ui.history
 
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
-import kotlinx.coroutines.flow.combine
-import com.ayuno.domain.model.EntryKind
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
@@ -15,74 +20,75 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.window.DialogProperties
-import com.ayuno.app.ui.components.FieldError
-import com.ayuno.domain.usecase.Outcome
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
+import com.ayuno.app.ui.components.Badge
 import com.ayuno.app.ui.components.EmptyState
+import com.ayuno.app.ui.components.EntryIcon
+import com.ayuno.app.ui.components.EntryIcons
 import com.ayuno.app.ui.components.ErrorState
+import com.ayuno.app.ui.components.FieldError
 import com.ayuno.app.ui.components.ListRow
 import com.ayuno.app.ui.components.LoadingState
 import com.ayuno.app.ui.components.ScreenScaffold
 import com.ayuno.app.ui.components.SecondaryButton
-import com.ayuno.app.ui.components.Badge
 import com.ayuno.app.ui.components.SectionTitle
 import com.ayuno.app.ui.containerFactory
 import com.ayuno.app.ui.format.Formats
 import com.ayuno.app.ui.home.endReasonText
-import com.ayuno.app.ui.record.weightChangeText
 import com.ayuno.app.ui.home.totalText
+import com.ayuno.app.ui.record.weightChangeText
 import com.ayuno.app.ui.refeed.toleranceText
 import com.ayuno.app.ui.theme.Dimens
 import com.ayuno.domain.derived.DailyTotal
 import com.ayuno.domain.derived.DailyTotals
 import com.ayuno.domain.derived.FastClock
-import com.ayuno.domain.derived.WeightChange
 import com.ayuno.domain.derived.FastRecords
 import com.ayuno.domain.derived.Timeline
 import com.ayuno.domain.derived.TimelineEntry
+import com.ayuno.domain.derived.WeightChange
+import com.ayuno.domain.model.BloodPressureReading
 import com.ayuno.domain.model.EndReason
+import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.FastWithPlan
-import com.ayuno.domain.model.MetricType
-import com.ayuno.domain.model.BloodPressureReading
 import com.ayuno.domain.model.Intake
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Position
-import com.ayuno.domain.model.StartWarning
-import com.ayuno.domain.model.WarningKind
 import com.ayuno.domain.model.ProductLogStatus
 import com.ayuno.domain.model.RuleLevel
+import com.ayuno.domain.model.StartWarning
 import com.ayuno.domain.model.UserChoice
+import com.ayuno.domain.model.WarningKind
+import com.ayuno.domain.usecase.Outcome
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 /** Un ayuno de la lista con el nombre de la regla que lo terminó, si fue por una regla. */
@@ -356,13 +362,35 @@ private fun TimelineItem(fast: Fast, entry: TimelineEntry, d: FastDetail, onOpen
         else -> null
     }
     val base = Modifier.fillMaxWidth().heightIn(min = Dimens.touchMin)
-    Column((if (open != null) base.clickable(onClick = open) else base).padding(vertical = Dimens.spaceXs).semantics(mergeDescendants = true) {}) {
-        Text(Formats.time(entry.at) + hour, style = MaterialTheme.typography.bodyMedium)
-        val with = joined.map { stringResource(R.string.history_intake_with, intakeText(it, d)) }
-        val text = (listOf(entryText(entry, d)) + with).joinToString(" ")
-        Text(text, style = MaterialTheme.typography.titleMedium)
-        if (entry.isBaseline()) Badge(stringResource(R.string.badge_baseline))
+    Row(
+        (if (open != null) base.clickable(onClick = open) else base).padding(vertical = Dimens.spaceXs).semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        EntryIcon(entryIcon(entry, d))
+        Spacer(Modifier.size(Dimens.spaceM))
+        Column(Modifier.weight(1f)) {
+            Text(Formats.time(entry.at) + hour, style = MaterialTheme.typography.bodyMedium)
+            val with = joined.map { stringResource(R.string.history_intake_with, intakeText(it, d)) }
+            val text = (listOf(entryText(entry, d)) + with).joinToString(" ")
+            Text(text, style = MaterialTheme.typography.titleMedium)
+            if (entry.isBaseline()) Badge(stringResource(R.string.badge_baseline))
+        }
     }
+}
+
+/** GUIA §2.1: el icono del tipo de cada entrada. */
+@DrawableRes
+private fun entryIcon(entry: TimelineEntry, d: FastDetail): Int = when (entry) {
+    is TimelineEntry.OfMeasurement -> d.metricTypes[entry.value.metricTypeCode]?.let { EntryIcons.metric(it) }
+        ?: EntryIcons.metric(entry.value.metricTypeCode, isScale = false)
+    is TimelineEntry.OfBloodPressure -> EntryIcons.bloodPressure
+    is TimelineEntry.OfSymptom -> EntryIcons.symptom
+    is TimelineEntry.OfIntake -> EntryIcons.intake
+    is TimelineEntry.OfProductLog -> EntryIcons.product
+    is TimelineEntry.OfAlert -> EntryIcons.alert(d.source.ruleById(entry.value.ruleId)?.level == RuleLevel.NOTICE)
+    is TimelineEntry.OfNote -> EntryIcons.note
+    is TimelineEntry.OfRefeed -> EntryIcons.refeed
+    is TimelineEntry.OfMeal -> EntryIcons.meal
 }
 
 private fun TimelineEntry.isBaseline(): Boolean = when (this) {
@@ -453,7 +481,7 @@ private fun entryText(entry: TimelineEntry, d: FastDetail): String {
                 UserChoice.CONTINUE -> stringResource(R.string.alert_continue) + (entry.value.choiceReason?.let { ": $it" } ?: "")
                 null -> stringResource(R.string.history_alert_undecided)
             }
-            "${if (rule?.level == RuleLevel.NOTICE) "▲" else "■"} $level · ${rule?.name.orEmpty()} · $choice"
+            "$level · ${rule?.name.orEmpty()} · $choice"
         }
         is TimelineEntry.OfNote -> stringResource(R.string.history_note, entry.value.text)
         is TimelineEntry.OfRefeed -> stringResource(R.string.history_refeed_step, entry.step?.description.orEmpty())

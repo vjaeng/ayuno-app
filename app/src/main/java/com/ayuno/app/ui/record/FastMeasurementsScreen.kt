@@ -1,12 +1,12 @@
 package com.ayuno.app.ui.record
 
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ayuno.app.R
 import com.ayuno.app.di.AppContainer
 import com.ayuno.app.ui.components.EmptyState
+import com.ayuno.app.ui.components.EntryIcons
 import com.ayuno.app.ui.components.ErrorState
 import com.ayuno.app.ui.components.FilterChips
 import com.ayuno.app.ui.components.ListRow
@@ -35,9 +36,9 @@ import com.ayuno.domain.derived.FastMeasurements
 import com.ayuno.domain.derived.MeasurementItem
 import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.Fast
-import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.GlucoseSource
+import com.ayuno.domain.model.MetricType
 import com.ayuno.domain.model.Position
 import com.ayuno.domain.model.Trend
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -135,6 +136,7 @@ fun FastMeasurementsScreen(
                                 title = measurementTitle(item, s.names, s.types),
                                 supporting = measurementSupporting(s.fast, item),
                                 onClick = { onOpen(item.kind, item.id) },
+                                icon = EntryIcons.metric(item.metricTypeCode, s.types),
                                 trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
                             )
                         }
@@ -145,7 +147,7 @@ fun FastMeasurementsScreen(
                     if (showDeleted) {
                         SectionTitle(stringResource(R.string.measurements_deleted_title))
                         s.deleted.forEach { item ->
-                            ListRow(measurementTitle(item, s.names, s.types), measurementSupporting(s.fast, item), onClick = {}) {
+                            ListRow(measurementTitle(item, s.names, s.types), measurementSupporting(s.fast, item), onClick = {}, icon = EntryIcons.metric(item.metricTypeCode, s.types)) {
                                 TextButton(onClick = { viewModel.restore(item) }, modifier = Modifier.heightIn(min = Dimens.touchMin)) {
                                     Text(stringResource(R.string.measurements_restore))
                                 }

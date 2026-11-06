@@ -1,14 +1,14 @@
 package com.ayuno.app.ui.home
 
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ayuno.app.di.AppContainer
+import com.ayuno.app.ui.components.EntryIcons
 import com.ayuno.app.ui.format.Formats
 import com.ayuno.domain.derived.DailyTotal
 import com.ayuno.domain.derived.DailyTotals
 import com.ayuno.domain.derived.ExpectedIntake
-import com.ayuno.domain.model.EntryKind
-import com.ayuno.domain.usecase.RecordResult
 import com.ayuno.domain.derived.FastClock
 import com.ayuno.domain.derived.Milestone
 import com.ayuno.domain.derived.Pending
@@ -16,13 +16,15 @@ import com.ayuno.domain.derived.PendingKind
 import com.ayuno.domain.derived.PendingRecords
 import com.ayuno.domain.derived.PendingState
 import com.ayuno.domain.derived.RefeedSchedule
-import com.ayuno.domain.model.RefeedCheck
 import com.ayuno.domain.derived.StageWindows
+import com.ayuno.domain.model.EntryKind
 import com.ayuno.domain.model.Fast
 import com.ayuno.domain.model.FastStatus
 import com.ayuno.domain.model.MetricType
+import com.ayuno.domain.model.RefeedCheck
 import com.ayuno.domain.time.LocalTimes
 import com.ayuno.domain.usecase.Outcome
+import com.ayuno.domain.usecase.RecordResult
 import com.ayuno.domain.usecase.ValidationError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -42,8 +44,8 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 
-data class NextPending(val kind: PendingKind, val label: String, val code: String, val at: LocalDateTime, val late: Boolean)
-data class LastMeasurement(val metricName: String, val value: String, val at: LocalDateTime)
+data class NextPending(val kind: PendingKind, val label: String, val code: String, val at: LocalDateTime, val late: Boolean, @DrawableRes val icon: Int)
+data class LastMeasurement(val metricName: String, val value: String, val at: LocalDateTime, @DrawableRes val icon: Int)
 
 /** BotonRapido de un líquido con medida de botón (H-051). */
 data class QuickButtonUi(val intakeTypeCode: String, val typeName: String, val unitCode: String, val unitName: String)
@@ -152,6 +154,7 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
         val readings = c.records.bloodPressure(fastId)
         val records = PendingRecords(measurements, readings, c.records.productLogs(fastId))
         val names = types.associate { it.code to it.name }
+        val typesByCode = types.associateBy { it.code }
         val active = types.filter { it.active }.map { it.code }.toSet()
         val next = Pending.items(source, active, products, now.minusHours(2), now.plusHours(48))
             .map { Pending.status(it, now, records) }
@@ -162,12 +165,19 @@ class HomeViewModel(private val container: AppContainer, tickMillis: Long = 30_0
                     PendingKind.PRODUCT -> products.firstOrNull { it.code == s.item.code }?.let { "${it.name} · ${Formats.number(s.item.amount ?: it.defaultAmount)} ${it.unit}" } ?: s.item.code
                     PendingKind.REFEED -> ""
                 }
-                NextPending(s.item.kind, label, s.item.code, s.item.scheduledAt, s.state == PendingState.LATE)
+                NextPending(s.item.kind, label, s.item.code, s.item.scheduledAt, s.state == PendingState.LATE, EntryIcons.pending(s.item.kind, s.item.code, typesByCode))
             }
         val lastMeasurement = measurements.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
-            ?.let { m -> LastMeasurement(names[m.metricTypeCode] ?: m.metricTypeCode, Formats.measurementValue(m, types.firstOrNull { it.code == m.metricTypeCode }), m.takenAt) }
+            ?.let { m ->
+                LastMeasurement(
+                    names[m.metricTypeCode] ?: m.metricTypeCode,
+                    Formats.measurementValue(m, typesByCode[m.metricTypeCode]),
+                    m.takenAt,
+                    EntryIcons.metric(m.metricTypeCode, typesByCode),
+                )
+            }
         val lastReading = readings.filter { it.notDoneReason == null }.maxByOrNull { it.takenAt }
-            ?.let { r -> LastMeasurement(names[MetricType.BLOOD_PRESSURE_CODE] ?: "", "${r.systolic}/${r.diastolic} mmHg", r.takenAt) }
+            ?.let { r -> LastMeasurement(names[MetricType.BLOOD_PRESSURE_CODE] ?: "", "${r.systolic}/${r.diastolic} mmHg", r.takenAt, EntryIcons.bloodPressure) }
         val stage = StageWindows.stageAt(StageWindows.of(fast, source.plan), now)
         val intakeTypes = c.catalog.intakeTypes()
         val settings = c.settings.get()

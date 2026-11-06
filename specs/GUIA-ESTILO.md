@@ -63,6 +63,7 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 | `touch_min` | 48 dp | Objetivo táctil mínimo de cualquier control |
 | `button_height` | 56 dp | Botones principales y secundarios |
 | `tile_size` | 96 dp | Botones de la rejilla Anotar |
+| `icon_tile` / `icon_row` | 32 / 24 dp | Icono de tipo en TileAnotar / al inicio de cada fila que muestra una anotación (§2.1) |
 | `row_min_height` | 56 dp | Filas de lista tocables |
 | `elevation` | 0 dp (tarjetas con borde) · 3 dp (hojas y diálogos) | Profundidad mínima |
 
@@ -73,7 +74,7 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 | **BotonPrincipal** | La acción principal de la pantalla («Anotar», «Guardar», «Terminar el ayuno», «Crear ayuno») | Más de uno por pantalla | `primary` / `on_primary`, alto 56 dp, ancho completo al pie, `label` |
 | **BotonSecundario** | Acción alternativa («No se hizo», «Ahora no», «Cancelar») | Acciones destructivas sin confirmación | Borde `outline`, texto `primary`, alto 56 dp |
 | **BotonSeguridad** | Acceso a la pantalla de Seguridad, siempre visible durante el ayuno | Cualquier otro uso | Icono de escudo + «Seguridad», `primary_container`, 48×48 dp mínimo, esquina superior |
-| **TileAnotar** | Cada tipo en la rejilla Anotar | Listas largas | 96×96 dp, `surface_variant`, icono + nombre en `label`, sin color por tipo |
+| **TileAnotar** | Cada tipo en la rejilla Anotar | Listas largas | 96×96 dp, `surface_variant`, icono de su tipo (§2.1, `icon_tile`, `on_surface_variant`) sobre el nombre en `label`, sin color por tipo; si el nombre no cabe, dos líneas; el icono es decorativo (el lector lee el nombre) |
 | **CampoNumerico** | Valores de medición, cantidades | Texto libre | Teclado numérico, `numeric_input`, unidad a la derecha con selector si hay alternativa; error con borde `outline_strong` 2 dp + icono ⓘ + mensaje bajo el campo en `on_surface` |
 | **CampoTexto** | Notas, motivos, nombres | Valores numéricos | `body`, borde `outline`, error como CampoNumerico |
 | **SelectorFechaHora** | Hora de cualquier entrada | — | Muestra «viernes 23 oct, 12:01:40» + icono ✎; abre selectores nativos |
@@ -86,8 +87,8 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 | **Interruptor** | Activar o desactivar (medición en plantilla, regla, bloqueo) | Acciones con efecto inmediato irreversible | Switch de Material 3 con etiqueta tocable en toda la fila |
 | **TarjetaReloj** | Reloj del ayuno en Inicio | — | `primary_container`, `display_clock`, restante y fin previsto en `body` |
 | **BarraHitos** | Hitos del ayuno | — | Línea horizontal (`outline`) con un punto por hito repartidos a lo ancho: rellenos (`primary`) alcanzados y huecos pendientes, con las horas debajo; cada punto es tocable (≥48 dp) y una línea bajo la barra muestra la fecha y hora del elegido (por defecto, el siguiente); hora y fecha legibles por el lector de pantalla |
-| **FilaPendiente** | Vista Hoy | — | Estado con icono **y** texto (✔ hecho · ○ pendiente · ! atrasado · ✖ no hecho), nunca solo con color; fila de 56 dp |
-| **ItemLineaTiempo** | Historial y detalle del ayuno | — | Hora + hora del ayuno + tipo + valor (`body_strong`); alertas con icono de nivel |
+| **FilaPendiente** | Vista Hoy | — | Icono de su tipo (§2.1, `icon_row`) a la izquierda; estado con signo **y** texto (✔ hecho · ○ pendiente · ! atrasado · ✖ no hecho), nunca solo con color; fila de 56 dp |
+| **ItemLineaTiempo** | Historial y detalle del ayuno | — | Icono de su tipo (§2.1, `icon_row`) + hora + hora del ayuno + tipo + valor (`body_strong`); en las alertas, el icono es el de su nivel |
 | **FranjaInformativa** | Avisos persistentes no clínicos (permiso de notificaciones denegado, recordatorios no aceptados) | Alertas de reglas | `surface_variant`, icono ⓘ, texto + botón de texto |
 | **AvisoAmarillo** | Regla con `rule.level = notice` | Errores de formulario | Hoja inferior `notice_container`, borde izquierdo `notice_accent` 4 dp, icono ▲, mensaje en `headline` |
 | **AlertaRoja** | Regla con `rule.level = alert` | Cualquier otra cosa | Pantalla completa `alert`/`on_alert`, mensaje en `headline`, botones de 56 dp en blanco con texto `alert`; no se cierra sin decidir |
@@ -98,8 +99,33 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 | **EstadoCargando** | Lectura en curso | Escrituras (usar botón deshabilitado con indicador) | Esqueleto de la estructura; nunca valores inventados |
 | **EstadoError** | Fallo de lectura o escritura | Validación de campo (va en el campo) | Texto «qué pasó + qué hacer» + «Reintentar» |
 | **EstadoSinPermisos** | Bloqueo activo; permiso del sistema denegado | — | Pantalla de desbloqueo (BiometricPrompt) o FranjaInformativa con botón a ajustes del teléfono |
-| **FilaLista** | Elemento tocable de una lista que abre un detalle (ayunos planificados, historial, plantillas) | Acciones directas (usar botón) | `ListRow`: fila de `rowMinHeight` (56 dp) mín., texto principal en `body` y secundario en `body` atenuado (`on_surface_variant`), chevron › al final cuando abre un detalle; toda la fila es el objetivo táctil |
+| **FilaLista** | Elemento tocable de una lista que abre un detalle (ayunos planificados, historial, plantillas) | Acciones directas (usar botón) | `ListRow`: fila de `rowMinHeight` (56 dp) mín., texto principal en `body` y secundario en `body` atenuado (`on_surface_variant`), chevron › al final cuando abre un detalle; si la fila muestra una anotación, el icono de su tipo a la izquierda (§2.1, `icon_row`); toda la fila es el objetivo táctil |
 | **BarraNavegacion** | Pestañas Inicio, Planificados, Hoy, Historial, Más | Dentro de flujos modales | Navigation bar de Material 3, 5 destinos (máximo de Material), icono + etiqueta |
+
+### 2.1 Iconos por tipo de anotación
+
+Los mismos que la app hermana `my-health-tracker` (su GUIA §2.1), para que un mismo tipo se reconozca igual en las dos. Material Icons rellenos (Apache 2.0), copiados como vectores propios en `res/drawable/ic_entry_*.xml` en lugar de depender de `material-icons-extended`, que añadiría unos 23 MB al APK por 12 iconos; en `on_surface_variant`; nunca con color por tipo ni como único portador del significado (siempre junto al nombre).
+
+| Tipo | Icono (Material · archivo) | Criterio |
+|---|---|---|
+| Glucosa | gota (`WaterDrop` · `ic_entry_glucose`) | `metric_type.code = glucose` |
+| Presión y pulso | monitor de corazón (`MonitorHeart` · `ic_entry_blood_pressure`) | `blood_pressure` |
+| Peso | báscula (`MonitorWeight` · `ic_entry_weight`) | `weight` |
+| Energía | rayo (`Bolt` · `ic_entry_energy`) | `energy` |
+| Ánimo | cara (`Mood` · `ic_entry_mood`) | `mood` |
+| Hambre | cubiertos (`Restaurant` · `ic_entry_hunger`) | `hunger` |
+| Otra medición numérica (cetonas, cintura, temperatura, las que cree la persona) | regla (`Straighten` · `ic_entry_numeric`) | sin `metric_option` |
+| Otra escala (claridad mental, las que cree la persona) | deslizadores (`Tune` · `ic_entry_scale`) | con `metric_option` |
+| Síntoma | tirita (`Healing` · `ic_entry_symptom`) | `symptom` |
+| Líquidos y sal | vaso (`LocalDrink` · `ic_entry_intake`) | `intake` |
+| Producto | cápsula (`Medication` · `ic_entry_product`) | `product_log` (como «Suplemento» en la hermana) |
+| Nota | nota (`EditNote` · `ic_entry_note`) | `note` (como «Nota del día» en la hermana) |
+| Comida de la vuelta a comer | plato con cubiertos (`DinnerDining` · `ic_entry_meal`) | `meal` (como «Comida» en la hermana) |
+| Paso de la vuelta a comer | círculo con marca (`TaskAlt` · `ic_entry_refeed`) | `refeed_check` |
+| Aviso | triángulo (`Warning` · `ic_entry_notice`) | `alert` de una regla con `rule.level = notice` |
+| Alerta | octógono (`Report` · `ic_entry_alert`) | `alert` de una regla con `rule.level = alert` |
+
+Dónde aparecen: TileAnotar (`icon_tile`) y, con `icon_row`, cada fila que muestra una anotación o lo que toca anotar: ItemLineaTiempo del detalle del ayuno, FilaPendiente y preguntas de Hoy, «Lo siguiente» y «Última medición» de Inicio, y la lista de Mediciones de este ayuno (también las borradas). En las alertas el icono de nivel sustituye a los signos ▲/■ del texto. Las pantallas de anotar o corregir una entrada no lo repiten: su título ya dice el tipo.
 
 ## 3. Modo claro y oscuro
 
@@ -130,6 +156,8 @@ Las cifras usan dígitos tabulares (`fontFeatureSettings = "tnum"`) para que el 
 
 | Fecha | Cambio | Porqué |
 |---|---|---|
+| 2026-11-06 | §2.1 ampliado: iconos también en cada fila con una anotación (Historial, Hoy, Inicio, Mediciones de este ayuno), token `icon_row` e iconos de comida, paso de la vuelta a comer, aviso y alerta | Que cada anotación se reconozca de un vistazo en todos los sitios donde aparece (decisión del humano) |
+| 2026-11-06 | §2.1 **Iconos por tipo de anotación** y token `icon_tile`; TileAnotar precisado | La rejilla Anotar mostraba solo texto aunque TileAnotar pedía icono + nombre; se usan los iconos de `my-health-tracker` para que las dos apps se lean igual (decisión del humano) |
 | 2026-10-14 | EV-004: componente **FiltroTipos** | La lista de mediciones del ayuno se filtra por tipo y puede haber más de 5 tipos, el límite de SelectorOpciones |
 | 2026-10-14 | **BarraHitos** precisada (línea horizontal, punto tocable, fecha del elegido debajo) | La construcción había hecho una lista vertical que ocupaba demasiado; el humano prefirió la barra del wireframe |
 | 2026-10-26 | EV-006: componentes **BotonRapido**, **Temporizador** e **Insignia** | Anotar agua y sal con un toque sin competir con «Anotar»; cronometrar la presión de pie con la pantalla apagada; marcar reglas de ejemplo, metas por llenar y lecturas de partida con texto, no con color |

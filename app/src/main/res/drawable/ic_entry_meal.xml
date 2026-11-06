@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Apache 2.0), Filled.DinnerDining. GUIA §2.1. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:fillColor="@android:color/white" android:pathData="M2,19 h20 l-2,2 H4 L2,19 Z M5,6 h1 v1 H5 V6 Z M5,4 h1 v1 H5 V4 Z M9,4 v1 H7 V4 H9 Z M9,7 H7 V6 h2 V7 Z M6,15.23 c-0.36,0.11 -0.69,0.28 -1,0.47 V8 h1 V15.23 Z M4,16.52 C3.62,16.96 3.32,17.45 3.16,18 h16.82 c0.01,-0.16 0.03,-0.33 0.03,-0.5 c0,-3.04 -2.46,-5.5 -5.5,-5.5 c-2.29,0 -4.25,1.4 -5.08,3.4 C8.84,15.15 8.19,15 7.5,15 c-0.17,0 -0.33,0.02 -0.5,0.04 V8 h2 c1.03,0.06 1.9,-0.96 2,-2 h10 V5 H11 c-0.1,-1.05 -0.97,-1.97 -2,-2 H3 v1 h1 v1 H3 v1 h1 v1 H3 v1 h1 V16.52 Z" />
+</vector>

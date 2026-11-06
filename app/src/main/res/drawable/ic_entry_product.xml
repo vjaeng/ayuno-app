@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons (Apache 2.0), Filled.Medication. GUIA §2.1. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:fillColor="@android:color/white" android:pathData="M6,3 h12 v2 h-12 Z" />
+    <path android:fillColor="@android:color/white" android:pathData="M17,6 H7 C5.9,6 5,6.9 5,8 v11 c0,1.1 0.9,2 2,2 h10 c1.1,0 2,-0.9 2,-2 V8 C19,6.9 18.1,6 17,6 Z M16,15 h-2.5 v2.5 h-3 V15 H8 v-3 h2.5 V9.5 h3 V12 H16 V15 Z" />
+</vector>
