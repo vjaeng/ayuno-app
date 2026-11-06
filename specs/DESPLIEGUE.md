@@ -52,13 +52,20 @@ Nombres y ubicaciones; los valores nunca se escriben aquí ni en el repositorio 
 
 ### 4.1 Actualización normal (lo habitual)
 
-Se instala **encima** de la versión oficial; los datos se conservan. **Nunca desinstalar.**
+Se instala **encima** de la versión oficial; los datos se conservan. **Nunca desinstalar.** Importar no hace falta nunca para actualizar.
+
+Al preparar cada versión se dice cuál de los dos casos es (y se anota en el registro, §8):
+
+| Caso | Cuándo | Exportar antes de instalar |
+|---|---|---|
+| **Con cambio de datos** | Sube la versión de la base de datos (`AyunoDatabase.version`) o la del formato del archivo (`schema_version`) | **Obligatorio** |
+| **Sin cambio de datos** | Solo cambia la pantalla o el comportamiento | Opcional (recomendado si hay un ayuno en curso) |
 
 1. Pruebas y lint en verde (`./gradlew test lint`). Si la versión de la base cambia, `MigrationTest` cubre la migración desde la versión instalada en el teléfono, con un ayuno en curso (`specs/PRUEBAS.md`).
 2. Subir `versionCode` (siempre mayor que el instalado) y `versionName` en `app/build.gradle.kts`.
 3. `./gradlew assembleRelease` y copiar el APK a `dist/ayuno-<versión>.apk`.
 4. Comprobar la firma (§5, paso 1).
-5. En el teléfono, **antes de instalar**: Más → Exportar todo, y copiar el `.json` fuera del teléfono (PC o Drive). Es la red de seguridad del rollback (§6).
+5. Si es **con cambio de datos**, en el teléfono y **antes de instalar**: Más → Exportar todo, y copiar el `.json` fuera del teléfono (PC o Drive). Es la red de seguridad del rollback (§6). Si es sin cambio de datos, este paso es opcional.
 6. Instalar encima:
    - con cable: `adb install -r dist/ayuno-<versión>.apk`;
    - sin cable: copiar el APK al teléfono, abrirlo y permitir «instalar apps desconocidas».
@@ -95,7 +102,7 @@ Para pasar datos de un paquete a otro (p. ej. de la prueba a la oficial) o tras 
 
 Android no deja instalar una versión **anterior** de la oficial encima de la nueva, y Room no abre una base de versión mayor que la que conoce. No hay vuelta atrás en el sitio:
 
-1. Si la versión nueva abre: Más → Exportar todo y copiar el `.json` fuera. Si no abre, usar el `.json` exportado en §4.1, paso 5 (se pierde lo anotado después).
+1. Si la versión nueva abre: Más → Exportar todo y copiar el `.json` fuera. Si no abre, usar el `.json` exportado en §4.1, paso 5 (se pierde lo anotado después); por eso ese paso es obligatorio cuando cambian los datos: sin cambio de datos, la versión nueva abre la misma base que la anterior.
 2. Desinstalar la versión nueva.
 3. Instalar el APK anterior desde `dist/` (por eso se conservan los APK publicados).
 4. Más → Restaurar con el `.json`. **Límite:** si la versión nueva subió el formato del archivo (`schema_version`), la anterior lo rechaza (H-040). En ese caso, restaurar el `.json` del paso 5 de §4.1 o, mejor, corregir hacia delante con una versión nueva.
@@ -118,6 +125,7 @@ Android no deja instalar una versión **anterior** de la oficial encima de la nu
 
 | Fecha | Decisión | Razón |
 |---|---|---|
+| 2026-11-06 | Exportar antes de actualizar es obligatorio solo si cambia la base de datos o el formato del archivo; si no, opcional | Instalar encima conserva los datos; el archivo solo hace falta para volver atrás cuando la versión nueva ya no puede abrirse con la base anterior |
 | 2026-11-06 | Clave release propia fuera del repo (`~/keystores/`, propiedades en `~/.gradle/gradle.properties`), con copia cifrada en Drive | Firmar la versión oficial sin depender de la clave de depuración del PC |
 | 2026-11-06 | La variante de prueba se instala como `com.ayuno.debug` («Ayuno (prueba)») | Probar sin desinstalar ni tocar los datos reales de la oficial |
 | 2026-11-06 | El APK oficial se publica en `dist/ayuno-<versión>.apk` y se conservan los anteriores | Nombre limpio para instalar; los anteriores hacen posible el rollback (§6) |
