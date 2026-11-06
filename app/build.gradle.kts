@@ -16,9 +16,26 @@ android {
         versionName = "0.14.0"
     }
 
+    // La clave y sus contraseñas viven fuera del repo (~/.gradle/gradle.properties);
+    // sin ellas la release sale sin firmar.
+    val releaseStoreFile = providers.gradleProperty("AYUNO_RELEASE_STORE_FILE").orNull
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = providers.gradleProperty("AYUNO_RELEASE_STORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("AYUNO_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("AYUNO_RELEASE_KEY_PASSWORD").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (releaseStoreFile != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
