@@ -504,6 +504,8 @@
     <string name="settings_title">Ajustes</string>
     <string name="more_settings_hint">Silencio nocturno</string>
     <string name="settings_reminders">Recordatorios</string>
+    <string name="settings_units">Unidades</string>
+    <string name="settings_units_hint">Es la unidad que aparece al anotar. Cambiarla no cambia lo ya anotado: cada entrada guarda la unidad con que se tecleó.</string>
     <string name="settings_quiet">Silencio nocturno</string>
     <string name="settings_quiet_hint">No suenan recordatorios en esa franja</string>
     <string name="settings_quiet_start">Desde</string>

@@ -12,8 +12,8 @@ android {
         applicationId = "com.ayuno"
         minSdk = 29
         targetSdk = 35
-        versionCode = 17
-        versionName = "0.14.1"
+        versionCode = 18
+        versionName = "0.15.0"
     }
 
     // La clave y sus contraseñas viven fuera del repo (~/.gradle/gradle.properties);

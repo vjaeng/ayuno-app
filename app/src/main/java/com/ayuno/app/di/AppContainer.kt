@@ -55,6 +55,7 @@ class AppContainer(
 
     val saveMetricType by lazy { SaveMetricType(catalog) }
     val setMetricTypeActive by lazy { SetMetricTypeActive(catalog) }
+    val setEntryUnit by lazy { com.ayuno.domain.usecase.SetEntryUnit(catalog) }
     val saveTemplate by lazy { SaveTemplate(templates) }
     val duplicateTemplate by lazy { com.ayuno.domain.usecase.DuplicateTemplate(templates) }
     val setTemplateDeleted by lazy { com.ayuno.domain.usecase.SetTemplateDeleted(templates, audit, transactions, clock) }

@@ -69,6 +69,18 @@ class RepositoriesTest {
     }
 
     @Test
+    fun `H-043 la unidad por defecto se guarda y lo ya anotado conserva la suya`() = runTest {
+        val t = template(); w.saveTemplate(t)
+        val fast = (w.createFast(CreateFast.Input(t.template.id, LocalDateTime.of(2026, 10, 22, 18, 0), LocalDateTime.of(2026, 10, 22, 22, 0), 57.0, null)) as Outcome.Ok).value.fast
+        w.now = Instant.parse("2026-10-23T03:10:00Z"); w.startFast(fast.id)
+        val fastId = fast.id
+        w.recordMeasurement(RecordMeasurement.Input(fastId, "weight", LocalDateTime.of(2026, 10, 22, 22, 5), valueEntered = 70.0))
+        assertEquals("lb", (com.ayuno.domain.usecase.SetEntryUnit(w.catalog)("weight", "lb") as Outcome.Ok).value.entryUnit)
+        assertEquals("lb", w.catalog.metricType("weight")!!.entryUnit)
+        assertEquals("kg", w.records.measurements(fastId).single().unitEntered)
+    }
+
+    @Test
     fun `H-007 desactivar un tipo se persiste`() = runTest {
         w.catalog.saveMetricType(w.catalog.metricType("ketones")!!.copy(active = false))
         assertEquals(false, w.catalog.metricType("ketones")!!.active)

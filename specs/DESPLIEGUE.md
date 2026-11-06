@@ -120,6 +120,7 @@ Android no deja instalar una versión **anterior** de la oficial encima de la nu
 | Fecha | Versión (versionCode) | Tipo | Resultado |
 |---|---|---|---|
 | 2026-11-06 | 0.14.0 (16) | Primera versión oficial firmada; migración desde la debug `com.ayuno` (§4.2) | Correcto (confirmado por la persona): exportado (formato 1.2, válido contra el esquema), desinstalada la debug, instalada `dist/ayuno-0.14.0.apk`, restaurado (1 ayuno, 38 mediciones, 7 presiones, 5 síntomas, 2 comidas, 1 plantilla) |
+| 2026-11-06 | 0.14.1 (17) | Actualización encima, sin cambio de datos (sin exportar) | Correcto (confirmado por la persona): iconos de tipo en Anotar, Historial, Hoy, Inicio y Mediciones de este ayuno; datos intactos |
 
 ## Log de decisiones
 

@@ -74,7 +74,7 @@ Casos mínimos derivados = criterios de aceptación + filas de la matriz CRUD (a
 | H-040 | Restaurar todo desde un archivo exportado | alta | 4 | 3 | U + I + E2E | en verde |
 | H-041 | Usar la app entera sin internet ni cuenta | alta | 3 | 7 | U + I + E2E | pendiente |
 | H-042 | Proteger mis datos en el teléfono y en copias | media | 5 | 1 | U + I + E2E | pendiente |
-| H-043 | Elegir mis unidades por defecto | media | 2 | 3 | U + I | pendiente |
+| H-043 | Elegir mis unidades por defecto | media | 2 | 3 | U + I | en verde (`H043UnitsTest`, `RepositoriesTest`) |
 | H-044 | Cambiar un ayuno que aún no ha empezado | media | 9 | 27 | U + I (+ E2E de acceso) | en verde |
 | H-045 | Borrar un ayuno para siempre con todos sus datos | alta | 7 | 22 | U + I + E2E | en verde |
 | H-046 | Ver mis ayunos planificados y elegir uno | alta | 8 | 12 | U + E2E | en verde |

@@ -7,8 +7,8 @@
 **Prioridad:** media · **Estimación:** S
 
 ### Criterios de Aceptación
-- [ ] Cambiar una unidad por defecto no altera las entradas ya guardadas.
-- [ ] Cada entrada conserva la unidad con que se tecleó.
+- [x] Cambiar una unidad por defecto no altera las entradas ya guardadas.
+- [x] Cada entrada conserva la unidad con que se tecleó.
 
 ### Consideraciones de Seguridad
 (ninguna evidente)

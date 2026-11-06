@@ -48,6 +48,7 @@ class TestWorld {
 
     val saveMetricType = SaveMetricType(catalog)
     val setMetricTypeActive = SetMetricTypeActive(catalog)
+    val setEntryUnit = com.ayuno.domain.usecase.SetEntryUnit(catalog)
     val saveTemplate = SaveTemplate(templates)
     val duplicateTemplate = com.ayuno.domain.usecase.DuplicateTemplate(templates)
     val setTemplateDeleted = com.ayuno.domain.usecase.SetTemplateDeleted(templates, audit, DirectTransactions, clock)

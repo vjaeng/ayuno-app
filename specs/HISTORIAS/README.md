@@ -50,7 +50,7 @@ Total: **57** historias · alta 42 · media 14 · baja 1. H-001 a H-043 son la v
 | H-040 | [Restaurar todo desde un archivo exportado](importacion-040-restaurar.md) | importacion | alta | entregada |
 | H-041 | [Usar la app entera sin internet ni cuenta](privacidad-041-sin-conexion-sin-cuenta.md) | privacidad | alta | tejida |
 | H-042 | [Proteger mis datos en el teléfono y en copias](privacidad-042-proteger-datos.md) | privacidad | media | tejida |
-| H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | tejida |
+| H-043 | [Elegir mis unidades por defecto](ajustes-043-unidades.md) | ajustes | media | entregada |
 | H-044 | [Cambiar un ayuno que aún no ha empezado](ayuno-044-cambiar-ayuno-planificado.md) | ayuno | media | entregada (EV-001) |
 | H-045 | [Borrar un ayuno para siempre con todos sus datos](historial-045-borrar-ayuno.md) | historial | alta | entregada (EV-001) |
 | H-046 | [Ver mis ayunos planificados y elegir uno](ayuno-046-ayunos-planificados.md) | ayuno | alta | entregada (EV-002) |
@@ -101,7 +101,7 @@ Sinónimos detectados en la solicitud (no resueltos aquí; candidatos a nudo N3 
 
 La sección *Después de la versión base* de la solicitud no genera historias todavía (entrarán como Evolución): gráficas y comparación entre ayunos, widget, importar lecturas del sensor continuo, Apple Salud / Health Connect, nota de voz, ventana diaria de comidas, envío a un servidor propio.
 
-De la solicitud de mejoras, EV-006 cubre solo la Prioridad 1 (M1-M5). La Prioridad 2 (M6-M11: glucosa en pareja, contexto del peso, despertares, hambre en un solo sitio, aparatos y cumplimiento del plan, resumen al terminar) y la Prioridad 3 (M12-M14: vuelta a comer que se cumpla sola, importar suplementos, motivo en las ediciones) serán las siguientes evoluciones; la **nota de voz** (M15) va aparte, con su ADR `SEG-` sobre micrófono y reconocimiento sin red (decisión del humano, 2026-10-25).
+De la solicitud de mejoras, EV-006 cubre solo la Prioridad 1 (M1-M5). La Prioridad 2 (M6-M11: glucosa en pareja, contexto del peso, despertares, hambre en un solo sitio, aparatos y cumplimiento del plan, resumen al terminar) y la Prioridad 3 (M12-M14: vuelta a comer que se cumpla sola, importar suplementos, motivo en las ediciones) serán las siguientes evoluciones; la **nota de voz** (M15) va aparte, con su ADR `SEG-` sobre micrófono y reconocimiento sin red (decisión del humano, 2026-10-25). **M9 (hambre en un solo sitio), decidido el 2026-11-06:** se queda la medición «Hambre» (escala con palabras) y sale el síntoma «Hambre»; la evolución de P2 lo quita del catálogo de fábrica y ajusta el criterio de H-010. Mientras tanto, la persona lo desactiva en su teléfono (Catálogos → Síntomas), sin tocar los ya anotados.
 
 ## Preguntas abiertas que afectan a las historias
 
@@ -176,6 +176,12 @@ Duplicar una plantilla (copia independiente con identificadores nuevos, «Copia 
 Medidas caseras con su equivalente y botones rápidos en Inicio con «Deshacer» (pulsación larga → formulario con ese tipo y esa medida); «Lleva sal disuelta» guarda dos ingestas enlazadas. Pregunta «¿Has tomado sal desde las …?» tras N horas despierto, con su fila en Hoy. Temporizador de pie con una alarma por cada tiempo del plan, segundos calculados, «Anotar sin esperar», «Cancelar» y resultado de la pareja. Reglas de diferencia al ponerse de pie, de cambio desde la partida y de tendencia, con su frase y su «Por:»; porcentaje de la meta en la regla de ingesta. «Marcar como de partida» en el Detalle de entrada. Revisión antes de empezar, con arreglo en el plan del ayuno, y «Empezó con pendientes» en Historial. Base de datos 9 y formato 1.2, ambos aditivos. 339 pruebas en verde (dominio 190, datos 61, app 88; cada variante de compilación las pasa todas); lint sin errores.
 
 **Entregadas en EV-006:** H-050, H-051, H-054, H-055, H-056 y H-057, y los criterios EV-006 de H-002, H-003, H-005, H-009, H-012, H-022, H-028, H-036 y H-040. **Construidas, pendientes de verificar en el teléfono (PRUEBAS §4.7):** H-052 (la pregunta con la app cerrada y tras reiniciar) y H-053 (el temporizador con la pantalla apagada). H-006 sigue en construcción solo por su caso D.
+
+## Construcción — H-043 (2026-11-06)
+
+Ajustes → Unidades: la unidad por defecto de glucosa, peso, cintura y temperatura (solo los tipos con unidad alternativa), con un selector de dos opciones por tipo y la ayuda «cambiarla no cambia lo ya anotado». Caso de uso `SetEntryUnit` (solo `metric_type.entry_unit`, valida que sea la principal o la alternativa). El formulario de medición, el peso al empezar y al terminar y la diferencia de peso ya usaban `entry_unit`. Sin cambio de base ni de formato (app 0.15.0). Pruebas de dominio `H043UnitsTest`.
+
+**Entregada:** H-043.
 
 ## Cambios aprobados durante la construcción
 

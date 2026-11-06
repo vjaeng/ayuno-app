@@ -91,6 +91,20 @@ internal fun codeFrom(text: String): String = Normalizer.normalize(text.lowercas
 
 internal val CODE_PATTERN = Regex("[a-z0-9_]+")
 
+/**
+ * H-043: unidad por defecto del formulario de un tipo con unidad alternativa. Solo cambia `entry_unit`: lo ya
+ * anotado conserva la unidad con que se tecleó.
+ */
+class SetEntryUnit(private val catalog: CatalogRepository) {
+    suspend operator fun invoke(code: String, unit: String): Outcome<MetricType> {
+        val type = catalog.metricType(code) ?: return invalid(ValidationError.METRIC_NOT_FOUND)
+        if (type.altUnit == null || (unit != type.unit && unit != type.altUnit)) return invalid(ValidationError.UNIT_NOT_ALLOWED)
+        val updated = type.copy(entryUnit = unit)
+        catalog.saveMetricType(updated)
+        return Outcome.Ok(updated)
+    }
+}
+
 /** H-007: activar o desactivar un tipo; desactivar no borra lo ya anotado. */
 class SetMetricTypeActive(private val catalog: CatalogRepository) {
     suspend operator fun invoke(code: String, active: Boolean): Outcome<MetricType> {
