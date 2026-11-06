@@ -31,6 +31,10 @@ android {
     }
 
     buildTypes {
+        // La debug convive con la oficial: otro paquete, otros datos y otra clave de base.
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
             isMinifyEnabled = false
             if (releaseStoreFile != null) {

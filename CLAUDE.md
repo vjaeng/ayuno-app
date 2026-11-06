@@ -110,6 +110,7 @@ Fundación: pasos 2-6 cerrados (historias, modelo, UX-UI, Tejido con compuerta a
 
 | Fecha | Decisión | Razón |
 |---|---|---|
+| 2026-11-06 | Versión oficial firmada con clave propia fuera del repo y publicada en `dist/ayuno-<versión>.apk`; la de prueba se instala aparte como `com.ayuno.debug` («Ayuno (prueba)»). Runbook en `specs/DESPLIEGUE.md` | Usar la app de verdad sin perder datos al probar versiones nuevas; la oficial se actualiza siempre encima |
 | 2026-10-26 | Empezar un ayuno pasa por una revisión previa derivada (reglas «de ejemplo» por marca, no por texto; metas sin cifra; lista previa sin marcar); «Empezar de todos modos» guarda lo que faltaba en `fast.started_with_warnings`, que no se edita (MODELO D-25) | EV-006: el primer ayuno real empezó con reglas de relleno sin que la app lo dijera |
 | 2026-10-26 | Las ingestas guardan lo tecleado y su equivalente en la unidad del tipo; las medidas caseras son catálogo editable (`household_unit`); totales, reglas y exportación usan siempre el equivalente (MODELO D-22). Base de datos 9 y formato 1.2, ambos aditivos | EV-006: anotar «1 pizca» o «1 vaso» sin hacer cuentas y sin tocar lo ya anotado |
 | 2026-10-26 | Reglas que comparan lecturas entre sí (diferencia de pie, cambio desde la partida, tendencia), con episodios para no repetir la alerta (MODELO D-24); las alarmas del temporizador de pie van fuera de la cadena de recordatorios y la pregunta «¿Has tomado…?» dentro (D-23) | EV-006: ver la subida del pulso al levantarse, que ninguna regla de umbral detectaba |
